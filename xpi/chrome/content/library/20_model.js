@@ -499,7 +499,7 @@ models.register({
 
 models.register({
 	name : 'Gyazo',
-	ICON : 'chrome://tombloo/skin/item.ico',
+	ICON : 'http://gyazo.com/public/img/favicon.ico',
 	
 	check : function(ps){
 		return ps.type=='photo' && ps.file;
