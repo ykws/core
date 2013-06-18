@@ -2248,7 +2248,7 @@ models.register({
 
 models.register(update({
 	name : 'HatenaBookmark',
-	ICON : 'http://b.hatena.ne.jp/favicon.ico',
+	ICON : 'chrome://tombloo/skin/favicon/hatenabookmark.png',
 	POST_URL : 'http://b.hatena.ne.jp/add',
 	
 	check : function(ps){
