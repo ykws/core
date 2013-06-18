@@ -1,22 +1,24 @@
-<?xml version="1.0"?>
-<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
-         xmlns:NC="http://home.netscape.com/NC-rdf#"
-         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-  <RDF:Description RDF:about="rdf:#$1wUlD2"
-                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                   em:minVersion="4.0"
-                   em:maxVersion="100.0.*"
-                   em:updateLink="http://github.com/to/tombloo/raw/release/tombloo.xpi"
-                   em:updateHash="sha512:8432c63623100ecd388f5ccefef24428750fea88480f0ed8a6de8bb0c2397b774671c19fe6d056507abc2c35fddc3e21a2b0e08abcc9179ca5fe9a79dddf16ec" />
-  <RDF:Description RDF:about="rdf:#$.vUlD2"
-                   em:version="0.4.36">
-    <em:targetApplication RDF:resource="rdf:#$1wUlD2"/>
-  </RDF:Description>
-  <RDF:Seq RDF:about="rdf:#$ZvUlD2">
-    <RDF:li RDF:resource="rdf:#$.vUlD2"/>
-  </RDF:Seq>
-  <RDF:Description RDF:about="urn:mozilla:extension:tombloo@brasil.to"
-                   em:signature="MIGTMA0GCSqGSIb3DQEBDQUAA4GBAF/GqvbAC+h9dz5k+BlRDgeeumnAEVX2cabpib5LpJ6XFck6J3JHXs+Lbog3SBpzs/WvIsXbwfDLQ2OmKJHSrIZqEQxGd6QSQYHSq9gAxjyuABmEPoKqADy+7Sw5iw3nNUa0FxZ2i+jcCmrxPbyaGZwyUn6ghJvAlQwpmwY8uYXO">
-    <em:updates RDF:resource="rdf:#$ZvUlD2"/>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<RDF:RDF xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <RDF:Description about="urn:mozilla:extension:tombfix@tombfix.github.io">
+    <em:updates>
+      <RDF:Seq>
+        <RDF:li>
+          <RDF:Description>
+            <em:version>0.0.1</em:version>
+            <em:targetApplication>
+              <RDF:Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>21.0</em:minVersion>
+                <em:maxVersion>100.0.*</em:maxVersion>
+                <em:updateLink>https://raw.github.com/tombfix/core/master/tombfix.xpi</em:updateLink>
+              </RDF:Description>
+            </em:targetApplication>
+          </RDF:Description>
+        </RDF:li>
+      </RDF:Seq>
+    </em:updates>
   </RDF:Description>
 </RDF:RDF>
