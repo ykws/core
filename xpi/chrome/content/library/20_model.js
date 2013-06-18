@@ -2401,34 +2401,6 @@ models.register({
 
 
 models.register({
-	name : 'Wassr',
-	ICON : 'http://wassr.jp/favicon.ico',
-	
-	check : function(ps){
-		return (/(regular|photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
-	},
-	
-	post : function(ps){
-		return this.addMessage(joinText([ps.item, ps.itemUrl, ps.body, ps.description], ' ', true));
-	},
-	
-	addMessage : function(message){
-		return request('http://wassr.jp/my/').addCallback(function(res){
-			if(!res.channel.URI.asciiSpec.match('http://wassr.jp/my/'))
-				throw new Error(getMessage('error.notLoggedin'));
-			
-			return request('http://wassr.jp/my/status/add', {
-				redirectionLimit : 0,
-				sendContent : update(formContents(convertToHTMLDocument(res.responseText)), {
-					message : message,
-				}),
-			});
-		})
-	},
-});
-
-
-models.register({
 	name : 'MediaMarker',
 	ICON : 'http://mediamarker.net/favicon.ico',
 	check : function(ps){
