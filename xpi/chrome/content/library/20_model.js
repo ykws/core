@@ -1784,7 +1784,7 @@ models.register(update({
 
 models.register({
 	name : 'Readability',
-	ICON : 'http://www.readability.com/favicon.ico',
+	ICON : 'chrome://tombloo/skin/favicon/readability.png',
 	URL  : 'http://www.readability.com/',
 	
 	check : function(ps){
