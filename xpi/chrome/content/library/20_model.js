@@ -1998,7 +1998,7 @@ models.register({
 
 models.register({
 	name : 'Faves',
-	ICON : 'http://faves.com/assets/favicon.ico',
+	ICON : 'chrome://tombloo/skin/favicon/faves.ico',
 	
 	/**
 	 * タグを取得する。
