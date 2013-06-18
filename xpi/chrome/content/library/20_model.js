@@ -1835,7 +1835,7 @@ models.register({
 
 models.register(update({
 	name : 'Instapaper',
-	ICON : 'chrome://tombloo/skin/instapaper.ico',
+	ICON : 'chrome://tombloo/skin/favicon/instapaper.png',
 	POST_URL: 'http://www.instapaper.com/edit',
 	check : function(ps){
 		return (/(quote|link)/).test(ps.type);
