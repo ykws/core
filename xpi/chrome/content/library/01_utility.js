@@ -5,7 +5,7 @@ var setPref = partial(setPrefValue, 'extensions.tombloo.');
 var CHROME_DIR = 'chrome://tombloo';
 var CHROME_CONTENT_DIR = CHROME_DIR + '/content';
 
-var EXTENSION_ID = 'tombloo@brasil.to';
+var EXTENSION_ID = 'tombfix@tombfix.github.io';
 
 var KEY_ACCEL = (AppInfo.OS == 'Darwin')? 'META' : 'CTRL';
 var PATH_DELIMITER = (navigator.appVersion.indexOf('Windows') != -1)? '\\' : '/';

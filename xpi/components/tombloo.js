@@ -1,4 +1,4 @@
-const EXTENSION_ID = 'tombloo@brasil.to';
+const EXTENSION_ID = 'tombfix@tombfix.github.io';
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
