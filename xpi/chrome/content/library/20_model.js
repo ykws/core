@@ -1380,7 +1380,7 @@ models.register(update({}, AbstractSessionService, {
 
 models.register({
 	name : 'Digg',
-	ICON : 'http://cdn1.diggstatic.com/img/favicon.ico',
+	ICON : 'chrome://tombloo/skin/favicon/digg.ico',
 	
 	check : function(ps){
 		return ps.type=='link';
