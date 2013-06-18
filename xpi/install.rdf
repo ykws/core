@@ -1,27 +1,27 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="utf-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>tombfix@tombfix.github.io</em:id>
+    <em:version>0.0.1</em:version>
+    <em:unpack>true</em:unpack>
+    <em:updateURL>https://raw.github.com/tombfix/core/master/update.rdf</em:updateURL>
 
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-	<Description about="urn:mozilla:install-manifest">
-		<em:id>tombloo@brasil.to</em:id>
-		<em:type>2</em:type>
-		<em:name>Tombloo</em:name>
-		<em:version>0.4.36</em:version>
-		<em:creator>to</em:creator>
-		<em:description></em:description>
-		<em:unpack>true</em:unpack>
-		<em:iconURL>chrome://tombloo/skin/tombloo_32.png</em:iconURL>
-		<em:optionsURL>chrome://tombloo/content/prefs.xul</em:optionsURL>
-		<em:aboutURL>chrome://tombloo/content/about.xul</em:aboutURL>
-		<em:updateURL>https://github.com/to/tombloo/raw/release/update.rdf</em:updateURL>
-		<em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDkDKakUfa66DxM47cHMltH9sviYxIBUNLhj8c6S5zbg2atrmraQVigfxQW9Oqj13WLGl2LiZPcbekEEViEsYa8CrqYNrF6tBZmW6Zp0eZmvIMABJOZfgt/sCWs6OF15BiOgl3kP92IJzMgOhizbnYOHhtPL6U4ZBQN61SWRxIdmwIDAQAB</em:updateKey>
-		
-		<em:targetApplication>
-			<Description>
-				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>4.0</em:minVersion>
-				<em:maxVersion>100.0.*</em:maxVersion>
-			</Description>
-		</em:targetApplication>
-	</Description>
+    <!-- Firefox -->
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>21.0</em:minVersion>
+        <em:maxVersion>100.0.*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+
+    <!-- Front End MetaData -->
+    <em:name>Tombfix</em:name>
+    <em:description>Tombfix is Fork of Tombloo. The main purpose is the maintenance of Tombloo.</em:description>
+    <em:creator>syoichi</em:creator>
+    <em:homepageURL>https://github.com/tombfix/core</em:homepageURL>
+    <em:iconURL>chrome://tombloo/skin/tombloo_32.png</em:iconURL>
+    <em:aboutURL>chrome://tombloo/content/about.xul</em:aboutURL>
+    <em:optionsURL>chrome://tombloo/content/prefs.xul</em:optionsURL>
+  </Description>
 </RDF>
