@@ -339,10 +339,6 @@ div{
 	
 	background: #FFFF99;
 	border: 1px solid #F0D67C;
-	-moz-border-top-colors:    #F0D67C;
-	-moz-border-bottom-colors: #F0D67C;
-	-moz-border-right-colors:  #F0D67C;
-	-moz-border-left-colors:   #F0D67C;
 }
 
 #message *|textarea {

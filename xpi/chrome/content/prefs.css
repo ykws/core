@@ -14,10 +14,7 @@ checkbox, radio, button, tab {
 textbox[readonly=true] {
 	-moz-appearance : none;
 	-moz-user-focus : ignore !important;
-	-moz-border-bottom-colors : transparent !important;
-	-moz-border-left-colors : transparent !important;
-	-moz-border-right-colors : transparent !important;
-	-moz-border-top-colors : transparent !important;
+	border: none !important;
 	background-color : transparent !important;
 }
 

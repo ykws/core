@@ -11,11 +11,7 @@ popup {
 	padding: 0;
  	cursor: pointer;
 	
-	border: 1px solid ThreeDShadow;
-	-moz-border-top-colors: ThreeDShadow;
-	-moz-border-right-colors: ThreeDShadow;
-	-moz-border-bottom-colors: ThreeDShadow;
-	-moz-border-left-colors: ThreeDShadow;
+	border: 1px solid gray;
 }
 
 listbox {

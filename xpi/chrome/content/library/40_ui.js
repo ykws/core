@@ -180,7 +180,7 @@ forEach({
 			vertical-align     : middle;
 			overflow           : hidden;
 			
-			-moz-border-radius : 4px;
+			border-radius      : 4px;
 			border             : 4px solid #EEE;
 			padding-left       : 20px;
 			padding-right      : 2px;
