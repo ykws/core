@@ -413,8 +413,8 @@ function addTab(url, background){
 	if(!background)
 		tabbrowser.selectedTab = tab;
 	
-	browser.addEventListener('DOMContentLoaded', function(event){
-		browser.removeEventListener('DOMContentLoaded', arguments.callee, true);
+	browser.addEventListener('DOMContentLoaded', function callee(event){
+		browser.removeEventListener('DOMContentLoaded', callee, true);
 	
 		d.callback(wrappedObject(event.originalTarget.defaultView));
 	}, true);
@@ -1851,7 +1851,7 @@ function convertToXULElement(str){
  * @return {String} HTML文字列。
  */
 function convertToHTMLString(src, safe){
-	var me = arguments.callee;
+	var me = convertToHTMLString;
 	
 	// 選択範囲の適切な外側まで含めてHTML文字列へ変換する(pre内選択なども正常処理される)
 	var doc = src.ownerDocument || src.focusNode.ownerDocument;

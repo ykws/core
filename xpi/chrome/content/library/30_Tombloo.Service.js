@@ -280,11 +280,11 @@ Tombloo.Service.Photo = {
 					if(photo.extension)
 						exts.unshift(exts.splice(exts.indexOf(photo.extension), 1)[0]);
 					
-					return (function(){
+					return (function callee(){
 						if(!exts.length)
 							return;
 						
-						var me = arguments.callee;
+						var me = callee;
 						photo.extension = exts.shift();
 						return Tumblr.Photo.download(photo.getFile(size)).addCallback(function(){
 							// ダウンロードが失敗した場合、拡張子を変えて再試行する

@@ -451,11 +451,11 @@ function Entity(def){
 			return Model.db.execute(sql, params).map(Model.rowToObject);
 		},
 		
-		__noSuchMethod__ : function (method, args) {
+		__noSuchMethod__ : function callee(method, args) {
 			if( ! method.match(/^(find|count)By/))
 				return;
 			
-			var me = arguments.callee;
+			var me = callee;
 			var cache = me.cache || (me.cache = {});
 			
 			var sql;

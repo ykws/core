@@ -1028,8 +1028,8 @@ DescriptionBox.prototype = {
 		this.customMenus = [];
 		
 		var df = document.createDocumentFragment();
-		(function(menus, parent){
-			var me = arguments.callee;
+		(function callee(menus, parent){
+			var me = callee;
 			menus.forEach(function(menu){
 				var elmItem = appendMenuItem(parent, menu.name, menu.icon, !!menu.children);
 				self.customMenus.push(elmItem);

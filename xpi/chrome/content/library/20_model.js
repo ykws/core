@@ -2511,8 +2511,8 @@ models.register({
 		var d = new Deferred();
 		
 		self.getPlayToken().addCallback(function(token){
-			(function(){
-				var me = arguments.callee;
+			(function callee(){
+				var me = callee;
 				return getJSON(self.URL + '/sets/' + token + '/' + ((number==0)? 'play' : 'next')+ '.json', {
 					queryString : {
 						mix_id : mixId,
