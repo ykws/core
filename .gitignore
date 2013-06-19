@@ -2,6 +2,5 @@ dest/
 build.properties
 resouces/
 xpi/chrome/content/work/
-xpi/chrome.manifest
 *.bak
 *.orig
