@@ -603,7 +603,7 @@ request = function(url, opts){
 	if(/^https?:\/\/(?:\w+\.)*tumblr\..*\/(?:reblog\/|new\/\w+)/.test(url)){
 		opts = updatetree(opts, {
 			headers : {
-				'User-Agent' : 'Mozilla/5.0 (Linux; U; Android 2.3.4; ja-jp; Build) Version/4.0 Mobile Safari/532'
+				'User-Agent' : 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)'
 			}
 		});
 	}
