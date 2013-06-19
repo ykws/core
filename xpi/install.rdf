@@ -21,7 +21,6 @@
     <em:creator>syoichi</em:creator>
     <em:homepageURL>https://github.com/tombfix/core</em:homepageURL>
     <em:iconURL>chrome://tombloo/skin/tombloo_32.png</em:iconURL>
-    <em:aboutURL>chrome://tombloo/content/about.xul</em:aboutURL>
     <em:optionsURL>chrome://tombloo/content/prefs.xul</em:optionsURL>
   </Description>
 </RDF>
