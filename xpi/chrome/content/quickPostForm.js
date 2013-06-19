@@ -717,17 +717,18 @@ TagsPanel.prototype = {
 			self.elmTags = {};
 			
 			var i = 0;
-			for each(var prop in ['recommended', 'popular']){
+			var list = ['recommended', 'popular'];
+			for (var prop in list){
 				if(i++ && self.elmTags.length)
 					self.elmSuggestion.appendChild(SPACER());
 				
-				res[prop].forEach(function(tag){
+				res[list[prop]].forEach(function(tag){
 					// この処理でパネルが延びるがロックしないため詳細ボックスが縮む。
 					// ロード時に開く場合、詳細ボックスはタグパネルの大きさも含んでいるため、
 					// 最終的に前回と同程度の大きさと間隔に復元される。
 					self.elmTags[tag] = self.elmSuggestion.appendChild(LABEL({
 						value : tag,
-						class : 'button ' + prop
+						class : 'button ' + list[prop]
 					}));
 				});
 			}

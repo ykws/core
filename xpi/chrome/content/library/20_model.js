@@ -303,15 +303,16 @@ models.register({
 		var user = user || this.getCurrentUser();
 		var endpoint;
 		return maybeDeferred((typeof(album)=='number')? album : this.getAlbums(user).addCallback(function(albums){
+			var entry = albums.feed.entry;
 			if(album){
 				// 大/小文字が表示されているものと異なる
-				for each(var a in albums.feed.entry)
-					if(album.match(a.gphoto$name.$t, 'i'))
-						return a.gphoto$id.$t;
+				for (var a in entry)
+					if(album.match(entry[a].gphoto$name.$t, 'i'))
+						return entry[a].gphoto$id.$t;
 				throw new Error('Album not found.');
 			} else {
 				// アルバムが指定されていない場合は先頭のアルバムとする
-				return albums.feed.entry[0].gphoto$id.$t;
+				return entry[0].gphoto$id.$t;
 			}
 		})).addCallback(function(aid){
 			// トークンを取得しポスト準備をする
