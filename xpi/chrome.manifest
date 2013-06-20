@@ -8,4 +8,3 @@ overlay   chrome://browser/content/browser.xul  chrome://tombfix/content/browser
 
 locale    tombfix  en-US  chrome/locale/en-US/
 locale    tombfix  ja-JP  chrome/locale/ja-JP/
-

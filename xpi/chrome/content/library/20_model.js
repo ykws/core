@@ -1236,7 +1236,6 @@ models.register({
 	},
 	
 	post : function(ps){
-		var self = this;
 		return this.getCurrentUser().addCallback(function(){
 			return request('https://avosapi.delicious.com/api/v1/posts/addoredit', {
 				queryString : {
