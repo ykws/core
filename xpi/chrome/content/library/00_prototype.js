@@ -27,14 +27,6 @@ update(Number.prototype, {
 });
 
 update(String.prototype, {
-	contains : function(str){
-		return this.indexOf(str) != -1;
-	},
-	
-	startsWith : function(s){
-		return this.indexOf(s) == 0;
-	},
-	
 	pad :function(len, ch){
 		len = len-this.length;
 		if(len<=0) return this;
@@ -44,14 +36,6 @@ update(String.prototype, {
 	indent : function(num, c){
 		c = c || ' ';
 		return this.replace(/^/mg, c.repeat(num))
-	},
-	
-	link: function(href){
-		return '<a href="' + href + '">' + this + '</a>';
-	},
-	
-	trim : function(){
-		return this.replace(/^\s+|\s+$/g, '');
 	},
 	
 	wrap : function(prefix, suffix){
