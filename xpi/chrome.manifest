@@ -1,11 +1,11 @@
 component {ab5cbd9b-56e1-42e4-8414-2201edb883e7} components/tombfix.js
 contract  @tombfix.github.io/tombfix-service;1 {ab5cbd9b-56e1-42e4-8414-2201edb883e7}
-category  content-policy TomblooService @tombfix.github.io/tombfix-service;1
+category  content-policy TombfixService @tombfix.github.io/tombfix-service;1
 
-content   tombloo  chrome/content/
-skin      tombloo  classic  chrome/skin/
-overlay   chrome://browser/content/browser.xul  chrome://tombloo/content/browser.xul
+content   tombfix  chrome/content/
+skin      tombfix  classic  chrome/skin/
+overlay   chrome://browser/content/browser.xul  chrome://tombfix/content/browser.xul
 
-locale    tombloo  en-US  chrome/locale/en-US/
-locale    tombloo  ja-JP  chrome/locale/ja-JP/
+locale    tombfix  en-US  chrome/locale/en-US/
+locale    tombfix  ja-JP  chrome/locale/ja-JP/
 

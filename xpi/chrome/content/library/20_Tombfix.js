@@ -1,4 +1,4 @@
-var Tombloo = {
+var Tombfix = {
 	SCHEMA_VERSION : 1,
 	
 	get root(){
@@ -14,7 +14,7 @@ var Tombloo = {
 			return this._db;
 		
 		var file = this.root;
-		file.append('tombloo.sqlite');
+		file.append('tombfix.sqlite');
 		
 		return this.db = new Database(file);
 	},
@@ -87,7 +87,7 @@ var Tombloo = {
 	Entity : function(def){
 		var Class = extend(Entity(def), {
 			get db(){
-				return Tombloo.db;
+				return Tombfix.db;
 			},
 		});
 		
@@ -100,7 +100,7 @@ var Tombloo = {
 			
 			var type = Class.definitions.name.slice(0, -1);
 			model._tags.forEach(function(tag){
-				Tombloo.Tag.insert({
+				Tombfix.Tag.insert({
 					id   : model.id,
 					type : type,
 					tag  : tag,
@@ -112,7 +112,7 @@ var Tombloo = {
 			if(this._tags)
 				return this._tags;
 			
-			return this._tags = Tombloo.Tag.findById(this.id);
+			return this._tags = Tombfix.Tag.findById(this.id);
 		});
 		
 		Class.prototype.__defineSetter__('tags', function(tags){
@@ -124,7 +124,7 @@ var Tombloo = {
 }
 
 
-Tombloo.Tag = Tombloo.Entity({
+Tombfix.Tag = Tombfix.Entity({
 	name : 'tags',
 	fields : {
 		id   : 'INTEGER',
@@ -132,12 +132,12 @@ Tombloo.Tag = Tombloo.Entity({
 		tag  : 'TEXT',
 	}
 });
-addAround(Tombloo.Tag, 'initialize', function(proceed, args, target){
+addAround(Tombfix.Tag, 'initialize', function(proceed, args, target){
 	proceed(args);
 	target.db.connection.executeSimpleSQL('CREATE INDEX idx_tags_id ON tags(id ASC)');
 });
 
-Tombloo.Regular = Tombloo.Entity({
+Tombfix.Regular = Tombfix.Entity({
 	name : 'regulars',
 	fields : {
 		id    : 'INTEGER PRIMARY KEY',
@@ -149,7 +149,7 @@ Tombloo.Regular = Tombloo.Entity({
 	}
 });
 
-Tombloo.Photo = Tombloo.Entity({
+Tombfix.Photo = Tombfix.Entity({
 	name : 'photos',
 	fields : {
 		id        : 'INTEGER PRIMARY KEY',
@@ -168,7 +168,7 @@ Tombloo.Photo = Tombloo.Entity({
 	}
 });
 
-Tombloo.Video = Tombloo.Entity({
+Tombfix.Video = Tombfix.Entity({
 	name : 'videos',
 	fields : {
 		id     : 'INTEGER PRIMARY KEY',
@@ -181,7 +181,7 @@ Tombloo.Video = Tombloo.Entity({
 	}
 });
 
-Tombloo.Link = Tombloo.Entity({
+Tombfix.Link = Tombfix.Entity({
 	name : 'links',
 	fields   : {
 		id     : 'INTEGER PRIMARY KEY',
@@ -194,7 +194,7 @@ Tombloo.Link = Tombloo.Entity({
 	}
 });
 
-Tombloo.Conversation = Tombloo.Entity({
+Tombfix.Conversation = Tombfix.Entity({
 	name : 'conversations',
 	fields : {
 		id    : 'INTEGER PRIMARY KEY',
@@ -206,7 +206,7 @@ Tombloo.Conversation = Tombloo.Entity({
 	}
 });
 
-Tombloo.Quote = Tombloo.Entity({
+Tombfix.Quote = Tombfix.Entity({
 	name : 'quotes',
 	fields : {
 		id     : 'INTEGER PRIMARY KEY',
@@ -219,13 +219,13 @@ Tombloo.Quote = Tombloo.Entity({
 });
 
 
-extend(Tombloo.Photo, {
+extend(Tombfix.Photo, {
 	findUsers : function(){
-		return Tombloo.Photo.find('SELECT user FROM photos GROUP BY user ORDER BY user').map(itemgetter('user'));
+		return Tombfix.Photo.find('SELECT user FROM photos GROUP BY user ORDER BY user').map(itemgetter('user'));
 	},
 	
 	getPhotoDir : function(size){
-		var dir = Tombloo.root;
+		var dir = Tombfix.root;
 		with(dir){
 			append('photo');
 			if(size)
@@ -249,7 +249,7 @@ extend(Tombloo.Photo, {
 	},
 });
 
-extend(Tombloo.Photo.prototype, {
+extend(Tombfix.Photo.prototype, {
 	file75  : 0, 
 	file100 : 0,
 	file250 : 0,
@@ -282,7 +282,7 @@ extend(Tombloo.Photo.prototype, {
 	},
 	
 	getFile : function(size){
-		var file = Tombloo.Photo.getPhotoDir(size);
+		var file = Tombfix.Photo.getPhotoDir(size);
 		file.append(this.getFileName(size));
 		return file;
 	},
@@ -292,10 +292,10 @@ extend(Tombloo.Photo.prototype, {
 	},
 });
 
-Tombloo.Post = Tombloo.Entity({name : 'posts'});
-extend(Tombloo.Post, {
+Tombfix.Post = Tombfix.Entity({name : 'posts'});
+extend(Tombfix.Post, {
 	insert : function(post){
-		Tombloo[post.type.capitalize()].insert(post);
+		Tombfix[post.type.capitalize()].insert(post);
 	},
 	
 	initialize : function(){

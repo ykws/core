@@ -534,7 +534,7 @@ models.register({
 
 models.register({
 	name : 'Local',
-	ICON : 'chrome://tombloo/skin/local.ico',
+	ICON : 'chrome://tombfix/skin/local.ico',
 	
 	check : function(ps){
 		return (/(regular|photo|quote|link)/).test(ps.type);
@@ -1381,7 +1381,7 @@ models.register(update({}, AbstractSessionService, {
 
 models.register({
 	name : 'Digg',
-	ICON : 'chrome://tombloo/skin/favicon/digg.ico',
+	ICON : 'chrome://tombfix/skin/favicon/digg.ico',
 	
 	check : function(ps){
 		return ps.type=='link';
@@ -1532,7 +1532,7 @@ models.register(update({}, AbstractSessionService, {
 
 models.register({
 	name : 'FirefoxBookmark',
-	ICON : 'chrome://tombloo/skin/firefox.ico',
+	ICON : 'chrome://tombfix/skin/firefox.ico',
 	ANNO_DESCRIPTION : 'bookmarkProperties/description',
 	
 	check : function(ps){
@@ -1751,7 +1751,7 @@ models.register({
 
 models.register(update({
 	name : 'Instapaper',
-	ICON : 'chrome://tombloo/skin/favicon/instapaper.png',
+	ICON : 'chrome://tombfix/skin/favicon/instapaper.png',
 	POST_URL: 'http://www.instapaper.com/edit',
 	check : function(ps){
 		return (/(quote|link)/).test(ps.type);
@@ -1785,7 +1785,7 @@ models.register(update({
 
 models.register({
 	name : 'Readability',
-	ICON : 'chrome://tombloo/skin/favicon/readability.png',
+	ICON : 'chrome://tombfix/skin/favicon/readability.png',
 	URL  : 'http://www.readability.com/',
 	
 	check : function(ps){
@@ -1999,7 +1999,7 @@ models.register({
 
 models.register({
 	name : 'Faves',
-	ICON : 'chrome://tombloo/skin/favicon/faves.ico',
+	ICON : 'chrome://tombfix/skin/favicon/faves.ico',
 	
 	/**
 	 * タグを取得する。
@@ -2045,7 +2045,7 @@ models.register({
 
 models.register({
 	name : 'Snipshot',
-	ICON : 'chrome://tombloo/skin/favicon/snipshot.png',
+	ICON : 'chrome://tombfix/skin/favicon/snipshot.png',
 	
 	check : function(ps){
 		return ps.type=='photo';
@@ -2163,7 +2163,7 @@ models.register({
 
 models.register(update({
 	name : 'HatenaBookmark',
-	ICON : 'chrome://tombloo/skin/favicon/hatenabookmark.png',
+	ICON : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
 	POST_URL : 'http://b.hatena.ne.jp/add',
 	
 	check : function(ps){
@@ -2365,7 +2365,7 @@ models.register({
 models.register({
 	name : '絶対復習',
 	URL  : 'http://brushup.narihiro.info',
-	ICON : 'chrome://tombloo/skin/item.ico',
+	ICON : 'chrome://tombfix/skin/item.ico',
 	
 	getAuthCookie : function(){
 		return getCookieString('brushup.narihiro.info', 'brushup_auth_token').split('=').pop();

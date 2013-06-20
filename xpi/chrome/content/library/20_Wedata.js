@@ -4,7 +4,7 @@ if(typeof(models)=='undefined')
 var Wedata = {
 	name : 'Wedata',
 	URL : 'http://wedata.net',
-	ICON : 'chrome://tombloo/skin/item.ico',
+	ICON : 'chrome://tombfix/skin/item.ico',
 	API_KEY : '61d69503acff33a28b61c0495eeefd6fb8c919a9',
 	
 	request :function(path, method, data){

@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
-<?xml-stylesheet href="chrome://tombloo/content/prefs.css" type="text/css" ?>
-<!DOCTYPE prefwindow SYSTEM "chrome://tombloo/locale/tombfix.dtd" >
+<?xml-stylesheet href="chrome://tombfix/content/prefs.css" type="text/css" ?>
+<!DOCTYPE prefwindow SYSTEM "chrome://tombfix/locale/tombfix.dtd" >
 <prefwindow
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	title="&label.tomblooOptions;" >
+	title="&label.tombfixOptions;" >
 	
 	<hbox flex="1" pack="end">
 		<resizer dir="bottomright" style="cursor: se-resize;" />
@@ -15,51 +15,51 @@
 		<preferences>
 			<preference
 				id="trimReblogInfo"
-				name="extensions.tombloo.trimReblogInfo"
+				name="extensions.tombfix.trimReblogInfo"
 				type="bool"/>
 			<preference
 				id="amazonAffiliateId"
-				name="extensions.tombloo.amazonAffiliateId"
+				name="extensions.tombfix.amazonAffiliateId"
 				type="string"/>
 			<preference
 				id="thumbnailTemplate"
-				name="extensions.tombloo.thumbnailTemplate"
+				name="extensions.tombfix.thumbnailTemplate"
 				type="string"/>
 			<preference
 				id="ignoreError"
-				name="extensions.tombloo.ignoreError"
+				name="extensions.tombfix.ignoreError"
 				type="string"/>
 			<preference
 				id="accesskey.share"
-				name="extensions.tombloo.accesskey.share"
+				name="extensions.tombfix.accesskey.share"
 				type="string"/>
 			<preference
 				id="contextMenu.top"
-				name="extensions.tombloo.contextMenu.top"
+				name="extensions.tombfix.contextMenu.top"
 				type="bool"/>
 			<preference
 				id="shortcutkey.quickPost.link"
-				name="extensions.tombloo.shortcutkey.quickPost.link"
+				name="extensions.tombfix.shortcutkey.quickPost.link"
 				type="string"/>
 			<preference
 				id="shortcutkey.quickPost.regular"
-				name="extensions.tombloo.shortcutkey.quickPost.regular"
+				name="extensions.tombfix.shortcutkey.quickPost.regular"
 				type="string"/>
 			<preference
 				id="shortcutkey.checkAndPost"
-				name="extensions.tombloo.shortcutkey.checkAndPost"
+				name="extensions.tombfix.shortcutkey.checkAndPost"
 				type="string"/>
 			<preference
 				id="tagProvider"
-				name="extensions.tombloo.tagProvider"
+				name="extensions.tombfix.tagProvider"
 				type="string"/>
 			<preference
 				id="tagAutoComplete"
-				name="extensions.tombloo.tagAutoComplete"
+				name="extensions.tombfix.tagAutoComplete"
 				type="bool"/>
 			<preference
 				id="dataDir"
-				name="extensions.tombloo.dataDir"
+				name="extensions.tombfix.dataDir"
 				type="string"/>
 		</preferences>
 		
@@ -180,7 +180,7 @@
 							</row>
 							<row align="center" style="margin-top: -0.3em;">
 								<spacer />
-								<textbox readonly="true" value="&label.example; {ProfD}/tombloo" />
+								<textbox readonly="true" value="&label.example; {ProfD}/tombfix" />
 							</row>
 						</rows>
 					</grid>
@@ -189,7 +189,7 @@
 		</tabbox>
 
 		<script><![CDATA[
-		// chrome://tombloo/content/prefs.xul
+		// chrome://tombfix/content/prefs.xul
 		var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 		env.extend(this, env, false);
 
@@ -432,7 +432,7 @@
 					return;
 				}
 				
-				this.changeCursor('url(chrome://tombloo/skin/' + this.source + '.png), pointer');
+				this.changeCursor('url(chrome://tombfix/skin/' + this.source + '.png), pointer');
 				this.setProp(pos, this.source);
 			},
 			

@@ -1,4 +1,4 @@
-<!ENTITY label.tomblooOptions "Tomblooの設定">
+<!ENTITY label.tombfixOptions "Tombfixの設定">
 <!ENTITY label.postConfig "デフォルトのポスト先">
 <!ENTITY label.post "ポスト関連">
 <!ENTITY label.entry "エントリ内容/他">

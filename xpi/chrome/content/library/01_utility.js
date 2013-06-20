@@ -1,8 +1,8 @@
 // ----[Application]-------------------------------------------------
-var getPref = partial(getPrefValue, 'extensions.tombloo.');
-var setPref = partial(setPrefValue, 'extensions.tombloo.');
+var getPref = partial(getPrefValue, 'extensions.tombfix.');
+var setPref = partial(setPrefValue, 'extensions.tombfix.');
 
-var CHROME_DIR = 'chrome://tombloo';
+var CHROME_DIR = 'chrome://tombfix';
 var CHROME_CONTENT_DIR = CHROME_DIR + '/content';
 
 var EXTENSION_ID = 'tombfix@tombfix.github.io';
@@ -24,7 +24,7 @@ function updatePatchChromeManifest(){
 	var DELIMITER = '# GENERATED';
 	
 	var dataDir = createURI(getDataDir()).spec;
-	var line = 'content tombloo-patch ' + dataDir;
+	var line = 'content tombfix-patch ' + dataDir;
 	var manifest = getChromeManifestFile();
 	var contents = getContents(manifest);
 	var updated =
@@ -326,7 +326,7 @@ function getTempDir(name){
 
 function getTempFile(ext){
 	var file = getTempDir();
-	file.append(joinText(['tombloo_' + (new Date()).getTime(), ext], '.'));
+	file.append(joinText(['tombfix_' + (new Date()).getTime(), ext], '.'));
 	
 	return file;
 }
@@ -372,7 +372,7 @@ function openProgressDialog(progress, max, value){
 	if(!(progress instanceof Progress))
 		progress = new Progress(progress, max, value);
 	
-	openDialog('chrome://tombloo/content/library/progressDialog.xul', 'dialog,centerscreen', progress);
+	openDialog('chrome://tombfix/content/library/progressDialog.xul', 'dialog,centerscreen', progress);
 	
 	return progress;
 }

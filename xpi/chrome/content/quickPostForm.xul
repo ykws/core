@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<?xml-stylesheet href="chrome://tombloo/content/quickPostForm.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://tombfix/content/quickPostForm.css" type="text/css" ?>
 <window id="window" 
 	xmlns:html="http://www.w3.org/1999/xhtml" 
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
@@ -71,13 +71,13 @@
 		</rows>
 	</grid>
 <script><![CDATA[
-// chrome://tombloo/content/quickPostForm.xul
+// chrome://tombfix/content/quickPostForm.xul
 
 var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 env.extend(this, env, false);
 
 ]]></script>
-<script type="application/javascript;version=1.7" src="chrome://tombloo/content/library/00_prototype.js"/>
+<script type="application/javascript;version=1.7" src="chrome://tombfix/content/library/00_prototype.js"/>
 <script type="application/javascript;version=1.7" src="quickPostForm.js"/>
 <script><![CDATA[
 

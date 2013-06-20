@@ -204,7 +204,7 @@ if (!ExtensionManager) {  // for firefox4
 
 Module = {
 	CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
-	NAME : 'TomblooService',
+	NAME : 'TombfixService',
 	PID  : '@tombfix.github.io/tombfix-service;1',
 	
 	initialized : false,
@@ -259,18 +259,18 @@ Module = {
 		setupEnvironment(env);
 		env.loadAllSubScripts();
 		
-		var GM_Tombloo = copy({
-			Tombloo : {
-				Service : copy({}, env.Tombloo.Service, /(check|share|posters|extractors)/),
+		var GM_Tombfix = copy({
+			Tombfix : {
+				Service : copy({}, env.Tombfix.Service, /(check|share|posters|extractors)/),
 			},
 		}, env, /(Deferred|DeferredHash|copyString|notify)/);
 		
 		for(var name in env.models)
 			if(env.models.hasOwnProperty(name))
-				GM_Tombloo[name] = copy({}, env.models[name], /^(?!.*(password|cookie))/i);
+				GM_Tombfix[name] = copy({}, env.models[name], /^(?!.*(password|cookie))/i);
 		
 		// 他拡張からの読み取りを許可する(Firefox 17用)
-		exposeProperties(GM_Tombloo, true);
+		exposeProperties(GM_Tombfix, true);
 		
 		// Greasemonkeyサンドボックスの拡張
 		var greasemonkey = Cc['@greasemonkey.mozdev.org/greasemonkey-service;1'];
@@ -281,7 +281,7 @@ Module = {
 				for(var i=0, len=arguments.length ; i<len ; i++){
 					var arg = arguments[i];
 					if(typeof(arg) == 'object'){
-						arg.GM_Tombloo = GM_Tombloo;
+						arg.GM_Tombfix = GM_Tombfix;
 						return;
 					}
 				}
@@ -292,7 +292,7 @@ Module = {
 			// Scriptishサンドボックスの拡張
 			var scope = {};
 			Components.utils.import('resource://scriptish/api.js', scope);
-			scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
+			scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
 		}catch(e){
 			// インストールされていない場合や無効になっている場合にエラーになる
 		}

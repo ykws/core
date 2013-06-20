@@ -246,7 +246,7 @@ var Tumblr = update({}, AbstractSessionService, {
 	
 	/**
 	 * reblogする。
-	 * Tombloo.Service.extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
+	 * Tombfix.Service.extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
 	 *
 	 * @param {Object} ps
 	 * @return {Deferred}
@@ -473,7 +473,7 @@ Tumblr.Regular = {
 Tumblr.Photo = {
 	convertToModel : function(post, info){
 		var photoUrl500 = getTextContent(post.querySelector('photo-url[max-width="500"]'));
-		var image = Tombloo.Photo.getImageInfo(photoUrl500);
+		var image = Tombfix.Photo.getImageInfo(photoUrl500);
 		
 		return update(info, {
 			photoUrl500   : photoUrl500,

@@ -299,7 +299,7 @@ function FormPanel(dialogPanel){
 	this.elmToggleDetail.setAttribute('tooltiptext', getMessage('label.showDetail'));
 	
 	getElement('type').value = ps.type.capitalize();
-	getElement('typeIcon').src = 'chrome://tombloo/skin/' + ps.type + '.png';
+	getElement('typeIcon').src = 'chrome://tombfix/skin/' + ps.type + '.png';
 	getElement('post').addEventListener('command', bind('post', this), true);
 	
 	this.elmToggleDetail.addEventListener('click', bind('toggleDetail', this), true);
@@ -387,7 +387,7 @@ FormPanel.prototype = {
 				ps[name] = field.value;
 		});
 		
-		Tombloo.Service.post(ps, checked);
+		Tombfix.Service.post(ps, checked);
 		
 		signal(this, 'post');
 	},
@@ -741,7 +741,7 @@ TagsPanel.prototype = {
 		withDocument(document, function(){
 			var elmStar = self.formPanel.addWidgetToTitlebar(IMAGE({
 				tooltiptext : getMessage('label.bookmarked'),
-				src : 'chrome://tombloo/skin/star.png',
+				src : 'chrome://tombfix/skin/star.png',
 			}));
 			
 			if(editPage){

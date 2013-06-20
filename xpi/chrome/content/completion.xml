@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<bindings id="tombloo-completion-bindings"
+<bindings id="tombfix-completion-bindings"
 	xmlns="http://www.mozilla.org/xbl" 
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns:xbl="http://www.mozilla.org/xbl" 
@@ -8,7 +8,7 @@
 	
 	<binding id="container">
 		<resources>
-			<stylesheet src="chrome://tombloo/content/completion.css"/>
+			<stylesheet src="chrome://tombfix/content/completion.css"/>
 		</resources>
 		
 		<content style="cursor: text;">

@@ -48,16 +48,16 @@ textbox[readonly=true] {
 }
 
 #posters treechildren::-moz-tree-image(default) {
-	list-style-image : url('chrome://tombloo/skin/default.png');
+	list-style-image : url('chrome://tombfix/skin/default.png');
 }
 
 #posters treechildren::-moz-tree-image(enabled) {
 	/* 透明度の設定はできない */
-	list-style-image : url('chrome://tombloo/skin/enabled.png');
+	list-style-image : url('chrome://tombfix/skin/enabled.png');
 }
 
 #posters treechildren::-moz-tree-image(disabled) {
-	list-style-image : url('chrome://tombloo/skin/disabled.png');
+	list-style-image : url('chrome://tombfix/skin/disabled.png');
 }
 
 

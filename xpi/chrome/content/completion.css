@@ -1,5 +1,5 @@
 textbox {
-	-moz-binding: url("chrome://tombloo/content/completion.xml#textbox");
+	-moz-binding: url("chrome://tombfix/content/completion.xml#textbox");
 }
 
 textbox *|input {
@@ -7,7 +7,7 @@ textbox *|input {
 }
 
 popup {
-	-moz-binding: url("chrome://tombloo/content/completion.xml#popup");
+	-moz-binding: url("chrome://tombfix/content/completion.xml#popup");
 	padding: 0;
  	cursor: pointer;
 	
@@ -15,7 +15,7 @@ popup {
 }
 
 listbox {
-	-moz-binding: url("chrome://tombloo/content/completion.xml#listbox");
+	-moz-binding: url("chrome://tombfix/content/completion.xml#listbox");
 	-moz-appearance: none !important;
  	border: none !important;
 	margin: 0;
@@ -23,7 +23,7 @@ listbox {
 }
 
 listitem {
-	-moz-binding: url("chrome://tombloo/content/completion.xml#listitem");
+	-moz-binding: url("chrome://tombfix/content/completion.xml#listitem");
 	outline: none !important;
 	padding-right : 4px;
 }

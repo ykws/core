@@ -1,4 +1,4 @@
-Tombloo.Service.extractors = new Repository([
+Tombfix.Service.extractors = new Repository([
 	{
 		name : 'LDR',
 		getItem : function(ctx, getOnly){
@@ -32,10 +32,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Quote - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.LDR.getItem(ctx, true) && ctx.selection;
+			return Tombfix.Service.extractors.LDR.getItem(ctx, true) && ctx.selection;
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				LDR.getItem(ctx);
 				return Quote.extract(ctx);
 			}
@@ -46,13 +46,13 @@ Tombloo.Service.extractors = new Repository([
 		name : 'ReBlog - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			var item = Tombloo.Service.extractors.LDR.getItem(ctx, true);
+			var item = Tombfix.Service.extractors.LDR.getItem(ctx, true);
 			return item && (
 				item.href.match('^http://.*?\\.tumblr\\.com/') ||
 				(ctx.onImage && ctx.target.src.match('^http://data\.tumblr\.com/')));
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				LDR.getItem(ctx);
 				return ReBlog.extractByLink(ctx, ctx.href);
 			}
@@ -63,13 +63,13 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Photo - LDR(FFFFOUND!)',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			var item = Tombloo.Service.extractors.LDR.getItem(ctx, true);
+			var item = Tombfix.Service.extractors.LDR.getItem(ctx, true);
 			return item &&
 				ctx.onImage &&
 				item.href.match('^http://ffffound\\.com/');
 		},
 		extract : function(ctx){
-			var item = Tombloo.Service.extractors.LDR.getItem(ctx);
+			var item = Tombfix.Service.extractors.LDR.getItem(ctx);
 			ctx.title = item.title;
 			
 			with(createURI(ctx.href))
@@ -93,11 +93,11 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Photo - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.LDR.getItem(ctx, true) &&
+			return Tombfix.Service.extractors.LDR.getItem(ctx, true) &&
 				ctx.onImage;
 		},
 		extract : function(ctx){
-			var exts = Tombloo.Service.extractors;
+			var exts = Tombfix.Service.extractors;
 			exts.LDR.getItem(ctx);
 			return exts.check(ctx)[0].extract(ctx);
 		},
@@ -107,10 +107,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Link - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.LDR.getItem(ctx, true);
+			return Tombfix.Service.extractors.LDR.getItem(ctx, true);
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				LDR.getItem(ctx);
 				return Link.extract(ctx);
 			}
@@ -148,10 +148,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Quote - GoogleReader',
 		ICON : 'http://www.google.com/reader/ui/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.GoogleReader.getItem(ctx, true) && ctx.selection;
+			return Tombfix.Service.extractors.GoogleReader.getItem(ctx, true) && ctx.selection;
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				GoogleReader.getItem(ctx);
 				return Quote.extract(ctx);
 			}
@@ -162,13 +162,13 @@ Tombloo.Service.extractors = new Repository([
 		name : 'ReBlog - GoogleReader',
 		ICON : 'http://www.google.com/reader/ui/favicon.ico',
 		check : function(ctx){
-			var item = Tombloo.Service.extractors.GoogleReader.getItem(ctx, true);
+			var item = Tombfix.Service.extractors.GoogleReader.getItem(ctx, true);
 			return item && (
 				item.href.match('^http://.*?\\.tumblr\\.com/') ||
 				(ctx.onImage && ctx.target.src.match('^http://data\.tumblr\.com/')));
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				GoogleReader.getItem(ctx);
 				return ReBlog.extractByLink(ctx, ctx.href);
 			}
@@ -179,13 +179,13 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Photo - GoogleReader(FFFFOUND!)',
 		ICON : 'http://www.google.com/reader/ui/favicon.ico',
 		check : function(ctx){
-			var item = Tombloo.Service.extractors.LDR.getItem(ctx, true);
+			var item = Tombfix.Service.extractors.LDR.getItem(ctx, true);
 			return item &&
 				ctx.onImage &&
 				item.href.match('^http://ffffound\\.com/');
 		},
 		extract : function(ctx){
-			var item = Tombloo.Service.extractors.GoogleReader.getItem(ctx);
+			var item = Tombfix.Service.extractors.GoogleReader.getItem(ctx);
 			ctx.title = item.title;
 			
 			with(createURI(ctx.href))
@@ -209,11 +209,11 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Photo - GoogleReader',
 		ICON : 'http://www.google.com/reader/ui/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.GoogleReader.getItem(ctx, true) &&
+			return Tombfix.Service.extractors.GoogleReader.getItem(ctx, true) &&
 				ctx.onImage;
 		},
 		extract : function(ctx){
-			var exts = Tombloo.Service.extractors;
+			var exts = Tombfix.Service.extractors;
 			exts.GoogleReader.getItem(ctx);
 			return exts.check(ctx)[0].extract(ctx);
 		},
@@ -223,10 +223,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Link - GoogleReader',
 		ICON : 'http://www.google.com/reader/ui/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.GoogleReader.getItem(ctx, true);
+			return Tombfix.Service.extractors.GoogleReader.getItem(ctx, true);
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				GoogleReader.getItem(ctx);
 				return Link.extract(ctx);
 			}
@@ -259,7 +259,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Quote - inyo.jp',
-		ICON : 'chrome://tombloo/skin/quote.png',
+		ICON : 'chrome://tombfix/skin/quote.png',
 		check : function(ctx){
 			return ctx.href.match('//inyo.jp/quote/[a-f0-9]+');
 		},
@@ -316,11 +316,11 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Photo - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.Amazon.preCheck(ctx) && 
+			return Tombfix.Service.extractors.Amazon.preCheck(ctx) && 
 				($x('./ancestor::*[@id="prodImageCell" or @id="prodImageOuter" or @id="image-block-widget"]', ctx.target) || ctx.target.id == 'magnifierLens');
 		},
 		extract : function(ctx){
-			Tombloo.Service.extractors.Amazon.extract(ctx);
+			Tombfix.Service.extractors.Amazon.extract(ctx);
 			
 			var d = new Deferred();
 			
@@ -332,7 +332,7 @@ Tombloo.Service.extractors = new Repository([
 			// http://tools4hack.santalab.me/new-ipad-get-largeartwork-amazon-img.html
 			var elmImage = IMG({
 				src : 'http://z-ecx.images-amazon.com/images/P/' + 
-					Tombloo.Service.extractors.Amazon.getAsin(ctx) + 
+					Tombfix.Service.extractors.Amazon.getAsin(ctx) + 
 					'.09.MAIN._FMpng_SCRMZZZZZZ_.png'
 			});
 			elmImage.onload = function(){
@@ -376,10 +376,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Quote - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.Amazon.preCheck(ctx) && ctx.selection;
+			return Tombfix.Service.extractors.Amazon.preCheck(ctx) && ctx.selection;
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				Amazon.extract(ctx);
 				return Quote.extract(ctx);
 			}
@@ -390,10 +390,10 @@ Tombloo.Service.extractors = new Repository([
 		name : 'Link - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.Amazon.preCheck(ctx);
+			return Tombfix.Service.extractors.Amazon.preCheck(ctx);
 		},
 		extract : function(ctx){
-			with(Tombloo.Service.extractors){
+			with(Tombfix.Service.extractors){
 				Amazon.extract(ctx);
 				return Link.extract(ctx);
 			}
@@ -489,24 +489,24 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'ReBlog - Tumblr',
-		ICON : 'chrome://tombloo/skin/reblog.ico',
+		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
-			return Tombloo.Service.extractors.ReBlog.getFrameUrl(currentDocument());
+			return Tombfix.Service.extractors.ReBlog.getFrameUrl(currentDocument());
 		},
 		extract : function(ctx){
-			return Tombloo.Service.extractors.ReBlog.extractByPage(ctx, currentDocument());
+			return Tombfix.Service.extractors.ReBlog.extractByPage(ctx, currentDocument());
 		},
 	},
 	
 	{
 		name : 'ReBlog - Dashboard',
-		ICON : 'chrome://tombloo/skin/reblog.ico',
+		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
 			return (/(tumblr-beta\.com|tumblr\.com)\//).test(ctx.href) && this.getLink(ctx);
 		},
 		extract : function(ctx){
 			// タイトルなどを取得するためextractByLinkを使う(reblogリンクを取得しextractByEndpointを使った方が速い)
-			return Tombloo.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
+			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
 		},
 		getLink : function(ctx){
 			var link = $x(
@@ -518,12 +518,12 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name: 'ReBlog - Tumblr Dashboard for iPhone',
-		ICON: 'chrome://tombloo/skin/reblog.ico',
+		ICON: 'chrome://tombfix/skin/reblog.ico',
 		check: function(ctx){
 			return (/(tumblr\.com)\/iphone/).test(ctx.href) && this.getLink(ctx);
 		},
 		extract : function(ctx){
-			return Tombloo.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
+			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
 		},
 		getLink : function(ctx){
 			var link = $x('./ancestor-or-self::li[starts-with(normalize-space(@id), "post")]//a[contains(concat(" ",normalize-space(@class)," ")," permalink ")]', ctx.target);
@@ -533,29 +533,29 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'ReBlog - Mosaic',
-		ICON : 'chrome://tombloo/skin/reblog.ico',
+		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
 			return ctx.href.match(/mosaic.html/i) && ctx.target.photo;
 		},
 		extract : function(ctx){
-			return Tombloo.Service.extractors.ReBlog.extractByLink(ctx, ctx.target.photo.url);
+			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, ctx.target.photo.url);
 		},
 	},
 	
 	{
 		name : 'ReBlog - Tumblr link',
-		ICON : 'chrome://tombloo/skin/reblog.ico',
+		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
 			return ctx.link && ctx.link.href.match(/^http:\/\/[^.]+.tumblr\.com\/post\/\d+/);
 		},
 		extract : function(ctx){
-			return Tombloo.Service.extractors.ReBlog.extractByLink(ctx, ctx.link.href);
+			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, ctx.link.href);
 		},
 	},
 	
 	{
 		name : 'Photo - Ameba blog',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.onLink && 
 				ctx.host == ('ameblo.jp') &&
@@ -626,7 +626,7 @@ Tombloo.Service.extractors = new Repository([
 					},
 				}
 			}).addErrback(function(err){
-				return Tombloo.Service.extractors['Photo'].extract(ctx);
+				return Tombfix.Service.extractors['Photo'].extract(ctx);
 			});
 		},
 	},
@@ -643,7 +643,7 @@ Tombloo.Service.extractors = new Repository([
 		extract : function(ctx){
 			ctx.target = this.getImage(ctx);
 			
-			return Tombloo.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+			return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
 		},
 		getImage : function(ctx){
 			// 標準モード
@@ -1029,13 +1029,13 @@ Tombloo.Service.extractors = new Repository([
 			ctx.target = {
 				src : ctx.link.href.replace('/l/im/', '/'),
 			};
-			return Tombloo.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+			return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
 		}
 	},
 	
 	{
 		name : 'Photo - Cheezburger',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.onImage && /(thereifixedit\.files\.wordpress\.com|chzbgr\.com)/.test(ctx.target.src);
 		},
@@ -1072,7 +1072,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Lightbox',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		PATTERNS : [
 			{re: /(nextLink|prevLink|hoverNav)/, image: 'lightboxImage'},
 			{re: /(lbPrevLink|lbNextLink|lbImage)/, image: 'lbImage'}
@@ -1101,7 +1101,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - covered',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			if(!currentDocument().elementFromPoint || !ctx.onImage)
 				return;
@@ -1114,7 +1114,7 @@ Tombloo.Service.extractors = new Repository([
 		extract : function(ctx){
 			removeElement(ctx.target);
 			
-			return Tombloo.Service.extractors[ctx.bgImageURL?
+			return Tombfix.Service.extractors[ctx.bgImageURL?
 				'Photo - background image' :
 				'Photo - area element'].extract(ctx);
 		},
@@ -1122,7 +1122,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - area element',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			if(currentDocument().elementFromPoint && tagName(ctx.target)=='area')
 				return true;
@@ -1139,7 +1139,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - image link',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			if(!ctx.onLink)
 				return;
@@ -1152,13 +1152,13 @@ Tombloo.Service.extractors = new Repository([
 				src : ctx.link.href
 			};
 			
-			return Tombloo.Service.extractors['Photo'].extract(ctx);
+			return Tombfix.Service.extractors['Photo'].extract(ctx);
 		},
 	},
 	
 	{
 		name : 'Photo - Data URI',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.onImage && ctx.target.src.match(/^data:/);
 		},
@@ -1176,18 +1176,18 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Canvas',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return tagName(ctx.target)=='canvas';
 		},
 		extract : function(ctx){
-			return Tombloo.Service.extractors['Photo - Data URI'].extract(ctx);
+			return Tombfix.Service.extractors['Photo - Data URI'].extract(ctx);
 		},
 	},
 	
 	{
 		name : 'Photo',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		PROTECTED_SITES : [
 			'files.posterous.com/',
 			'image.itmedia.co.jp/',
@@ -1213,7 +1213,7 @@ Tombloo.Service.extractors = new Repository([
 			if(this.PROTECTED_SITES.some(function(re){
 				return RegExp(re).test(itemUrl);
 			})){
-				return Tombloo.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+				return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
 			};
 			
 			if(ctx.document.contentType.match(/^image/))
@@ -1232,7 +1232,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Upload from Cache',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.onImage;
 		},
@@ -1383,7 +1383,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Quote',
-		ICON : 'chrome://tombloo/skin/quote.png',
+		ICON : 'chrome://tombfix/skin/quote.png',
 		check : function(ctx){
 			return ctx.selection;
 		},
@@ -1399,7 +1399,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Link - trim parameters',
-		ICON : 'chrome://tombloo/skin/link.png',
+		ICON : 'chrome://tombfix/skin/link.png',
 		TARGET_SITES : [
 			'//itunes.apple.com/',
 		],
@@ -1411,13 +1411,13 @@ Tombloo.Service.extractors = new Repository([
 		extract : function(ctx){
 			var uri = createURI(ctx.href);
 			ctx.href = uri.prePath + uri.filePath;
-			return Tombloo.Service.extractors.Link.extract(ctx);
+			return Tombfix.Service.extractors.Link.extract(ctx);
 		},
 	},
 	
 	{
 		name : 'Link - link',
-		ICON : 'chrome://tombloo/skin/link.png',
+		ICON : 'chrome://tombfix/skin/link.png',
 		check : function(ctx){
 			return ctx.onLink;
 		},
@@ -1437,7 +1437,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Link',
-		ICON : 'chrome://tombloo/skin/link.png',
+		ICON : 'chrome://tombfix/skin/link.png',
 		check : function(ctx){
 			return true;
 		},
@@ -1471,7 +1471,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - background image',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.bgImageURL;
 		},
@@ -1486,7 +1486,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Capture',
-		ICON : 'chrome://tombloo/skin/photo.png',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return true;
 		},
@@ -1530,7 +1530,7 @@ Tombloo.Service.extractors = new Repository([
 	
 	{
 		name : 'Text',
-		ICON : 'chrome://tombloo/skin/text.png',
+		ICON : 'chrome://tombfix/skin/text.png',
 		check : function(ctx){
 			return true;
 		},
@@ -1542,7 +1542,7 @@ Tombloo.Service.extractors = new Repository([
 	},
 ]);
 
-update(Tombloo.Service.extractors, {
+update(Tombfix.Service.extractors, {
 	REDIRECT_URLS : [
 		'pheedo.jp/',
 		'//feedproxy.google.com/',

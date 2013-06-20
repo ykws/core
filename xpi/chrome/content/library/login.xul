@@ -22,11 +22,11 @@ listitem {
 		<vbox style="margin-left: 0.7em;" flex="1">
 			<listbox id="users" flex="1" >
 			</listbox>
-			<button dlgtype="accept" image="chrome://tombloo/skin/accept.png" label="Login" style="margin-top: 0.7em;padding: 0.5em 0;"/>
+			<button dlgtype="accept" image="chrome://tombfix/skin/accept.png" label="Login" style="margin-top: 0.7em;padding: 0.5em 0;"/>
 		</vbox>
 	</hbox>
 	<script><![CDATA[
-	// chrome://tombloo/content/library/login.xul
+	// chrome://tombfix/content/library/login.xul
 	var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 	
 	var elmModels = document.getElementById('models');
@@ -47,10 +47,10 @@ listitem {
 				item.setAttribute('class', 'listitem-iconic');
 				if(pw.user == user){
 					elmUsers.selectedItem = item;
-					item.setAttribute('image', 'chrome://tombloo/skin/tick.png');
+					item.setAttribute('image', 'chrome://tombfix/skin/tick.png');
 					item.disabled = true;
 				} else {
-					item.setAttribute('image', 'chrome://tombloo/skin/empty.png');
+					item.setAttribute('image', 'chrome://tombfix/skin/empty.png');
 				}
 			});
 			elmUsers.refreshing = false;

@@ -58,19 +58,19 @@ window {
 }
 
 .snap-top-left{
-	cursor: url(chrome://tombloo/skin/snap-top-left.png) 2 1, pointer;
+	cursor: url(chrome://tombfix/skin/snap-top-left.png) 2 1, pointer;
 }
 
 .snap-top-right{
-	cursor: url(chrome://tombloo/skin/snap-top-right.png) 10 1, pointer;
+	cursor: url(chrome://tombfix/skin/snap-top-right.png) 10 1, pointer;
 }
 
 .snap-bottom-left{
-	cursor: url(chrome://tombloo/skin/snap-bottom-left.png) 2 15, pointer;
+	cursor: url(chrome://tombfix/skin/snap-bottom-left.png) 2 15, pointer;
 }
 
 .snap-bottom-right{
-	cursor: url(chrome://tombloo/skin/snap-bottom-right.png) 10 15, pointer;
+	cursor: url(chrome://tombfix/skin/snap-bottom-right.png) 10 15, pointer;
 }
 
 resizer[dir="topleft"] {
@@ -117,7 +117,7 @@ resizer[dir="bottomright"] {
 }
 
 #toggleDetail{
-	list-style-image: url(chrome://tombloo/skin/arrow-down.png);
+	list-style-image: url(chrome://tombfix/skin/arrow-down.png);
 	margin-left : 5px;
 	
 	/* 押しやすいように少し拡げる */
@@ -126,7 +126,7 @@ resizer[dir="bottomright"] {
 }
 
 #toggleDetail.expanded{
-	list-style-image: url(chrome://tombloo/skin/arrow-up.png);
+	list-style-image: url(chrome://tombfix/skin/arrow-up.png);
 }
 
 #titlebar .widget{
@@ -135,7 +135,7 @@ resizer[dir="bottomright"] {
 }
 
 #close{
-	list-style-image: url(chrome://tombloo/skin/mac/close.png);
+	list-style-image: url(chrome://tombfix/skin/mac/close.png);
 	
 	/* 押しやすいように左下へ拡げる */
 	border: transparent solid;
@@ -159,12 +159,12 @@ resizer[dir="bottomright"] {
 
 #tags box.completion{
 	font-size: 85%;
-	-moz-binding: url("chrome://tombloo/content/completion.xml#container");
+	-moz-binding: url("chrome://tombfix/content/completion.xml#container");
 }
 
 #tags .image-button{
 	margin: 1px 3px;
-	list-style-image: url(chrome://tombloo/skin/arrow-down.png);
+	list-style-image: url(chrome://tombfix/skin/arrow-down.png);
 }
 
 #tags .loading{
@@ -173,7 +173,7 @@ resizer[dir="bottomright"] {
 }
 
 #tags .image-button.expanded{
-	list-style-image: url(chrome://tombloo/skin/arrow-up.png);
+	list-style-image: url(chrome://tombfix/skin/arrow-up.png);
 }
 
 #tags listbox{

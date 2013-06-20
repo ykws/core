@@ -2,7 +2,7 @@ function QueryForm(elmForm, params){
 	// ユーザー選択ボックスの作成
 	var elmUser = $x('//select[@name="user"]', elmForm);
 	appendChildNodes(elmUser,
-		Tombloo.Photo.findUsers().map(function(user){
+		Tombfix.Photo.findUsers().map(function(user){
 			return OPTION({value:user}, user);
 		}))
 	
@@ -14,7 +14,7 @@ function QueryForm(elmForm, params){
 	elmUser.onchange = submit;
 	
 	// ページバーの作成
-	var entries = params.random? 0 : Tombloo.Photo.countByUser(params);
+	var entries = params.random? 0 : Tombfix.Photo.countByUser(params);
 	if(entries){
 		var pagebar = Pagebar({
 			current : params.offset/PER+1,
@@ -73,7 +73,7 @@ function SlidePanel(elmPanel){
 var QuickPostForm = {
 	show : function(ps, position, message){
 		openDialog(
-			'chrome://tombloo/content/quickPostForm.xul', 
+			'chrome://tombfix/content/quickPostForm.xul', 
 			'chrome,alwaysRaised=yes,resizable=yes,dependent=yes,titlebar=no', ps, position, message);
 	},
 };
@@ -118,10 +118,10 @@ forEach({
 			target    : doc.documentElement,
 		}, win.location);
 		
-		var exts = Tombloo.Service.check(ctx).filter(function(ext){
+		var exts = Tombfix.Service.check(ctx).filter(function(ext){
 			return /^Link/.test(ext.name);
 		});
-		Tombloo.Service.extractors.extract(
+		Tombfix.Service.extractors.extract(
 			ctx, 
 			exts[0]
 		).addCallback(function(ps){
@@ -162,7 +162,7 @@ forEach({
 			},
 		}, win.location);
 
-		var ext = Tombloo.Service.check(ctx)[0];
+		var ext = Tombfix.Service.check(ctx)[0];
 		
 		// FIXME: xul:popup要素の使用を検討
 		var tip = doc.createElement('div');
@@ -200,7 +200,7 @@ forEach({
 			});
 		}, 250);
 		
-		Tombloo.Service.share(ctx, ext, ext.name.match(/^Link/));
+		Tombfix.Service.share(ctx, ext, ext.name.match(/^Link/));
 	},
 }, function([key, func]){
 	key = getPref(key);
@@ -221,9 +221,9 @@ connect(grobal, 'browser-load', function(e){
 	var top = getPref('contextMenu.top');
 	var context;
 	var menuContext = doc.getElementById('contentAreaContextMenu');
-	var menuShare   = doc.getElementById('tombloo-menu-share');
-	var menuSelect  = doc.getElementById('tombloo-menu-select');
-	var menuAction  = doc.getElementById('tombloo-menu-action');
+	var menuShare   = doc.getElementById('tombfix-menu-share');
+	var menuSelect  = doc.getElementById('tombfix-menu-select');
+	var menuAction  = doc.getElementById('tombfix-menu-action');
 	var separator = doc.createElement('menuseparator');
 	
 	menuShare.setAttribute('accesskey', getPref('accesskey.share'));
@@ -276,10 +276,10 @@ connect(grobal, 'browser-load', function(e){
 			menu      : cwin.gContextMenu,
 		});
 		
-		var exts = Tombloo.Service.check(context);
+		var exts = Tombfix.Service.check(context);
 		menuShare.label = 'Share - ' + exts[0].name;
 		menuShare.extractor = exts[0].name;
-		menuShare.setAttribute('image', exts[0].ICON || 'chrome://tombloo/skin/empty.png');
+		menuShare.setAttribute('image', exts[0].ICON || 'chrome://tombfix/skin/empty.png');
 		
 		if(exts.length<=1){
 			menuSelect.parentNode.disabled = true;
@@ -288,7 +288,7 @@ connect(grobal, 'browser-load', function(e){
 			
 			for(var i=0 ; i<exts.length ; i++){
 				var ext = exts[i];
-				var elmItem = appendMenuItem(menuSelect, ext.name, ext.ICON || 'chrome://tombloo/skin/empty.png');
+				var elmItem = appendMenuItem(menuSelect, ext.name, ext.ICON || 'chrome://tombfix/skin/empty.png');
 				elmItem.extractor = ext.name;
 				elmItem.showForm = true;
 			}
@@ -336,7 +336,7 @@ connect(grobal, 'browser-load', function(e){
 	menuContext.addEventListener('command', function(e){
 		var target = e.target;
 		if(target.extractor){
-			var svc = Tombloo.Service;
+			var svc = Tombfix.Service;
 			svc.share(context, svc.extractors[target.extractor], target.showForm);
 			
 			return;
@@ -363,7 +363,7 @@ connect(grobal, 'browser-load', function(e){
 		}
 	}, true);
 	
-	var menuMain = doc.getElementById('tombloo-menu-main');
+	var menuMain = doc.getElementById('tombfix-menu-main');
 	menuMain.addEventListener('popupshowing', function(e){
 		if(e.eventPhase != Event.AT_TARGET)
 			return;
@@ -403,7 +403,7 @@ connect(grobal, 'browser-load', function(e){
 				if(action.children)
 					me(action.children, elmItem.appendChild(doc.createElement('menupopup')));
 			});
-		})(Tombloo.Service.actions.values, df);
+		})(Tombfix.Service.actions.values, df);
 		root.appendChild(df);
 	}
 });
@@ -412,8 +412,8 @@ function connectToBrowser(win){
 	// パフォーマンスを考慮しconnectしているものがいなければウォッチしない
 	// リロードや設定変更により繰り返し呼ばれたときに多重フックしないようにチェック
 	// チェック状況をグローバル環境に持つのは複雑になりリークを招くためwindowに置く
-	var Tombloo = win.Tombloo = (win.Tombloo || {});
-	var hooked = Tombloo.hooked = (Tombloo.hooked || {});
+	var Tombfix = win.Tombfix = (win.Tombfix || {});
+	var hooked = Tombfix.hooked = (Tombfix.hooked || {});
 	var tabbrowser = win.getBrowser();
 	var version = parseFloat(AppInfo.version);
 	

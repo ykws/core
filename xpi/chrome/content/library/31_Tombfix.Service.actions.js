@@ -1,7 +1,7 @@
-Tombloo.Service.actions = new Repository([
+Tombfix.Service.actions = new Repository([
 	{
 		type : 'context',
-		icon : 'chrome://tombloo/skin/tombloo_16.png',
+		icon : 'chrome://tombfix/skin/tombloo_16.png',
 		name : getMessage('label.action.installPatch'),
 		check : function(ctx){
 			// GitHubでかつraw以外のリンクの場合は除外する
@@ -43,7 +43,7 @@ Tombloo.Service.actions = new Repository([
 		type : 'menu,context',
 		name : getMessage('label.action.changeAcount'),
 		execute : function(){
-			openDialog('chrome://tombloo/content/library/login.xul', 'resizable,centerscreen');
+			openDialog('chrome://tombfix/content/library/login.xul', 'resizable,centerscreen');
 		},
 	},
 	{
@@ -52,10 +52,10 @@ Tombloo.Service.actions = new Repository([
 	},
 	{
 		type : 'menu,context',
-		icon : 'chrome://tombloo/skin/tombloo_16.png',
-		name : getMessage('label.action.tomblooOptions'),
+		icon : 'chrome://tombfix/skin/tombloo_16.png',
+		name : getMessage('label.action.tombfixOptions'),
 		execute : function(){
-			openDialog('chrome://tombloo/content/prefs.xul', 'resizable,centerscreen');
+			openDialog('chrome://tombfix/content/prefs.xul', 'resizable,centerscreen');
 		},
 	},
 ]);
@@ -96,15 +96,15 @@ var openInActionBase = {
 }
 
 if(AppShellService.hiddenDOMWindow.PicLensContext){
-	Tombloo.Service.actions.register({
+	Tombfix.Service.actions.register({
 		name : 'Piclens + Local Tumblr',
 		execute : function(){
-			var users = Tombloo.Photo.findUsers();
+			var users = Tombfix.Photo.findUsers();
 			var user = (users.length<=1)? users[0] : input({'User' : users});
 			if(!user)
 				return;
 			
-			var photos = Tombloo.Photo.findByUser({
+			var photos = Tombfix.Photo.findByUser({
 				user   : user, 
 				limit  : 1000, 
 				offset : 0, 

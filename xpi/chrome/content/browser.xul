@@ -5,29 +5,29 @@
 			position="1" 
 			class="menuitem-iconic"
 			label="Share" 
-			id="tombloo-menu-share" 
+			id="tombfix-menu-share" 
 			accesskey="J"/>
 		<menu 
 			position="2" 
 			class="menu-iconic"
 			label="Share...">
-			<menupopup id="tombloo-menu-select"/>
+			<menupopup id="tombfix-menu-select"/>
 		</menu>
 		<menu 
 			position="3" 
 			class="menu-iconic"
-			image="chrome://tombloo/skin/tombloo_16.png"
-			label="Tombloo" >
-			<menupopup id="tombloo-menu-action"/>
+			image="chrome://tombfix/skin/tombloo_16.png"
+			label="Tombfix" >
+			<menupopup id="tombfix-menu-action"/>
 		</menu>
 	</popup>
 	<menupopup id="menu_ToolsPopup">
 		<menu 
-			label="Tombloo" 
+			label="Tombfix" 
 			class="menu-iconic"
-			image="chrome://tombloo/skin/tombloo_16.png"
+			image="chrome://tombfix/skin/tombloo_16.png"
 			insertbefore="sanitizeSeparator">
-			<menupopup id="tombloo-menu-main"/>
+			<menupopup id="tombfix-menu-main"/>
 		</menu>
 	</menupopup>
 	<script type="text/javascript; version=1.8"><![CDATA[

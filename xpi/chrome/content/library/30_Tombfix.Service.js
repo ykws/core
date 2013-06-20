@@ -1,4 +1,4 @@
-Tombloo.Service = {
+Tombfix.Service = {
 	/**
 	 * コンテキストからどのような情報が抽出できるのかチェックする。
 	 * 処理は同期で行われる。
@@ -17,7 +17,7 @@ Tombloo.Service = {
 				ctx.onImage = ctx.target instanceof Ci.nsIDOMHTMLImageElement;
 			}
 			
-			return Tombloo.Service.extractors.check(ctx);
+			return Tombfix.Service.extractors.check(ctx);
 		});
 	},
 	
@@ -34,7 +34,7 @@ Tombloo.Service = {
 	share : function(ctx, ext, showForm){
 		// エラー処理をまとめるためDeferredの中に入れる
 		return succeed().addCallback(function(){
-			return Tombloo.Service.extractors.extract(ctx, ext);
+			return Tombfix.Service.extractors.extract(ctx, ext);
 		}).addCallback(function(ps){
 			ctx.ps = ps;
 			
@@ -52,7 +52,7 @@ Tombloo.Service = {
 				if(models.getEnables(ps).length){
 					QuickPostForm.show(ps, (ctx.mouse && (ctx.mouse.post || ctx.mouse.screen)));
 				} else {
-					Tombloo.Service.alertPreference(ps.type);
+					Tombfix.Service.alertPreference(ps.type);
 				}
 				
 				// FIXME: クイックポストフォームのポスト結果を伝えるように
@@ -61,16 +61,16 @@ Tombloo.Service = {
 			
 			var posters = models.getDefaults(ps);
 			if(!posters.length){
-				Tombloo.Service.alertPreference(ps.type);
+				Tombfix.Service.alertPreference(ps.type);
 				return succeed({});
 			}
 			
-			return Tombloo.Service.post(ps, posters);
+			return Tombfix.Service.post(ps, posters);
 		}).addErrback(function(err){
 			if(err instanceof CancelledError)
 				return;
 			
-			Tombloo.Service.alertError(err, ctx.title, ctx.href, ctx.ps);
+			Tombfix.Service.alertError(err, ctx.title, ctx.href, ctx.ps);
 		});
 	},
 	
@@ -185,7 +185,7 @@ Tombloo.Service = {
 	 * @param {String} type ポストタイプ。
 	 */
 	alertPreference : function(type){
-		var win = openDialog('chrome://tombloo/content/prefs.xul', 'resizable,centerscreen');
+		var win = openDialog('chrome://tombfix/content/prefs.xul', 'resizable,centerscreen');
 		win.addEventListener('load', function(){
 			// load時は、まだダイアログが表示されていない
 			setTimeout(function(){
@@ -207,13 +207,13 @@ Tombloo.Service = {
 		if(p.ended)
 			return;
 		
-		return Tombloo.db.transaction(function(){
+		return Tombfix.db.transaction(function(){
 			var d = succeed();
 			d.addCallback(bind('getInfo', Tumblr), user, type);
 			d.addCallback(function(info){
 				// 取得済みのデータがウェブで削除されている場合、その件数分隙間となり取得されない
 				// 但し、ページ単位で処理が行われ、件数を超えて処理が行われるため、そこで補正される可能性が高い
-				p.max = info.total - Tombloo[type? type.capitalize() : 'Post'].countByUser(user);
+				p.max = info.total - Tombfix[type? type.capitalize() : 'Post'].countByUser(user);
 				
 				if(p.ended)
 					return;
@@ -224,7 +224,7 @@ Tombloo.Service = {
 					// ページ内のポストを繰り返す
 					posts.forEach(function(post){
 						try{
-							Tombloo.Post.insert(post);
+							Tombfix.Post.insert(post);
 							p.value++;
 						} catch(e if e instanceof Database.DuplicateKeyException) {
 							// 前回の処理を途中で終了したときに発生する重複エラーを無視する
@@ -244,7 +244,7 @@ Tombloo.Service = {
 }
 
 
-Tombloo.Service.Photo = {
+Tombfix.Service.Photo = {
 	/**
 	 * 未取得の画像ファイルを全てダウンロードする。
 	 *
@@ -259,7 +259,7 @@ Tombloo.Service.Photo = {
 		
 		var d = succeed();
 		d.addCallback(function(){
-			return Tombloo.Service.Photo.getByFileExists(user, size, false);
+			return Tombfix.Service.Photo.getByFileExists(user, size, false);
 		});
 		d.addCallback(function(photos){
 			p.max = photos.length;
@@ -267,7 +267,7 @@ Tombloo.Service.Photo = {
 			if(p.ended)
 				return;
 			
-			return Tombloo.db.transaction(function(){
+			return Tombfix.db.transaction(function(){
 				// 全ての未取得のphotoを繰り返す
 				return deferredForEach(photos, function(photo){
 					if(p.ended)
@@ -320,9 +320,9 @@ Tombloo.Service.Photo = {
 		exists = exists==null? true : exists;
 		
 		var result = [];
-		var photoAll = Tombloo.Photo['findByUserAndFile' + size]([user, Number(exists)]);
+		var photoAll = Tombfix.Photo['findByUserAndFile' + size]([user, Number(exists)]);
 		
-		var d = Tombloo.db.transaction(function(){
+		var d = Tombfix.db.transaction(function(){
 			// 全てのポストを繰り返す(150件ごと)
 			return deferredForEach(photoAll.split(150), function(photos){
 				forEach(photos, function(photo){
