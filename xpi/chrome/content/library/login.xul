@@ -27,7 +27,7 @@ listitem {
 	</hbox>
 	<script><![CDATA[
 	// chrome://tombloo/content/library/login.xul
-	var env = Components.classes['@brasil.to/tombloo-service;1'].getService().wrappedJSObject;
+	var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 	
 	var elmModels = document.getElementById('models');
 	var elmUsers = document.getElementById('users');

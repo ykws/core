@@ -205,7 +205,7 @@ if (!ExtensionManager) {  // for firefox4
 Module = {
 	CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
 	NAME : 'TomblooService',
-	PID  : '@brasil.to/tombloo-service;1',
+	PID  : '@tombfix.github.io/tombfix-service;1',
 	
 	initialized : false,
 	

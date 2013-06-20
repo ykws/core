@@ -32,7 +32,7 @@
 	</menupopup>
 	<script type="text/javascript; version=1.8"><![CDATA[
 	(function(){
-		var env = Cc['@brasil.to/tombloo-service;1'].createInstance().wrappedJSObject;
+		var env = Cc['@tombfix.github.io/tombfix-service;1'].createInstance().wrappedJSObject;
 		
 		env.signal(env, 'browser-open', window);
 		

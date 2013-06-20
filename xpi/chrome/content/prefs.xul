@@ -190,7 +190,7 @@
 
 		<script><![CDATA[
 		// chrome://tombloo/content/prefs.xul
-		var env = Components.classes['@brasil.to/tombloo-service;1'].getService().wrappedJSObject;
+		var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 		env.extend(this, env, false);
 
 		var prefpane = document.getElementsByTagName('prefpane')[0];
