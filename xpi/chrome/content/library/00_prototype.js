@@ -83,12 +83,6 @@ update(String.prototype, {
 		return crypto.finish(true);
 	},
 	
-	extract : function(re, group){
-		group = group==null? 1 : group;
-		var res = this.match(re);
-		return res ? res[group] : '';
-	},
-	
 	convertToUnicode : function(charset){
 		return new UnicodeConverter(charset).ConvertToUnicode(this);
 	},
