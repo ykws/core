@@ -203,7 +203,7 @@ if (!ExtensionManager) {  // for firefox4
 
 
 Module = {
-	CID  : Components.ID('{aec75109-b143-4e49-a708-4904cfe85ea0}'),
+	CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
 	NAME : 'TomblooService',
 	PID  : '@brasil.to/tombloo-service;1',
 	

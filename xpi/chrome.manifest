@@ -1,5 +1,5 @@
-component {aec75109-b143-4e49-a708-4904cfe85ea0} components/tombloo.js
-contract  @brasil.to/tombloo-service;1 {aec75109-b143-4e49-a708-4904cfe85ea0}
+component {ab5cbd9b-56e1-42e4-8414-2201edb883e7} components/tombloo.js
+contract  @brasil.to/tombloo-service;1 {ab5cbd9b-56e1-42e4-8414-2201edb883e7}
 category  content-policy TomblooService @brasil.to/tombloo-service;1
 
 content   tombloo  chrome/content/
