@@ -1227,7 +1227,7 @@ models.register(update({
 }));
 
 
-models.register(update({}, AbstractSessionService, {
+models.register({
 	name : 'Delicious',
 	ICON : 'http://www.delicious.com/favicon.ico',
 	
@@ -1238,30 +1238,16 @@ models.register(update({}, AbstractSessionService, {
 	post : function(ps){
 		var self = this;
 		return this.getCurrentUser().addCallback(function(){
-			return request('http://www.delicious.com/save', {
+			return request('https://avosapi.delicious.com/api/v1/posts/addoredit', {
 				queryString : {
-					title : ps.item,
-					url   : ps.itemUrl,
+					description : ps.item,
+					url         : ps.itemUrl,
+					note        : joinText([ps.body, ps.description], ' ', true),
+					tags        : joinText(ps.tags, ','),
+					private     : ps.private,
+					replace     : true
 				}
 			})
-		}).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			var form = {};
-			items(formContents(doc.documentElement)).forEach(function([key, value]){
-				form[key.replace(/[A-Z]/g, function(c){
-					return '_' + c.toLowerCase()
-				})] = value;
-			});
-			
-			return request('http://www.delicious.com/save', {
-				sendContent : update(form, {
-					title   : ps.item,
-					url     : ps.itemUrl,
-					note    : joinText([ps.body, ps.description], ' ', true),
-					tags    : joinText(ps.tags, ','),
-					private : ps.private,
-				}),
-			});
 		}).addCallback(function(res){
 			res = JSON.parse(res.responseText);
 			
@@ -1270,25 +1256,50 @@ models.register(update({}, AbstractSessionService, {
 		});
 	},
 	
-	getAuthCookie : function(){
-		return getCookieString('www.delicious.com', 'deluser');
-	},
-	
 	getCurrentUser : function(){
-		var self = this;
-		return this.getSessionValue('user', function(){
-			return self.getInfo().addCallback(function(info){
-				if(!info.is_logged_in)
-					throw new Error(getMessage('error.notLoggedin'));
-				
-				return info.logged_in_username;
-			});
+		return this.getInfo().addCallback(function(info){
+			if(!info || !(info.isLoggedIn || info.is_logged_in))
+				throw new Error(getMessage('error.notLoggedin'));
+			
+			return info.username || info.logged_in_username;
 		});
 	},
 	
 	getInfo : function(){
-		return request('http://delicious.com/save/quick', {method : 'POST'}).addCallback(function(res){
-			return evalInSandbox('(' + res.responseText + ')', 'http://delicious.com/');
+		var info;
+		return succeed().addCallback(function() {
+			var file, storage, stmt, value;
+			// localStorage参照
+			file = getProfileDir();
+			file.append('webappsstore.sqlite');
+			storage = StorageService.openDatabase(file);
+			stmt = storage.createStatement([
+				"SELECT key, value FROM webappsstore2 WHERE key = 'user' AND scope LIKE '",
+				'delicious.com'.split('').reverse().join(''),
+				"%'"
+			].join(''));
+			try {
+				while (stmt.executeStep()) {
+					value = stmt.getString(1);
+				}
+				info = (value && JSON.parse(value));
+			} finally {
+				stmt.reset();
+				stmt.finalize();
+			}
+		}).addBoth(function(res) {
+			if (info) {
+				return info;
+			}
+			if (res && res instanceof Error) {
+				debug(res);
+				throw res;
+			}
+			return request('http://previous.delicious.com/save/quick', {
+				method : 'POST'
+			}).addCallback(function(res) {
+				return JSON.parse(res.responseText);
+			});
 		});
 	},
 	
@@ -1376,7 +1387,7 @@ models.register(update({}, AbstractSessionService, {
 			return res;
 		});
 	},
-}));
+});
 
 
 models.register({
