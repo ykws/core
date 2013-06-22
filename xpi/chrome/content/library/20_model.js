@@ -1228,102 +1228,82 @@ models.register(update({
 
 
 models.register({
-	name : 'Delicious',
-	ICON : 'http://www.delicious.com/favicon.ico',
-	
+	name    : 'Delicious',
+	ICON    : 'https://delicious.com/favicon.ico',
+	API_URL : 'https://avosapi.delicious.com/api/v1/',
+
 	check : function(ps){
-		return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
+		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
 	},
-	
+
 	post : function(ps){
-		return this.getCurrentUser().addCallback(function(){
-			return request('https://avosapi.delicious.com/api/v1/posts/addoredit', {
+		var that = this, retry = true;
+
+		return this.getInfo().addCallback(function AddBookmark(user) {
+			return request(that.API_URL + 'posts/addoredit', {
 				queryString : {
 					description : ps.item,
 					url         : ps.itemUrl,
 					note        : joinText([ps.body, ps.description], ' ', true),
-					tags        : joinText(ps.tags, ','),
+					tags        : joinText(ps.tags),
 					private     : ps.private,
 					replace     : true
 				}
-			})
-		}).addCallback(function(res){
-			res = JSON.parse(res.responseText);
-			
-			if(res.error)
-				throw new Error(res.error_msg);
-		});
-	},
-	
-	getCurrentUser : function(){
-		return this.getInfo().addCallback(function(info){
-			if(!info || !(info.isLoggedIn || info.is_logged_in))
-				throw new Error(getMessage('error.notLoggedin'));
-			
-			return info.username || info.logged_in_username;
-		});
-	},
-	
-	getInfo : function(){
-		var info;
-		return succeed().addCallback(function() {
-			var file, storage, stmt, value;
-			// localStorage参照
-			file = getProfileDir();
-			file.append('webappsstore.sqlite');
-			storage = StorageService.openDatabase(file);
-			stmt = storage.createStatement([
-				"SELECT key, value FROM webappsstore2 WHERE key = 'user' AND scope LIKE '",
-				'delicious.com'.split('').reverse().join(''),
-				"%'"
-			].join(''));
-			try {
-				while (stmt.executeStep()) {
-					value = stmt.getString(1);
+			}).addCallback(function(res){
+				var info = JSON.parse(res.responseText);
+
+				if (info.error) {
+					if (retry) {
+						retry = false;
+						return that.updateSession(user).addCallback(AddBookmark);
+					}
+
+					throw new Error(info.error);
 				}
-				info = (value && JSON.parse(value));
-			} finally {
-				stmt.reset();
-				stmt.finalize();
-			}
-		}).addBoth(function(res) {
-			if (info) {
-				return info;
-			}
-			if (res && res instanceof Error) {
-				debug(res);
-				throw res;
-			}
-			return request('http://previous.delicious.com/save/quick', {
-				method : 'POST'
-			}).addCallback(function(res) {
-				return JSON.parse(res.responseText);
 			});
 		});
 	},
-	
+
+	getInfo : function(){
+		return getLocalStorageValue('delicious.com', 'user').addCallback(function(user){
+			if(!user || !user.isLoggedIn) {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+
+			return user;
+		});
+	},
+
+	updateSession : function(user){
+		var {username, password_hash} = user;
+
+		return request(
+			this.API_URL + 'account/webloginhash/' + username + '/' + password_hash
+		).addCallback(function(res){
+			return JSON.parse(res.responseText);
+		});
+	},
+
 	/**
 	 * ユーザーの利用しているタグ一覧を取得する。
 	 *
-	 * @param {String} user 対象ユーザー名。未指定の場合、ログインしているユーザー名が使われる。
 	 * @return {Array}
 	 */
-	getUserTags : function(user){
-		// 同期でエラーが起きないようにする
-		var d = (user)? succeed(user) : Delicious.getCurrentUser();
-		return d.addCallback(function(user){
-			return request('http://feeds.delicious.com/v2/json/tags/' + user);
+	getUserTags : function(){
+		return Delicious.getInfo().addCallback(function(user){
+			return request('http://feeds.delicious.com/v2/json/tags/' + user.username);
 		}).addCallback(function(res){
 			var tags = JSON.parse(res.responseText);
-			
+
 			// タグが無いか?(取得失敗時も発生)
-			if(!tags || isEmpty(tags))
+			if (!tags || isEmpty(tags)) {
 				return [];
-			
+			}
+
 			return reduce(function(memo, tag){
 				memo.push({
 					name      : tag[0],
-					frequency : tag[1],
+					frequency : tag[1]
 				});
 				return memo;
 			}, tags, []);
@@ -1331,11 +1311,11 @@ models.register({
 			// Delicious移管によりfeedが停止されタグの取得に失敗する
 			// 再開時に動作するように接続を試行し、失敗したら空にしてエラーを回避する
 			error(err);
-			
+
 			return [];
 		});
 	},
-	
+
 	/**
 	 * タグ、おすすめタグ、ネットワークなどを取得する。
 	 * ブックマーク済みでも取得できる。
@@ -1344,48 +1324,38 @@ models.register({
 	 * @return {Object}
 	 */
 	getSuggestions : function(url){
-		var self = this;
-		var ds = {
+		var that = this;
+
+		return new DeferredHash({
 			tags : this.getUserTags(),
-			suggestions : this.getCurrentUser().addCallback(function(){
+			suggestions : this.getInfo().addCallback(function(){
 				// フォームを開いた時点でブックマークを追加し過去のデータを修正可能にするか?
 				// 過去データが存在すると、お勧めタグは取得できない
 				// (現時点で保存済みか否かを確認する手段がない)
-				return getPref('model.delicious.prematureSave')? 
-					request('http://www.delicious.com/save', {
-						queryString : {
-							url : url,
-						}
-					}) : 
-					request('http://www.delicious.com/save/confirm', {
-						queryString : {
-							url   : url,
-							isNew : true,
-						}
-					});
+				return request(that.API_URL + 'posts/compose', {
+					queryString : { url : url }
+				});
 			}).addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
+				var {pkg} = JSON.parse(res.responseText);
 				return {
-					editPage : 'http://www.delicious.com/save?url=' + url,
+					editPage : 'https://delicious.com/save?url=' + url,
 					form : {
-						item        : doc.getElementById('saveTitle').value,
-						description : doc.getElementById('saveNotes').value,
-						tags        : doc.getElementById('saveTags').value.split(','),
-						private     : doc.getElementById('savePrivate').checked,
+						item        : pkg.suggested_title,
+						description : pkg.note,
+						tags        : pkg.suggested_tags/*,
+						private     : null*/
 					},
-					
-					duplicated : !!doc.querySelector('.saveFlag'),
-					recommended : $x('id("recommendedField")//a[contains(@class, "m")]/text()', doc, true), 
+
+					duplicated : pkg.previously_saved,
+					recommended : pkg.suggested_tags
 				}
 			})
-		};
-		
-		return new DeferredHash(ds).addCallback(function(ress){
+		}).addCallback(function(ress){
 			var res = ress.suggestions[1];
 			res.tags = ress.tags[1];
 			return res;
 		});
-	},
+	}
 });
 
 
