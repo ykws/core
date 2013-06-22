@@ -26,7 +26,6 @@ textbox[readonly=true] {
 #posters treecol hbox{
 	-moz-box-align : center;
 	-moz-box-pack : center;
-	align : center;
 	width : 3.5em;
 	
 	/* Macで列ヘッダーの高さが広がらない問題に対応 */
