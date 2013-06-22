@@ -2,7 +2,7 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>tombfix@tombfix.github.io</em:id>
-    <em:version>0.0.4</em:version>
+    <em:version>0.0.5</em:version>
     <em:unpack>true</em:unpack>
     <em:updateURL>https://raw.github.com/tombfix/core/master/update.rdf</em:updateURL>
 
