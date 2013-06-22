@@ -2493,3 +2493,43 @@ function commentToText(commentFunc) {
 function getTextContent(node) {
 	return node ? node.textContent : '';
 }
+
+// can't get localStorage on SSL site
+function getLocalStorage(origin) {
+  return DOMStorageManager.getLocalStorageForPrincipal(
+    ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
+  );
+}
+
+function getLocalStorageValue(hostname, key) {
+	var info;
+	return succeed().addCallback(function(){
+		var file, storage, stmt, value;
+		// localStorage参照
+		file = getProfileDir();
+		file.append('webappsstore.sqlite');
+		storage = StorageService.openDatabase(file);
+		stmt = storage.createStatement([
+			"SELECT key, value FROM webappsstore2 WHERE key = '" + key + "' AND scope LIKE '",
+			hostname.split('').reverse().join(''),
+			"%'"
+		].join(''));
+		try {
+			while (stmt.executeStep()) {
+				value = stmt.getString(1);
+			}
+			info = (value && JSON.parse(value));
+		} finally {
+			stmt.reset();
+			stmt.finalize();
+		}
+	}).addBoth(function(res){
+		if (info) {
+			return info;
+		}
+		if (res && res instanceof Error) {
+			debug(res);
+			throw res;
+		}
+	});
+}

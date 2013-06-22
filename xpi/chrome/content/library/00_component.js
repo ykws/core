@@ -64,6 +64,8 @@ var IHttpChannel         = Ci.nsIHttpChannel;
 	['ThreadManager',       'nsIThreadManager',          '/thread-manager;1'],
 	['PrefService',         null,                        '/preferences-service;1'],
 	['AppInfo',             null,                        '/xre/app-info;1'],
+	['DOMStorageManager',   'nsIDOMStorageManager',      '/dom/storagemanager;1'],
+	['ScriptSecurityManager', 'nsIScriptSecurityManager', '/scriptsecuritymanager;1']
 ].forEach(function([name, ifc, cid]){
 	defineLazyServiceGetter(this, name, '@mozilla.org' + cid, ifc);
 }, this);
