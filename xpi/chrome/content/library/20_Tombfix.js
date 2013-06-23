@@ -1,4 +1,5 @@
-var Tombfix = {
+var Tombloo;
+var Tombfix = Tombloo = {
 	SCHEMA_VERSION : 1,
 	
 	get root(){

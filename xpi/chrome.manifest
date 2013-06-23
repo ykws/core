@@ -2,7 +2,9 @@ component {ab5cbd9b-56e1-42e4-8414-2201edb883e7} components/tombfix.js
 contract  @tombfix.github.io/tombfix-service;1 {ab5cbd9b-56e1-42e4-8414-2201edb883e7}
 category  content-policy TombfixService @tombfix.github.io/tombfix-service;1
 
+content   tombloo  chrome/content/
 content   tombfix  chrome/content/
+skin      tombloo  classic  chrome/skin/
 skin      tombfix  classic  chrome/skin/
 overlay   chrome://browser/content/browser.xul  chrome://tombfix/content/browser.xul
 
