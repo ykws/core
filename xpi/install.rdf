@@ -4,7 +4,7 @@
     <em:id>tombfix@tombfix.github.io</em:id>
     <em:version>0.0.5</em:version>
     <em:unpack>true</em:unpack>
-    <em:updateURL>https://raw.github.com/tombfix/core/master/update.rdf</em:updateURL>
+    <em:updateURL>https://raw.github.com/tombfix/update/master/update.rdf</em:updateURL>
 
     <!-- Firefox -->
     <em:targetApplication>

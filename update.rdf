@@ -13,7 +13,7 @@
                 <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
                 <em:minVersion>21.0</em:minVersion>
                 <em:maxVersion>100.0.*</em:maxVersion>
-                <em:updateLink>https://raw.github.com/tombfix/core/master/tombfix.xpi</em:updateLink>
+                <em:updateLink>https://raw.github.com/tombfix/update/master/tombfix.xpi</em:updateLink>
               </RDF:Description>
             </em:targetApplication>
           </RDF:Description>
