@@ -18,6 +18,10 @@
 				name="extensions.tombfix.trimReblogInfo"
 				type="bool"/>
 			<preference
+				id="model.tumblr.appendContentSource"
+				name="extensions.tombfix.model.tumblr.appendContentSource"
+				type="bool"/>
+			<preference
 				id="amazonAffiliateId"
 				name="extensions.tombfix.amazonAffiliateId"
 				type="string"/>
@@ -170,6 +174,10 @@
 							<row align="center">
 								<label value="&label.trimReblogInfo;"/>
 								<checkbox preference="trimReblogInfo" />
+							</row>
+							<row align="center">
+								<label value="&label.model.tumblr.appendContentSource;"/>
+								<checkbox preference="model.tumblr.appendContentSource" />
 							</row>
 							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
 							<row align="center">

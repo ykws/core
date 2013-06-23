@@ -238,7 +238,19 @@ var Tumblr = update({}, AbstractSessionService, {
 	appendTags : function(form, ps){
 		if(ps.private!=null)
 			form['post[state]'] = (ps.private)? 'private' : 0;
-		
+
+		if (getPref('model.tumblr.appendContentSource')) {
+			if (!ps.favorite || !ps.favorite.name || ps.favorite.name !== 'Tumblr') {
+				// not reblog post
+				if (ps.pageUrl && ps.pageUrl !== 'http://') {
+					form['post[source_url]'] = ps.pageUrl;
+					if (ps.type !== 'link') {
+						form['post[three]'] = ps.pageUrl;
+					}
+				}
+			}
+		}
+
 		return update(form, {
 			'post[tags]' : (ps.tags && ps.tags.length)? joinText(ps.tags, ',') : '',
 		});
