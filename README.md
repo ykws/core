@@ -2,16 +2,23 @@
 
 TombfixはTomblooの派生版です。主な目的はTomblooのメンテナンスとなります。
 
-## 使い方
-
-現在、Tomblooと大きな差異はありません。[Tomblooのwiki](https://github.com/to/tombloo/wiki)をご覧ください。
-
 ## インストール
 
 * [tombfix.xpi](https://raw.github.com/tombfix/update/master/tombfix.xpi)
 
 上記をダウンロード後、Firefoxにドラッグ・アンド・ドロップするとインストールされます。  
 TomblooがインストールされていてもTombfixのインストールに大きな問題はありませんが、なるべくTomblooを無効にしてからインストールした方が良いかもしれません。
+
+## 使い方
+
+現在、Tomblooと大きな差異はありません。[Tomblooのwiki](https://github.com/to/tombloo/wiki)をご覧ください。
+
+## 対応環境
+
+* Mozilla Firefox on Windows 7 Home Premium SP1 64bit
+
+基本的にFirefoxの最新の安定版のみに対応しますが、Beta、Aurora、Nightlyで不具合が発生した場合、確認でき次第修正を試みたいと考えています。[ESR](http://www.mozilla.jp/business/downloads/)については対応しません。  
+また、OSに関してはWindows 7 Home Premium SP1 64bitでしか確認していない為、その他の環境の設定ダイアログのデザインなどは崩れている可能性があります。
 
 ## ライセンス
 
