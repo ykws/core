@@ -323,7 +323,7 @@
 			
 			load : function(){
 				var self = this;
-				var configs = eval(getPref('postConfig'));
+				var configs = JSON.parse(getPref('postConfig'));
 				
 				self.all = [];
 				
@@ -364,7 +364,7 @@
 					}
 				});
 				
-				setPref('postConfig', uneval(configs));
+				setPref('postConfig', JSON.stringify(configs));
 			},
 			
 			// DOM

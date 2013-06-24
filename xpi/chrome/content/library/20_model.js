@@ -3003,7 +3003,7 @@ models.check = function(ps){
  * @return {Array}
  */
 models.getDefaults = function(ps){
-	var config = eval(getPref('postConfig'));
+	var config = JSON.parse(getPref('postConfig'));
 	return this.check(ps).filter(function(m){
 		return models.getPostConfig(config, m.name, ps) == 'default';
 	});
@@ -3017,7 +3017,7 @@ models.getDefaults = function(ps){
  * @return {Array}
  */
 models.getEnables = function(ps){
-	var config = eval(getPref('postConfig'));
+	var config = JSON.parse(getPref('postConfig'));
 	return this.check(ps).filter(function(m){
 		m.config = (m.config || {});
 		
