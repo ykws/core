@@ -144,7 +144,7 @@ var Tumblr = update({}, AbstractSessionService, {
 	 * @return {Deferred}
 	 */
 	trimReblogInfo : function(form){
-		if(!getPref('trimReblogInfo'))
+		if(!getPref('model.tumblr.trimReblogInfo'))
 		 return;
 		 
 		function trimQuote(entry){

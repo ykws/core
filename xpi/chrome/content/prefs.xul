@@ -14,8 +14,8 @@
 	<prefpane flex="1" id="main">
 		<preferences>
 			<preference
-				id="trimReblogInfo"
-				name="extensions.tombfix.trimReblogInfo"
+				id="model.tumblr.trimReblogInfo"
+				name="extensions.tombfix.model.tumblr.trimReblogInfo"
 				type="bool"/>
 			<preference
 				id="model.tumblr.appendContentSource"
@@ -172,8 +172,8 @@
 								<textbox readonly="true" value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;" />
 							</row>
 							<row align="center">
-								<label value="&label.trimReblogInfo;"/>
-								<checkbox preference="trimReblogInfo" />
+								<label value="&label.model.tumblr.trimReblogInfo;"/>
+								<checkbox preference="model.tumblr.trimReblogInfo" />
 							</row>
 							<row align="center">
 								<label value="&label.model.tumblr.appendContentSource;"/>

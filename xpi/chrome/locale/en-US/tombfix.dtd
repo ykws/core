@@ -5,7 +5,7 @@
 
 <!ENTITY label.amazonAffiliateId "Amazon Affiliate ID">
 <!ENTITY label.thumbnailTemplate "Link thumbnail template">
-<!ENTITY label.trimReblogInfo "Trim reblog info">
+<!ENTITY label.model.tumblr.trimReblogInfo "Tumblr: Trim reblog info">
 <!ENTITY label.model.tumblr.appendContentSource "Tumblr: Append content source">
 <!ENTITY label.tagProvider "Tag Provider">
 <!ENTITY label.tagAutoComplete "Tag Auto Complete">

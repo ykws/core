@@ -9,7 +9,7 @@ pref('extensions.tombfix.tagAutoComplete',   true);
 pref('extensions.tombfix.accesskey.share',   'J');
 pref('extensions.tombfix.amazonAffiliateId', '');
 pref('extensions.tombfix.thumbnailTemplate', '');
-pref('extensions.tombfix.trimReblogInfo',    false);
+pref('extensions.tombfix.model.tumblr.trimReblogInfo',    false);
 pref('extensions.tombfix.model.tumblr.appendContentSource', true);
 
 pref('extensions.tombfix.ignoreError',       '');
