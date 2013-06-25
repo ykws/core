@@ -44,7 +44,7 @@ Tombfix.Service = {
 			
 			debug(ps);
 			
-			if(!ps)
+			if(!ps || !ps.type)
 				return succeed({});
 			
 			if(showForm){
