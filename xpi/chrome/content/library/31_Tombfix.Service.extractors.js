@@ -555,7 +555,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Ameba blog',
-		ICON : 'chrome://tombfix/skin/photo.png',
+		ICON : 'http://ameblo.jp/favicon.ico',
 		check : function(ctx){
 			return ctx.onLink && 
 				ctx.host == ('ameblo.jp') &&
