@@ -1058,7 +1058,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Tabelog',
-		ICON : 'http://r.tabelog.com/favicon.ico',
+		ICON : 'http://tabelog.com/favicon.ico',
 		check : function(ctx){
 			return /tabelog\.com/.test(ctx.host) && /link-(left|right)/.test(ctx.target.id);
 		},
