@@ -664,6 +664,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Kiva',
+		ICON : 'http://www.kiva.org/favicon.ico',
 		check : function(ctx){
 			return (ctx.onImage && this.isOriginalUrl(ctx.target.src)) || 
 				(ctx.onLink && this.isOriginalUrl(ctx.link.href));
