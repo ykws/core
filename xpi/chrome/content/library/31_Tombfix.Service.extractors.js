@@ -856,7 +856,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - webshots',
-		ICON : 'http://www.webshots.com/favicon.ico',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.host.match('^.+\.webshots\.com') && this.getAuthor();
 		},
