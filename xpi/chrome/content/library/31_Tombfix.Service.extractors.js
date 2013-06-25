@@ -1320,7 +1320,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - MySpaceTV',
-		ICON : 'http://vids.myspace.com/favicon.ico',
+		ICON : 'https://x.myspacecdn.com/new/common/images/favicons/favicon.ico',
 		check : function(ctx){
 			return ctx.host.match(/vids\.myspace\.com/) && this.getTag();
 		},
