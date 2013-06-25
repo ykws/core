@@ -789,7 +789,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - BRIGIT',
-		ICON : 'http://brigit.jp/img/favicon.gif',
+		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
 			return ctx.host == 'brigit.jp' && $x('ancestor::div[@id="photo_1"]', ctx.target);
 		},
