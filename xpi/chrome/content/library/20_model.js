@@ -2555,7 +2555,7 @@ models.register({
 
 models.register({
 	name    : 'bit.ly',
-	ICON    : 'http://bit.ly/static/images/favicon.png',
+	ICON    : 'chrome://tombfix/skin/favicon/bitly.png',
 	URL     : 'http://api.bit.ly',
 	API_KEY : 'R_8d078b93e8213f98c239718ced551fad',
 	USER    : 'to',
