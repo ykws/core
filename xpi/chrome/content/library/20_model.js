@@ -2606,7 +2606,7 @@ models.register({
 
 models.register(update({}, models['bit.ly'], {
 	name : 'j.mp',
-	ICON : 'http://j.mp/static/images/favicon.png',
+	ICON : 'https://j.mp/favicon.ico',
 	URL  : 'http://api.j.mp',
 }));
 
