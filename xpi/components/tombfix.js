@@ -4,6 +4,24 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
 
+const SCRIPT_FILES = [
+	// library/third_party
+	'MochiKit.js',
+	// library
+	'component.js',
+	'prototype.js',
+	'utility.js',
+	'database.js',
+	'progress.js',
+	'tabWatcher.js',
+	'Tombfix.js',
+	'models.js',
+	'Tombfix.Service.js',
+	'Tombfix.Service.actions.js',
+	'extractors.js',
+	'ui.js'
+];
+
 var ILocalFile = Ci.nsILocalFile;
 
 ConsoleService      = getService('/consoleservice;1', Ci.nsIConsoleService);
@@ -28,9 +46,20 @@ function getScriptFiles(dir){
 function getLibraries(){
 	var libDir = getContentDir();
 	libDir.append('library');
-	
-	return getScriptFiles(libDir).sort(function(l, r){
-		return l.leafName < r.leafName? -1 : 1;
+
+	var thirdPartyDir = getContentDir();
+	thirdPartyDir.setRelativeDescriptor(thirdPartyDir, 'library');
+	thirdPartyDir.append('third_party');
+
+	var scripts = getScriptFiles(thirdPartyDir).concat(getScriptFiles(libDir));
+
+	return SCRIPT_FILES.map(function(scriptName){
+		for (let idx = 0, len = scripts.length; idx < len; idx += 1) {
+			let script = scripts[idx];
+			if (script.leafName === scriptName) {
+				return script;
+			}
+		}
 	});
 }
 

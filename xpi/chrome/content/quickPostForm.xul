@@ -77,7 +77,7 @@ var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService(
 env.extend(this, env, false);
 
 ]]></script>
-<script type="application/javascript;version=1.7" src="chrome://tombfix/content/library/00_prototype.js"/>
+<script type="application/javascript;version=1.7" src="chrome://tombfix/content/library/prototype.js"/>
 <script type="application/javascript;version=1.7" src="quickPostForm.js"/>
 <script><![CDATA[
 
