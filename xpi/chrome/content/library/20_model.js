@@ -605,11 +605,13 @@ models.register(Tumblr);
 
 
 /*
- * Tumblrフォーム変更対応パッチ(2012/1/25周辺)
+ * Tumblrフォーム変更対応パッチ(2013/1/25周辺)
  * UAを古いAndroidにして旧フォームを取得。
  *
  * polygonplanetのコードを簡略化(パフォーマンス悪化の懸念あり)
- * https://gist.github.com/4643063
+ * https://gist.github.com/polygonplanet/4643063
+ *
+ * 2013年5月末頃の変更に対応する為、UAをIE8に変更
 */
 var request_ = request;
 request = function(url, opts){
