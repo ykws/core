@@ -15,6 +15,7 @@ const SCRIPT_FILES = [
 	'progress.js',
 	'tabWatcher.js',
 	'Tombfix.js',
+	'repository.js',
 	'models.js',
 	'Tombfix.Service.js',
 	'Tombfix.Service.actions.js',
