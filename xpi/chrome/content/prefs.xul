@@ -266,13 +266,13 @@
 		
 		
 		var tagProvider = document.getElementsByAttribute('preference', 'tagProvider')[0];
-		for(var name in models){
-			if(models[name].getSuggestions){
+		for(var name in Models){
+			if(Models[name].getSuggestions){
 				var elmRadio = tagProvider.appendItem(name, name);
 				
 				// ロード後にアイコンを設定するために保持する
 				// (アイコンのロードに失敗すると設定画面が開かないため)
-				elmRadio.src = models[name].ICON;
+				elmRadio.src = Models[name].ICON;
 			}
 		}
 		
@@ -327,7 +327,7 @@
 				
 				self.all = [];
 				
-				values(models).forEach(function(model){
+				values(Models).forEach(function(model){
 					// インターフェースが実装されているポスト対象のサービスでない場合は処理しない
 					if(!model.check)
 						return;

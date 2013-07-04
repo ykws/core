@@ -1,5 +1,6 @@
-if(typeof(models)=='undefined')
-	this.models = models = new Repository();
+if(typeof(Models)=='undefined')
+	var Models, models;
+	this.Models = this.models = Models = models = new Repository();
 
 
 var Tumblr = update({}, AbstractSessionService, {
@@ -601,7 +602,7 @@ Tumblr.Quote = {
 	},
 }
 
-models.register(Tumblr);
+Models.register(Tumblr);
 
 
 /*
@@ -785,10 +786,10 @@ update(Wedata.Item, {
 	},
 });
 
-models.register(Wedata);
+Models.register(Wedata);
 
 
-models.register({
+Models.register({
 	name : 'FriendFeed',
 	ICON : 'http://friendfeed.com/favicon.ico',
 	check : function(ps){
@@ -822,7 +823,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'FFFFOUND',
 	ICON : 'http://ffffound.com/favicon.ico',
 	URL  : 'http://FFFFOUND.com/',
@@ -892,7 +893,7 @@ models.register({
 
 // Flickr API Documentation 
 // http://www.flickr.com/services/api/
-models.register(update({
+Models.register(update({
 	name : 'Flickr',
 	ICON : 'http://www.flickr.com/favicon.ico',
 	API_KEY : 'ecf21e55123e4b31afa8dd344def5cc5',
@@ -903,7 +904,7 @@ models.register(update({
 	
 	post : function(ps){
 		return (ps.file? succeed(ps.file) : download(ps.itemUrl, getTempFile())).addCallback(function(file){
-			return models.Flickr.upload({
+			return Models.Flickr.upload({
 				photo       : file,
 				title       : ps.item || ps.page || '',
 				description : ps.description || '',
@@ -1049,7 +1050,7 @@ models.register(update({
 }, AbstractSessionService));
 
 
-models.register({
+Models.register({
 	name : 'Picasa',
 	ICON : 'http://picasaweb.google.com/favicon.ico',
 	URL  : 'http://picasaweb.google.com',
@@ -1143,7 +1144,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name     : 'Twitpic',
 	ICON     : 'http://twitpic.com/images/favicon.ico',
 	POST_URL : 'http://twitpic.com/upload',
@@ -1191,7 +1192,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'WeHeartIt',
 	ICON : 'http://weheartit.com/favicon.ico',
 	URL  : 'http://weheartit.com/',
@@ -1240,7 +1241,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : '4u',
 	ICON : 'data:image/x-icon,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%10%00%00%00%10%08%03%00%00%00(-%0FS%00%00%00ZPLTE%FF%FF%FF%F9%F9%F9%C3%C3%C3%AE%AE%AE%E7%E7%E7%24%24%24EEE%60%60%60!!!%DE%DE%DEoooZZZWWW%CC%CC%CC%0C%0C%0CKKK%D2%D2%D2fff%06%06%06uuu%D5%D5%D5%1B%1B%1B%93%93%93ccclll%BA%BA%BA%C0%C0%C0%AB%AB%AB%00%00%00%8D%8D%8D2%BF%0C%CD%00%00%00IIDAT%18%95c%60%20%17021%B3%20%F3YX%D9%D898%91%04%B8%B8%D1t%B0%F3%A0%09%F0%F2%F1%0B%A0%8Ap%0A%0A%093%A2%0A%89%88%8A%A1i%13%97%40%E2H%B20H%89J%23%09%08%F3%C9%88%CA%E2w%3A%1E%00%00%E6%DF%02%18%40u1A%00%00%00%00IEND%AEB%60%82',
 	URL : 'http://4u.straightline.jp/',
@@ -1284,7 +1285,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Gyazo',
 	ICON : 'http://gyazo.com/public/img/favicon.ico',
 	
@@ -1318,7 +1319,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Local',
 	ICON : 'chrome://tombfix/skin/local.ico',
 	
@@ -1383,7 +1384,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Twitter',
 	ICON : 'http://twitter.com/favicon.ico',
 	URL  : 'https://twitter.com',
@@ -1403,7 +1404,7 @@ models.register({
 		
 		return maybeDeferred((status.length < 140)? 
 			status : 
-			shortenUrls(status, models[this.SHORTEN_SERVICE])
+			shortenUrls(status, Models[this.SHORTEN_SERVICE])
 		).addCallback(function(shortend){
 			status = shortend;
 			
@@ -1489,7 +1490,7 @@ models.register({
 });
 
 
-models.register(update({
+Models.register(update({
 	name : 'Plurk',
 	ICON : 'http://www.plurk.com/static/favicon.png',
 	
@@ -1542,16 +1543,16 @@ models.register(update({
 }, AbstractSessionService));
 
 
-models.register({
+Models.register({
 	name : 'Google',
 	ICON : 'http://www.google.com/favicon.ico',
 });
 
 
 // copied from http://userscripts.org/scripts/show/19741
-models.register({
+Models.register({
 	name : 'GoogleWebHistory',
-	ICON : models.Google.ICON,
+	ICON : Models.Google.ICON,
 	
 	getCh : function(url){
 		function r(x,y){
@@ -1592,9 +1593,9 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'GoogleBookmarks',
-	ICON : models.Google.ICON,
+	ICON : Models.Google.ICON,
 	POST_URL : 'https://www.google.com/bookmarks/mark',
 	
 	check : function(ps){
@@ -1683,7 +1684,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'GoogleCalendar',
 	ICON : 'http://calendar.google.com/googlecalendar/images/favicon.ico',
 	
@@ -1748,7 +1749,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Dropmark',
 	ICON : 'http://dropmark.com/favicon.ico',
 	URL  : 'http://dropmark.com/',
@@ -1822,7 +1823,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name     : 'Evernote',
 	ICON     : 'http://www.evernote.com/favicon.ico',
 	POST_URL : 'https://www.evernote.com/clip.action',
@@ -1891,7 +1892,7 @@ models.register({
 });
 
 
-models.register(update({
+Models.register(update({
 	name : 'Pinboard',
 	ICON : 'http://pinboard.in/favicon.ico',
 	
@@ -2013,7 +2014,7 @@ models.register(update({
 }));
 
 
-models.register({
+Models.register({
 	name    : 'Delicious',
 	ICON    : 'https://delicious.com/favicon.ico',
 	API_URL : 'https://avosapi.delicious.com/api/v1/',
@@ -2145,7 +2146,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Digg',
 	ICON : 'chrome://tombfix/skin/favicon/digg.ico',
 	
@@ -2191,7 +2192,7 @@ models.register({
 });
 
 
-models.register(update({}, AbstractSessionService, {
+Models.register(update({}, AbstractSessionService, {
 	name : 'StumbleUpon',
 	ICON : 'http://www.stumbleupon.com/favicon.ico',
 	
@@ -2296,7 +2297,7 @@ models.register(update({}, AbstractSessionService, {
 }));
 
 
-models.register({
+Models.register({
 	name : 'FirefoxBookmark',
 	ICON : 'chrome://tombfix/skin/firefox.ico',
 	ANNO_DESCRIPTION : 'bookmarkProperties/description',
@@ -2487,7 +2488,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Pocket',
 	ICON : 'http://getpocket.com/favicon.ico',
 	check : function(ps){
@@ -2515,7 +2516,7 @@ models.register({
 });
 
 
-models.register(update({
+Models.register(update({
 	name : 'Instapaper',
 	ICON : 'chrome://tombfix/skin/favicon/instapaper.png',
 	POST_URL: 'http://www.instapaper.com/edit',
@@ -2549,7 +2550,7 @@ models.register(update({
 }, AbstractSessionService));
 
 
-models.register({
+Models.register({
 	name : 'Readability',
 	ICON : 'chrome://tombfix/skin/favicon/readability.png',
 	URL  : 'http://www.readability.com/',
@@ -2589,7 +2590,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Remember The Milk',
 	ICON : 'http://www.rememberthemilk.com/favicon.ico',
 	POST_URL: 'http://www.rememberthemilk.com/services/ext/addtask.rtm',
@@ -2645,7 +2646,7 @@ models.register({
 
 
 // http://www.kawa.net/works/ajax/romanize/japanese.html
-models.register({
+Models.register({
 	name : 'Kawa',
 	
 	getRomaReadings : function(text){
@@ -2667,7 +2668,7 @@ models.register({
 
 
 // http://developer.yahoo.co.jp/jlp/MAService/V1/parse.html
-models.register({
+Models.register({
 	name : 'Yahoo',
 	APP_ID : '16y9Ex6xg64GBDD.tmwF.WIdXURG0iTT25NUQ72RLF_Jzt2_MfXDDZfKehYkX6dPZqk-',
 	
@@ -2698,7 +2699,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'YahooBookmarks',
 	ICON : 'http://bookmarks.yahoo.co.jp/favicon.ico',
 	
@@ -2763,7 +2764,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Faves',
 	ICON : 'chrome://tombfix/skin/favicon/faves.ico',
 	
@@ -2809,7 +2810,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Snipshot',
 	ICON : 'chrome://tombfix/skin/favicon/snipshot.png',
 	
@@ -2834,7 +2835,7 @@ models.register({
 });
 
 
-models.register(update({
+Models.register(update({
 	name : 'Hatena',
 	ICON : 'http://www.hatena.ne.jp/favicon.ico',
 	
@@ -2891,7 +2892,7 @@ models.register(update({
 }, AbstractSessionService));
 
 
-models.register({
+Models.register({
 	name : 'HatenaFotolife',
 	ICON : 'http://f.hatena.ne.jp/favicon.ico',
 	
@@ -2902,7 +2903,7 @@ models.register({
 	post : function(ps){
 		// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
 		return (ps.file? succeed(ps.file) : download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))).addCallback(function(file){
-			return models.HatenaFotolife.upload({
+			return Models.HatenaFotolife.upload({
 				fototitle1 : ps.item || ps.page,
 				image1     : file,
 			});
@@ -2927,7 +2928,7 @@ models.register({
 });
 
 
-models.register(update({
+Models.register(update({
 	name : 'HatenaBookmark',
 	ICON : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
 	POST_URL : 'http://b.hatena.ne.jp/add',
@@ -3024,7 +3025,7 @@ models.register(update({
 }, AbstractSessionService));
 
 
-models.register( {
+Models.register( {
 	name     : 'HatenaDiary',
 	ICON     : 'http://d.hatena.ne.jp/favicon.ico',
 	POST_URL : 'http://d.hatena.ne.jp',
@@ -3082,7 +3083,7 @@ models.register( {
 });
 
 
-models.register({
+Models.register({
 	name : 'HatenaStar',
 	ICON : 'http://s.hatena.ne.jp/favicon.ico',
 	
@@ -3128,7 +3129,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : '絶対復習',
 	URL  : 'http://brushup.narihiro.info',
 	ICON : 'chrome://tombfix/skin/item.ico',
@@ -3167,7 +3168,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'MediaMarker',
 	ICON : 'http://mediamarker.net/favicon.ico',
 	check : function(ps){
@@ -3206,7 +3207,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'LibraryThing',
 	ICON : 'http://www.librarything.com/favicon.ico',
 	
@@ -3249,7 +3250,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : '8tracks',
 	ICON : 'http://8tracks.com/favicon.ico',
 	URL  : 'http://8tracks.com',
@@ -3310,7 +3311,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'is.gd',
 	ICON : 'http://is.gd/favicon.ico',
 	URL  : 'http://is.gd/',
@@ -3339,7 +3340,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name    : 'bit.ly',
 	ICON    : 'chrome://tombfix/skin/favicon/bitly.png',
 	URL     : 'http://api.bit.ly',
@@ -3390,14 +3391,14 @@ models.register({
 });
 
 
-models.register(update({}, models['bit.ly'], {
+Models.register(update({}, Models['bit.ly'], {
 	name : 'j.mp',
 	ICON : 'https://j.mp/favicon.ico',
 	URL  : 'http://api.j.mp',
 }));
 
 
-models.register({
+Models.register({
 	name : 'TextConversionServices',
 	DATABASE_NAME : 'Text Conversion Services',
 	
@@ -3472,7 +3473,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Sharebee.com',
 	URL  : 'http://sharebee.com/',
 	
@@ -3488,7 +3489,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Nicovideo',
 	URL  : 'http://www.nicovideo.jp',
 	ICON : 'http://www.nicovideo.jp/favicon.ico',
@@ -3520,7 +3521,7 @@ models.register({
 });
 
 
-models.register({
+Models.register({
 	name : 'Soundcloud',
 	URL  : 'http://soundcloud.com/',
 	ICON : 'http://soundcloud.com/favicon.ico',
@@ -3584,7 +3585,7 @@ models.register({
 });
 
 
-models.register(update({}, AbstractSessionService, {
+Models.register(update({}, AbstractSessionService, {
 	name : 'NDrive',
 	ICON : 'http://ndrive.naver.jp/favicon.ico',
 	
@@ -3765,7 +3766,7 @@ models.register(update({}, AbstractSessionService, {
 
 
 // 全てのサービスをグローバルコンテキストに置く(後方互換)
-models.copyTo(this);
+Models.copyTo(this);
 
 
 /**
@@ -3774,7 +3775,7 @@ models.copyTo(this);
  * @param {Object} ps ポスト情報。
  * @return {Array}
  */
-models.check = function(ps){
+Models.check = function(ps){
 	return this.values.filter(function(m){
 		if((ps.favorite && ps.favorite.name==m.name) || (m.check && m.check(ps)))
 			return true;
@@ -3788,10 +3789,10 @@ models.check = function(ps){
  * @param {Object} ps ポスト情報。
  * @return {Array}
  */
-models.getDefaults = function(ps){
+Models.getDefaults = function(ps){
 	var config = JSON.parse(getPref('postConfig'));
 	return this.check(ps).filter(function(m){
-		return models.getPostConfig(config, m.name, ps) == 'default';
+		return Models.getPostConfig(config, m.name, ps) == 'default';
 	});
 }
 
@@ -3802,14 +3803,14 @@ models.getDefaults = function(ps){
  * @param {Object} ps ポスト情報。
  * @return {Array}
  */
-models.getEnables = function(ps){
+Models.getEnables = function(ps){
 	var config = JSON.parse(getPref('postConfig'));
 	return this.check(ps).filter(function(m){
 		m.config = (m.config || {});
 		
 		// クイックポストフォームにて、取得後にデフォルトなのか利用可能なのかを
 		// 判定する必要があったため、サービスに設定値を保存し返す
-		var val = m.config[ps.type] = models.getPostConfig(config, m.name, ps);
+		var val = m.config[ps.type] = Models.getPostConfig(config, m.name, ps);
 		return val==null || (/(default|enable)/).test(val);
 	});
 }
@@ -3822,7 +3823,7 @@ models.getEnables = function(ps){
  * @param {Object} ps ポスト情報。
  * @return {String}
  */
-models.getPostConfig = function(config, name, ps){
+Models.getPostConfig = function(config, name, ps){
 	var c = config[name] || {};
 	return (ps.favorite && ps.favorite.name==name)? c.favorite : c[ps.type];
 }

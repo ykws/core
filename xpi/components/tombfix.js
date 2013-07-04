@@ -301,9 +301,9 @@ Module = {
 			},
 		}, env, /(Deferred|DeferredHash|copyString|notify)/);
 		
-		for(var name in env.models)
-			if(env.models.hasOwnProperty(name))
-				GM_Tombfix[name] = GM_Tombloo[name] = copy({}, env.models[name], /^(?!.*(password|cookie))/i);
+		for(var name in env.Models)
+			if(env.Models.hasOwnProperty(name))
+				GM_Tombfix[name] = GM_Tombloo[name] = copy({}, env.Models[name], /^(?!.*(password|cookie))/i);
 		
 		// 他拡張からの読み取りを許可する(Firefox 17用)
 		exposeProperties(GM_Tombloo, true);

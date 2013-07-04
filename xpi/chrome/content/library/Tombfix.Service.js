@@ -49,7 +49,7 @@ Tombfix.Service = {
 			
 			if(showForm){
 				// 利用可能なサービスがあるか？
-				if(models.getEnables(ps).length){
+				if(Models.getEnables(ps).length){
 					QuickPostForm.show(ps, (ctx.mouse && (ctx.mouse.post || ctx.mouse.screen)));
 				} else {
 					Tombfix.Service.alertPreference(ps.type);
@@ -59,7 +59,7 @@ Tombfix.Service = {
 				return succeed({});
 			}
 			
-			var posters = models.getDefaults(ps);
+			var posters = Models.getDefaults(ps);
 			if(!posters.length){
 				Tombfix.Service.alertPreference(ps.type);
 				return succeed({});

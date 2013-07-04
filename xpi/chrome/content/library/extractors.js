@@ -119,7 +119,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Quote - Twitter',
-		ICON : models.Twitter.ICON,
+		ICON : Models.Twitter.ICON,
 		check : function(ctx){
 			return ctx.href.match('//twitter.com/.*?/(status|statuses)/\\d+');
 		},
@@ -457,7 +457,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Flickr',
-		ICON : models.Flickr.ICON,
+		ICON : Models.Flickr.ICON,
 		
 		RE : new RegExp('^http://(?:.+?.)?static.?flickr.com/\\d+?/(\\d+?)_.*'),
 		getImageId : function(ctx){
@@ -517,7 +517,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Google Book Search',
-		ICON : models.Google.ICON,
+		ICON : Models.Google.ICON,
 		check : function(ctx){
 			if(!(/^books.google./).test(ctx.host))
 				return;
@@ -582,7 +582,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - 4u',
-		ICON : models['4u'].ICON,
+		ICON : Models['4u'].ICON,
 		check : function(ctx){
 			return ctx.onImage && 
 				ctx.href.match('^http://4u.straightline.jp/image/') && 
@@ -607,7 +607,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - We Heart It',
-		ICON : models.WeHeartIt.ICON,
+		ICON : Models.WeHeartIt.ICON,
 		check : function(ctx){
 			return ctx.onImage &&
 				ctx.href.match('^http://weheartit.com/entry/') &&
@@ -631,7 +631,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Snipshot',
-		ICON : models.Snipshot.ICON,
+		ICON : Models.Snipshot.ICON,
 		check : function(ctx){
 			return ctx.href.match('http://services.snipshot.com/edit/');
 		},
@@ -688,7 +688,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Google',
-		ICON : models.Google.ICON,
+		ICON : Models.Google.ICON,
 		check : function(ctx){
 			return (ctx.onLink && ctx.link.href.match('http://lh..(google.ca|ggpht.com)/.*(png|gif|jpe?g)$'));
 		},
@@ -794,7 +794,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - FFFFOUND!',
-		ICON : models.FFFFOUND.ICON,
+		ICON : Models.FFFFOUND.ICON,
 		check : function(ctx){
 			return (ctx.href.match('http://ffffound.com/image/') && (/^asset/).test(ctx.target.id)) ||
 				(ctx.onLink && ctx.link.href.match('http://ffffound.com/image/'));
@@ -840,7 +840,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Google Image Search',
-		ICON : models.Google.ICON,
+		ICON : Models.Google.ICON,
 		check : function(ctx){
 			return ctx.host == 'images.google.co.jp' &&
 				ctx.onImage && ctx.onLink;
@@ -1188,7 +1188,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - Google Video',
-		ICON : models.Google.ICON,
+		ICON : Models.Google.ICON,
 		check : function(ctx){
 			return ctx.host.match('video.google.com');
 		},
@@ -1248,7 +1248,7 @@ Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - Nico Nico Douga',
-		ICON : models.Nicovideo.ICON,
+		ICON : Models.Nicovideo.ICON,
 		check : function(ctx){
 			return ctx.href.match('^http://www\.nicovideo\.jp/watch/');
 		},

@@ -5,6 +5,9 @@ log(typeof Tombloo.Service);
 log(typeof Tombfix.Service.extractors);
 log(typeof Tombloo.Service.extractors);
 log(typeof models);
+log(typeof Models);
+log(typeof models.Tumblr);
+log(typeof Models.Tumblr);
 log(typeof Tumblr);
 
 Tombloo.Service.extractors.register({

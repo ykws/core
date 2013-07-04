@@ -37,7 +37,7 @@ listitem {
 		if(elmUsers.refreshing)
 			return;
 		
-		var model = env.models[elmModels.value];
+		var model = env.Models[elmModels.value];
 		elmUsers.refreshing = true;
 		(model.getCurrentUser? model.getCurrentUser() : succeed()).addCallback(function(user){
 			env.clearChildren(elmUsers);
@@ -57,7 +57,7 @@ listitem {
 		});
 	}, true);
 	
-	env.forEach(env.models.values, function(m){
+	env.forEach(env.Models.values, function(m){
 		if(!m.login || !m.getPasswords || !m.getPasswords().length)
 			return;
 		
@@ -70,7 +70,7 @@ listitem {
 	
 	window.addEventListener('dialogaccept', function(){
 		var item = elmUsers.selectedItem;
-		env.models[elmModels.value].login(item.label, item.value);
+		env.Models[elmModels.value].login(item.label, item.value);
 	}, true);
 	
 	]]></script>

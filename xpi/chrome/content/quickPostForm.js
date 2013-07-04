@@ -636,7 +636,7 @@ function TagsPanel(elmPanel, formPanel){
 		// linkタイプの場合、既ブックマークかの判定も行うため必ずタグを取得する
 		// それ以外のタイプの場合、キャッシュがあればそれを使う
 		if(self.suggest || !QuickPostForm.candidates.length){
-			models[self.tagProvider].getSuggestions(ps.itemUrl).addCallback(function(res){
+			Models[self.tagProvider].getSuggestions(ps.itemUrl).addCallback(function(res){
 				self.arrangeSuggestions(res);
 				self.setTags(res.tags);
 				
@@ -1151,7 +1151,7 @@ function PostersPanel(){
 	
 	this.elmPanel = getElement('posters');
 	this.elmButton = getElement('post');
-	this.posters = new Repository(models.getEnables(ps));
+	this.posters = new Repository(Models.getEnables(ps));
 	
 	withDocument(document, function(){
 		self.elmTooltip = self.elmPanel.appendChild(TOOLTIP());
