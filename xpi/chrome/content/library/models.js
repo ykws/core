@@ -1,6 +1,5 @@
-if(typeof(Models)=='undefined')
-	var Models, models;
-	this.Models = this.models = Models = models = new Repository();
+var Models, models;
+this.Models = this.models = Models = models = new Repository();
 
 
 var Tumblr = update({}, AbstractSessionService, {
