@@ -4,6 +4,8 @@ log(typeof Tombfix.Service);
 log(typeof Tombloo.Service);
 log(typeof Tombfix.Service.extractors);
 log(typeof Tombloo.Service.extractors);
+log(typeof Extractors);
+log(typeof Extractors.ReBlog);
 log(typeof models);
 log(typeof Models);
 log(typeof models.Tumblr);

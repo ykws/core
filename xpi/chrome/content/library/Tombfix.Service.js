@@ -17,7 +17,7 @@ Tombfix.Service = {
 				ctx.onImage = ctx.target instanceof Ci.nsIDOMHTMLImageElement;
 			}
 			
-			return Tombfix.Service.extractors.check(ctx);
+			return Extractors.check(ctx);
 		});
 	},
 	
@@ -34,7 +34,7 @@ Tombfix.Service = {
 	share : function(ctx, ext, showForm){
 		// エラー処理をまとめるためDeferredの中に入れる
 		return succeed().addCallback(function(){
-			return Tombfix.Service.extractors.extract(ctx, ext);
+			return Extractors.extract(ctx, ext);
 		}).addCallback(function(ps){
 			ctx.ps = ps;
 			

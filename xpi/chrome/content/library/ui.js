@@ -121,10 +121,7 @@ forEach({
 		var exts = Tombfix.Service.check(ctx).filter(function(ext){
 			return /^Link/.test(ext.name);
 		});
-		Tombfix.Service.extractors.extract(
-			ctx, 
-			exts[0]
-		).addCallback(function(ps){
+		Extractors.extract(ctx, exts[0]).addCallback(function(ps){
 			QuickPostForm.show(ps);
 		});
 	},
@@ -336,8 +333,7 @@ connect(grobal, 'browser-load', function(e){
 	menuContext.addEventListener('command', function(e){
 		var target = e.target;
 		if(target.extractor){
-			var svc = Tombfix.Service;
-			svc.share(context, svc.extractors[target.extractor], target.showForm);
+			Tombfix.Service.share(context, Extractors[target.extractor], target.showForm);
 			
 			return;
 		}

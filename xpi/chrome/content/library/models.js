@@ -260,7 +260,7 @@ var Tumblr = update({}, AbstractSessionService, {
 	
 	/**
 	 * reblogする。
-	 * Tombfix.Service.extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
+	 * Extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
 	 *
 	 * @param {Object} ps
 	 * @return {Deferred}

@@ -1,4 +1,5 @@
-Tombfix.Service.extractors = new Repository([
+var Extractors;
+this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'LDR',
 		getItem : function(ctx, getOnly){
@@ -32,13 +33,11 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Quote - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.LDR.getItem(ctx, true) && ctx.selection;
+			return Extractors.LDR.getItem(ctx, true) && ctx.selection;
 		},
 		extract : function(ctx){
-			with(Tombfix.Service.extractors){
-				LDR.getItem(ctx);
-				return Quote.extract(ctx);
-			}
+			Extractors.LDR.getItem(ctx);
+			return Extractors.Quote.extract(ctx);
 		},
 	},
 	
@@ -46,16 +45,14 @@ Tombfix.Service.extractors = new Repository([
 		name : 'ReBlog - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			var item = Tombfix.Service.extractors.LDR.getItem(ctx, true);
+			var item = Extractors.LDR.getItem(ctx, true);
 			return item && (
 				item.href.match('^http://.*?\\.tumblr\\.com/') ||
 				(ctx.onImage && ctx.target.src.match('^http://data\.tumblr\.com/')));
 		},
 		extract : function(ctx){
-			with(Tombfix.Service.extractors){
-				LDR.getItem(ctx);
-				return ReBlog.extractByLink(ctx, ctx.href);
-			}
+			Extractors.LDR.getItem(ctx);
+			return Extractors.ReBlog.extractByLink(ctx, ctx.href);
 		},
 	},
 	
@@ -63,13 +60,13 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Photo - LDR(FFFFOUND!)',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			var item = Tombfix.Service.extractors.LDR.getItem(ctx, true);
+			var item = Extractors.LDR.getItem(ctx, true);
 			return item &&
 				ctx.onImage &&
 				item.href.match('^http://ffffound\\.com/');
 		},
 		extract : function(ctx){
-			var item = Tombfix.Service.extractors.LDR.getItem(ctx);
+			var item = Extractors.LDR.getItem(ctx);
 			ctx.title = item.title;
 			
 			with(createURI(ctx.href))
@@ -93,13 +90,12 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Photo - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.LDR.getItem(ctx, true) &&
+			return Extractors.LDR.getItem(ctx, true) &&
 				ctx.onImage;
 		},
 		extract : function(ctx){
-			var exts = Tombfix.Service.extractors;
-			exts.LDR.getItem(ctx);
-			return exts.check(ctx)[0].extract(ctx);
+			Extractors.LDR.getItem(ctx);
+			return Extractors.check(ctx)[0].extract(ctx);
 		},
 	},
 	
@@ -107,13 +103,11 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Link - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.LDR.getItem(ctx, true);
+			return Extractors.LDR.getItem(ctx, true);
 		},
 		extract : function(ctx){
-			with(Tombfix.Service.extractors){
-				LDR.getItem(ctx);
-				return Link.extract(ctx);
-			}
+			Extractors.LDR.getItem(ctx);
+			return Extractors.Link.extract(ctx);
 		},
 	},
 	
@@ -200,11 +194,11 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Photo - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.Amazon.preCheck(ctx) && 
+			return Extractors.Amazon.preCheck(ctx) && 
 				($x('./ancestor::*[@id="prodImageCell" or @id="prodImageOuter" or @id="image-block-widget"]', ctx.target) || ctx.target.id == 'magnifierLens');
 		},
 		extract : function(ctx){
-			Tombfix.Service.extractors.Amazon.extract(ctx);
+			Extractors.Amazon.extract(ctx);
 			
 			var d = new Deferred();
 			
@@ -216,7 +210,7 @@ Tombfix.Service.extractors = new Repository([
 			// http://tools4hack.santalab.me/new-ipad-get-largeartwork-amazon-img.html
 			var elmImage = IMG({
 				src : 'http://z-ecx.images-amazon.com/images/P/' + 
-					Tombfix.Service.extractors.Amazon.getAsin(ctx) + 
+					Extractors.Amazon.getAsin(ctx) + 
 					'.09.MAIN._FMpng_SCRMZZZZZZ_.png'
 			});
 			elmImage.onload = function(){
@@ -260,13 +254,11 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Quote - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.Amazon.preCheck(ctx) && ctx.selection;
+			return Extractors.Amazon.preCheck(ctx) && ctx.selection;
 		},
 		extract : function(ctx){
-			with(Tombfix.Service.extractors){
-				Amazon.extract(ctx);
-				return Quote.extract(ctx);
-			}
+			Extractors.Amazon.extract(ctx);
+			return Extractors.Quote.extract(ctx);
 		},
 	},
 
@@ -274,13 +266,11 @@ Tombfix.Service.extractors = new Repository([
 		name : 'Link - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.Amazon.preCheck(ctx);
+			return Extractors.Amazon.preCheck(ctx);
 		},
 		extract : function(ctx){
-			with(Tombfix.Service.extractors){
-				Amazon.extract(ctx);
-				return Link.extract(ctx);
-			}
+			Extractors.Amazon.extract(ctx);
+			return Extractors.Link.extract(ctx);
 		},
 	},
 	
@@ -375,10 +365,10 @@ Tombfix.Service.extractors = new Repository([
 		name : 'ReBlog - Tumblr',
 		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
-			return Tombfix.Service.extractors.ReBlog.getFrameUrl(currentDocument());
+			return Extractors.ReBlog.getFrameUrl(currentDocument());
 		},
 		extract : function(ctx){
-			return Tombfix.Service.extractors.ReBlog.extractByPage(ctx, currentDocument());
+			return Extractors.ReBlog.extractByPage(ctx, currentDocument());
 		},
 	},
 	
@@ -390,7 +380,7 @@ Tombfix.Service.extractors = new Repository([
 		},
 		extract : function(ctx){
 			// タイトルなどを取得するためextractByLinkを使う(reblogリンクを取得しextractByEndpointを使った方が速い)
-			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
+			return Extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
 		},
 		getLink : function(ctx){
 			var link = $x(
@@ -407,7 +397,7 @@ Tombfix.Service.extractors = new Repository([
 			return (/(tumblr\.com)\/iphone/).test(ctx.href) && this.getLink(ctx);
 		},
 		extract : function(ctx){
-			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
+			return Extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
 		},
 		getLink : function(ctx){
 			var link = $x('./ancestor-or-self::li[starts-with(normalize-space(@id), "post")]//a[contains(concat(" ",normalize-space(@class)," ")," permalink ")]', ctx.target);
@@ -422,7 +412,7 @@ Tombfix.Service.extractors = new Repository([
 			return ctx.href.match(/mosaic.html/i) && ctx.target.photo;
 		},
 		extract : function(ctx){
-			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, ctx.target.photo.url);
+			return Extractors.ReBlog.extractByLink(ctx, ctx.target.photo.url);
 		},
 	},
 	
@@ -433,7 +423,7 @@ Tombfix.Service.extractors = new Repository([
 			return ctx.link && ctx.link.href.match(/^http:\/\/[^.]+.tumblr\.com\/post\/\d+/);
 		},
 		extract : function(ctx){
-			return Tombfix.Service.extractors.ReBlog.extractByLink(ctx, ctx.link.href);
+			return Extractors.ReBlog.extractByLink(ctx, ctx.link.href);
 		},
 	},
 	
@@ -510,7 +500,7 @@ Tombfix.Service.extractors = new Repository([
 					},
 				}
 			}).addErrback(function(err){
-				return Tombfix.Service.extractors['Photo'].extract(ctx);
+				return Extractors.Photo.extract(ctx);
 			});
 		},
 	},
@@ -527,7 +517,7 @@ Tombfix.Service.extractors = new Repository([
 		extract : function(ctx){
 			ctx.target = this.getImage(ctx);
 			
-			return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+			return Extractors['Photo - Upload from Cache'].extract(ctx);
 		},
 		getImage : function(ctx){
 			// 標準モード
@@ -914,7 +904,7 @@ Tombfix.Service.extractors = new Repository([
 			ctx.target = {
 				src : ctx.link.href.replace('/l/im/', '/'),
 			};
-			return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+			return Extractors['Photo - Upload from Cache'].extract(ctx);
 		}
 	},
 	
@@ -999,7 +989,7 @@ Tombfix.Service.extractors = new Repository([
 		extract : function(ctx){
 			removeElement(ctx.target);
 			
-			return Tombfix.Service.extractors[ctx.bgImageURL?
+			return Extractors[ctx.bgImageURL?
 				'Photo - background image' :
 				'Photo - area element'].extract(ctx);
 		},
@@ -1037,7 +1027,7 @@ Tombfix.Service.extractors = new Repository([
 				src : ctx.link.href
 			};
 			
-			return Tombfix.Service.extractors['Photo'].extract(ctx);
+			return Extractors.Photo.extract(ctx);
 		},
 	},
 	
@@ -1066,7 +1056,7 @@ Tombfix.Service.extractors = new Repository([
 			return tagName(ctx.target)=='canvas';
 		},
 		extract : function(ctx){
-			return Tombfix.Service.extractors['Photo - Data URI'].extract(ctx);
+			return Extractors['Photo - Data URI'].extract(ctx);
 		},
 	},
 	
@@ -1098,7 +1088,7 @@ Tombfix.Service.extractors = new Repository([
 			if(this.PROTECTED_SITES.some(function(re){
 				return RegExp(re).test(itemUrl);
 			})){
-				return Tombfix.Service.extractors['Photo - Upload from Cache'].extract(ctx);
+				return Extractors['Photo - Upload from Cache'].extract(ctx);
 			};
 			
 			if(ctx.document.contentType.match(/^image/))
@@ -1296,7 +1286,7 @@ Tombfix.Service.extractors = new Repository([
 		extract : function(ctx){
 			var uri = createURI(ctx.href);
 			ctx.href = uri.prePath + uri.filePath;
-			return Tombfix.Service.extractors.Link.extract(ctx);
+			return Extractors.Link.extract(ctx);
 		},
 	},
 	
@@ -1427,7 +1417,7 @@ Tombfix.Service.extractors = new Repository([
 	},
 ]);
 
-update(Tombfix.Service.extractors, {
+update(Extractors, {
 	REDIRECT_URLS : [
 		'pheedo.jp/',
 		'//feedproxy.google.com/',
