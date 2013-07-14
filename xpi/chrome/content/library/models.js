@@ -353,8 +353,10 @@ var Tumblr = update({}, AbstractSessionService, {
 	login : function(user, password){
 		var LOGIN_FORM_URL = 'https://www.tumblr.com/login';
 		var self = this;
+		notify(self.name, getMessage('message.changeAccount.logout'), self.ICON);
 		return Tumblr.logout().addCallback(function(){
 			return request(LOGIN_FORM_URL).addCallback(function(res){
+				notify(self.name, getMessage('message.changeAccount.login'), self.ICON);
 				var doc = convertToHTMLDocument(res.responseText);
 				var form = doc.getElementById('signup_form');
 				return request(LOGIN_FORM_URL, {
@@ -366,6 +368,7 @@ var Tumblr = update({}, AbstractSessionService, {
 			}).addCallback(function(){
 				self.updateSession();
 				self.user = user;
+				notify(self.name, getMessage('message.changeAccount.done'), self.ICON);
 			});
 		});
 	},
@@ -2842,7 +2845,9 @@ Models.register(update({
 	
 	login : function(user, password){
 		var self = this;
+		notify(self.name, getMessage('message.changeAccount.logout'), self.ICON);
 		return (this.getAuthCookie()? this.logout() : succeed()).addCallback(function(){
+			notify(self.name, getMessage('message.changeAccount.login'), self.ICON);
 			return request('https://www.hatena.ne.jp/login', {
 				sendContent : {
 					name : user,
@@ -2854,6 +2859,7 @@ Models.register(update({
 		}).addCallback(function(){
 			self.updateSession();
 			self.user = user;
+			notify(self.name, getMessage('message.changeAccount.done'), self.ICON);
 		});
 	},
 	
