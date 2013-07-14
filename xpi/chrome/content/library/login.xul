@@ -15,7 +15,7 @@ listitem {
 	padding: 0.5em 0.2em;
 }
 " type="text/css"?>
-<dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Change Acount">
+<dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Change Account">
 	<hbox flex="1">
 		<radiogroup id="models">
 		</radiogroup>

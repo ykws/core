@@ -41,7 +41,7 @@ Tombfix.Service.actions = new Repository([
 	
 	{
 		type : 'menu,context',
-		name : getMessage('label.action.changeAcount'),
+		name : getMessage('label.action.changeAccount'),
 		execute : function(){
 			openDialog('chrome://tombfix/content/library/login.xul', 'resizable,centerscreen');
 		},
