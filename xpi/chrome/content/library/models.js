@@ -2859,6 +2859,7 @@ Models.register(update({
 		}).addCallback(function(){
 			self.updateSession();
 			self.user = user;
+			delete self.userInfo;
 			notify(self.name, getMessage('message.changeAccount.done'), self.ICON);
 		});
 	},
