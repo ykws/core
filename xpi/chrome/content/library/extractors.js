@@ -385,7 +385,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		getLink : function(ctx){
 			var link = $x(
 				'./ancestor-or-self::li[starts-with(normalize-space(@class), "post")]' + 
-				'//a[starts-with(@id,"permalink_")]', ctx.target);
+				'//a[starts-with(@id, "permalink_") and not(contains(@href, "/private/"))]', ctx.target);
 			return link && link.href;
 		},
 	},
