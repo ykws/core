@@ -347,20 +347,18 @@ var Tumblr = update({}, AbstractSessionService, {
 	},
 	
 	getPasswords : function(){
-		return getPasswords('http://www.tumblr.com');
+		return getPasswords('https://www.tumblr.com');
 	},
 	
 	login : function(user, password){
 		var LOGIN_FORM_URL = 'https://www.tumblr.com/login';
-		var LOGIN_EXEC_URL = 'https://www.tumblr.com/svc/account/register';
 		var self = this;
 		return Tumblr.logout().addCallback(function(){
 			return request(LOGIN_FORM_URL).addCallback(function(res){
 				var doc = convertToHTMLDocument(res.responseText);
 				var form = doc.getElementById('signup_form');
-				return request(LOGIN_EXEC_URL, {
+				return request(LOGIN_FORM_URL, {
 					sendContent : update(formContents(form), {
-						'action'         : 'signup_login',
 						'user[email]'    : user,
 						'user[password]' : password
 					})
