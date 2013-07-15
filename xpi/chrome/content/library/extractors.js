@@ -1118,7 +1118,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			var target = ctx.target;
 			var itemUrl = (tagName(target)=='object')? target.data : target.src;
 			
-			var uri = createURI(itemUrl);
 			return download(itemUrl, getTempDir()).addCallback(function(file){
 				return {
 					type    : 'photo',
