@@ -744,37 +744,6 @@ function simpleRequest(url, opt) {
 		position = -1,
 		data, method, multipart, error;
 
-	function queryString(params, question) {
-		var queries;
-
-		if (typeof params === 'string') {
-			return params;
-		}
-
-		if (isEmpty(params)) {
-			return '';
-		}
-
-		queries = [];
-
-		for (let key in params) {
-			if (params.hasOwnProperty(key)) {
-				let value = params[key];
-				if (value === null) {
-					continue;
-				} else if (Array.isArray(value)) {
-					value.forEach(function (val) {
-						queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
-					});
-				} else {
-					queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
-				}
-			}
-		}
-
-		return (question ? '?' : '') + queries.join('&');
-	}
-
 	opt = opt ? update({}, opt) : {};
 	method = opt.method && opt.method.toUpperCase();
 
@@ -972,33 +941,37 @@ function formContents(elm){
 	}, zip.apply(null, MochiKit.DOM.formContents(elm)), {});
 }
 
-function queryString(params, charset){
-	if(typeof(params)=='string')
+// via Taberareloo 3.0.2's queryString()
+// https://github.com/Constellation/taberareloo/blob/3.0.2/src/lib/utils.js#L467
+function queryString(params, question) {
+	var queries;
+
+	if (typeof params === 'string') {
 		return params;
-	
-	if(isEmpty(params))
+	}
+
+	if (isEmpty(params)) {
 		return '';
-	
-	// EUCエンコードなどに対応
-	var e = (charset)? function(str){
-		return escape((''+str).convertFromUnicode(charset))
-	} : encodeURIComponent;
-	
-	var qeries = [];
-	for(var key in params){
-		var value = params[key];
-		if(value==null)
-			continue;
-		
-		if(value instanceof Array){
-			value.forEach(function(val){
-				qeries.push(e(key) + '=' + e(val));
-			});
-		} else {
-			qeries.push(e(key) + '='+ e(value));
+	}
+
+	queries = [];
+
+	for (let key in params) {
+		if (params.hasOwnProperty(key)) {
+			let value = params[key];
+			if (value === null) {
+				continue;
+			} else if (Array.isArray(value)) {
+				value.forEach(function (val) {
+					queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
+				});
+			} else {
+				queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+			}
 		}
 	}
-	return qeries.join('&');
+
+	return (question ? '?' : '') + queries.join('&');
 }
 
 registerIteratorFactory(
