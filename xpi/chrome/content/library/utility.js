@@ -509,6 +509,10 @@ function setCookie(channel){
  *        コンテントタイプ。指定されない場合、application/octet-streamになる。
  */
 function request(url, opts){
+	if (opts && opts.responseType) {
+		return simpleRequest(url, opts);
+	}
+	
 	var d = new Deferred();
 	
 	opts = opts || {};
