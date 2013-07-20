@@ -2455,3 +2455,9 @@ function getLocalStorageValue(hostname, key) {
 		}
 	});
 }
+
+function downloadWithReferrer(url, referrer) {
+	return request(url, {referrer: referrer}).addCallback(function(){
+		return download(url, getTempDir());
+	});
+}
