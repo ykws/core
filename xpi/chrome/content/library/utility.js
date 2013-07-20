@@ -731,6 +731,167 @@ function request(url, opts){
 	return d;
 }
 
+// via Taberareloo 3.0.2's request()
+// https://github.com/Constellation/taberareloo/blob/3.0.2/src/lib/utils.js#L870
+function simpleRequest(url, opt) {
+	var req = Request(), // new XMLHttpRequest()
+		ret = new Deferred(),
+		setHeader = true,
+		position = -1,
+		data, method, multipart, error;
+
+	function queryString(params, question) {
+		var queries;
+
+		if (typeof params === 'string') {
+			return params;
+		}
+
+		if (isEmpty(params)) {
+			return '';
+		}
+
+		queries = [];
+
+		for (let key in params) {
+			if (params.hasOwnProperty(key)) {
+				let value = params[key];
+				if (value === null) {
+					continue;
+				} else if (Array.isArray(value)) {
+					value.forEach(function (val) {
+						queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
+					});
+				} else {
+					queries.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
+				}
+			}
+		}
+
+		return (question ? '?' : '') + queries.join('&');
+	}
+
+	opt = opt ? update({}, opt) : {};
+	method = opt.method && opt.method.toUpperCase();
+
+	if (opt.queryString) {
+		url += queryString(opt.queryString, true);
+	}
+
+	// construct FormData (if required)
+	multipart = opt.multipart || false;
+	if (opt.sendContent && opt.mode && opt.mode === 'raw') {
+		// no modify, use sendContent directly
+		data = opt.sendContent;
+		if (!method) {
+			method = 'POST';
+		}
+	} else if (opt.sendContent && (!method || method === 'POST')) {
+		let sendContent = opt.sendContent;
+		if (!method) {
+			method = 'POST';
+		}
+		for (let key in sendContent) {
+			if (sendContent[key] instanceof window.File) {
+				multipart = true;
+				break;
+			}
+		}
+		if (multipart) {
+			// using FormData is not unstable in Yahoo Model.
+			// so, use it in multipart pattern only
+			data = new window.FormData();
+			for (let key in sendContent) {
+				let value = sendContent[key];
+				if (value === null || value === undefined) {
+					continue;
+				}
+				data.append(key, value);
+			}
+		} else {
+			data = queryString(sendContent, false);
+		}
+	}
+
+	// construct method
+	if (!method) {
+		method = 'GET';
+	}
+
+	// open XHR
+	if ('username' in opt) {
+		req.open(method, url, true, opt.username, opt.password);
+	} else {
+		req.open(method, url, true);
+	}
+
+	// construct responseType
+	if (opt.responseType) {
+		req.responseType = opt.responseType;
+	}
+
+	// construct charset
+	if (opt.charset) {
+		req.overrideMimeType(opt.charset);
+	}
+
+	// construct headers
+	if (opt.headers) {
+		if (opt.headers['Content-Type']) {
+			setHeader = false;
+		}
+		Object.keys(opt.headers).forEach(function (key) {
+			req.setRequestHeader(key, opt.headers[key]);
+		});
+	}
+
+	if (opt.referrer) {
+		req.setRequestHeader('Referer', opt.referrer);
+	}
+
+	if (setHeader && opt.sendContent && !multipart) {
+		req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	}
+
+	req.addEventListener('progress', function (e) {
+		position = e.position;
+	});
+
+	req.addEventListener('readystatechange', function () {
+		if (req.readyState === 4) {
+			var length = 0;
+			try {
+				length = parseInt(req.getResponseHeader('Content-Length'), 10);
+			} catch (err) {
+				debug('ERROR', err);
+			}
+			// 最終時のlengthと比較
+			if (position !== length) {
+				if (opt.denyRedirection) {
+					ret.errback(req);
+					error = true;
+				}
+			}
+			if (!error) {
+				if (req.status >= 200 && req.status < 300) {
+					ret.callback(req);
+				} else {
+					req.message = getMessage('error.http.' + req.status);
+					ret.errback(req);
+				}
+			}
+		}
+	});
+
+	if (data) {
+		req.send(data);
+	} else {
+		req.send();
+	}
+
+	return ret;
+}
+
 function getMimeType(file){
 	try{
 		return (file instanceof IFile)?

@@ -75,6 +75,9 @@ broad(AppInfo, [Ci.nsIXULRuntime]);  // nsIXULRuntime => AppInfo.OS
 var HTMLFormatConverter =
 	createConstructor('/widget/htmlformatconverter;1', 'nsIFormatConverter');
 
+var Request =
+	createConstructor('/xmlextras/xmlhttprequest;1', 'nsIXMLHttpRequest');
+
 var SupportsString =
 	createConstructor('/supports-string;1', 'nsISupportsString', function(data){
 		this.data = data;
