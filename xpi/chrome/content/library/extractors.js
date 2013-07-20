@@ -897,6 +897,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Photo - ITmedia',
 		ICON : 'http://www.itmedia.co.jp/favicon.ico',
+		REFERRER: 'http://www.itmedia.co.jp/',
 		check : function(ctx){
 			return ctx.onLink && ctx.link.href.match('http://image.itmedia.co.jp/l/im/');
 		},
@@ -904,7 +905,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			ctx.target = {
 				src : ctx.link.href.replace('/l/im/', '/'),
 			};
-			return Extractors['Photo - Upload from Cache'].extract(ctx);
+			return downloadWithReferrer(ctx.target.src, this.REFERRER).addCallback(function(file){
+				return {
+					type    : 'photo',
+					item    : ctx.title,
+					itemUrl : ctx.target.src,
+					file    : file
+				};
+			});
 		}
 	},
 	
