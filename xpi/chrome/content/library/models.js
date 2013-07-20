@@ -897,6 +897,8 @@ Models.register(update({
 	name : 'Flickr',
 	ICON : 'http://www.flickr.com/favicon.ico',
 	API_KEY : 'ecf21e55123e4b31afa8dd344def5cc5',
+	API_REST_URL: 'http://flickr.com/services/rest/',
+	API_UPLOAD_URL: 'http://up.flickr.com/services/upload/',
 	
 	check : function(ps){
 		return ps.type == 'photo';
@@ -919,14 +921,14 @@ Models.register(update({
 	},
 	
 	callMethod : function(ps){
-		return request('http://flickr.com/services/rest/', {
+		return request(this.API_REST_URL, {
 			queryString : update({
 				api_key        : this.API_KEY,
 				nojsoncallback : 1,
 				format         : 'json',
 			}, ps),
 		}).addCallback(function(res){
-			eval('var json=' + res.responseText);
+			var json = JSON.parse(res.responseText);
 			if(json.stat!='ok')
 				throw json.message;
 			return json;
@@ -934,6 +936,7 @@ Models.register(update({
 	},
 	
 	callAuthMethod : function(ps){
+		var that = this;
 		return this.getToken().addCallback(function(page){
 			if(ps.method=='flickr.photos.upload')
 				delete ps.method;
@@ -947,7 +950,7 @@ Models.register(update({
 				return key + ps[key]
 			}).join('')).md5();
 			
-			return request('http://flickr.com/services/' + (ps.method? 'rest/' : 'upload/'), {
+			return request(ps.method? that.API_REST_URL : that.API_UPLOAD_URL, {
 				sendContent : ps,
 			});
 		}).addCallback(function(res){
@@ -978,11 +981,11 @@ Models.register(update({
 			return request('http://flickr.com/').addCallback(function(res){
 				var html = res.responseText;
 				return self.token = {
-					secret : html.extract(/global_flickr_secret[ =]+'(.*?)'/),
+					secret : html.extract(/"secret"[ :]+"(.*?)"/),
 					token  : {
-						api_key    : html.extract(/global_magisterLudi[ =]+'(.*?)'/),
-						auth_hash  : html.extract(/global_auth_hash[ =]+'(.*?)'/),
-						auth_token : html.extract(/global_auth_token[ =]+'(.*?)'/),
+						api_key    : html.extract(/"api_key"[ :]+"(.*?)"/),
+						auth_hash  : html.extract(/"auth_hash"[ :]+"(.*?)"/),
+						auth_token : html.extract(/"auth_token"[ :]+"(.*?)"/),
 					},
 				};
 			});
