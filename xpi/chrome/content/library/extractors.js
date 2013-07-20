@@ -1139,7 +1139,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			var author = $x('//div[@class="byline"]/a');
 			return {
 				type      : 'video',
-				item      : $x('//div[@class="title"]/text()').trim(),
+				item      : ctx.title.replace(/ on Vimeo$/, ''),
 				itemUrl   : ctx.href,
 				author    : author.textContent,
 				authorUrl : author.href,
