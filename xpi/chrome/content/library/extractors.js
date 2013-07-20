@@ -1085,6 +1085,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			'/awkwardfamilyphotos.com/',
 			'/docs.google.com/',
 			'share-image.com/pictures/big/',
+			'^http://i\\d+\\.pixiv\\.net/img\\d+/'
 		],
 		check : function(ctx){
 			return ctx.onImage;
