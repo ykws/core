@@ -457,10 +457,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				// アノテーション上の場合はphoto_notesの孫要素となる
 				if(
 					(ctx.target.src && ctx.target.src.match('spaceball.gif')) || 
-					ctx.target.id == 'photo-drag-proxy' || 
+					ctx.target.id == 'photo-container' || 
 					$x('./ancestor-or-self::div[@id="photo-drag-proxy"]', ctx.target)
 				){
 					ctx.target = $x('//div[@class="photo-div"]/img') || ctx.target;
+				} else if ($x('./ancestor-or-self::a[@data-track]', ctx.target)) {
+					ctx.target = $x('./ancestor-or-self::a[@data-track]/img', ctx.target);
 				}
 			}
 			
