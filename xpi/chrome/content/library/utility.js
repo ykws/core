@@ -974,6 +974,29 @@ function queryString(params, question) {
 	return (question ? '?' : '') + queries.join('&');
 }
 
+// via Taberareloo 3.0.2's queryHash()
+// https://github.com/Constellation/taberareloo/blob/3.0.2/src/lib/utils.js#L494
+function queryHash(query) {
+	var hash = {};
+
+	query.replace(/^\?/, '').split(/[&;]/).forEach(function (pair) {
+		pair = pair.split('=');
+
+		if (pair.length === 2) {
+			let [key, val] = pair;
+			if (!hash[key]) {
+				hash[key] = val;
+			} else if (Array.isArray(hash[key])) {
+				hash[key].push(val);
+			} else {
+				hash[key] = [hash[key], val];
+			}
+		}
+	});
+
+	return hash;
+}
+
 registerIteratorFactory(
 	'SimpleEnumerator',
 	function(it){
