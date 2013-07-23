@@ -956,6 +956,199 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
+		name : 'Photo - pixiv',
+		ICON : 'http://www.pixiv.net/favicon.ico',
+		REFERRER : 'http://www.pixiv.net/',
+		PAGE_URL : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
+		API_URL : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
+		IMG_RE : new RegExp(
+			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
+				'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
+				'(?:mobile/)?\\d+(?:_[^.]+)?\\.'
+		),
+		IMG_THUMB_RE : new RegExp(
+			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
+				'img-inf/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
+		),
+		IMG_PAGE_RE : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
+
+		check : function (ctx) {
+			if (!ctx.selection) {
+				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
+					return this.getIllustID(ctx, true);
+				} else {
+					return this.isImagePage(ctx) && this.getImageElement(ctx);
+				}
+			}
+		},
+		extract : function (ctx) {
+			var that = this, retry = true;
+
+			return this.getMediumPage(ctx).addCallback(function getImage(info){
+				var {imageURL, pageTitle, illustID} = info;
+
+				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file =>{
+					ctx.href = that.PAGE_URL + illustID;
+					return {
+						type    : 'photo',
+						item    : pageTitle,
+						itemUrl : imageURL,
+						file    : file
+					};
+				}).addErrback(err => {
+					// when image extension is wrong
+					if (retry) {
+						retry = false;
+						return that.fixImageExtensionFromAPI(info).addCallback(getImage);
+					}
+
+					throw new Error(err);
+				});
+			});
+		},
+		getMediumPage : function (ctx) {
+			var illustID = this.getIllustID(ctx);
+
+			if (!ctx.onImage && !ctx.onLink && this.isImagePage(ctx, 'medium')) {
+				return succeed(this.getInfo(ctx, illustID));
+			}
+
+			return request(this.PAGE_URL + illustID, {
+				responseType : 'document'
+			}).addCallback(res => this.getInfo(ctx, illustID, res.response));
+		},
+		getInfo : function (ctx, illustID, doc) {
+			var {title} = doc || ctx.document,
+				url = this.getFullSizeImageURL(this.getImageElement(
+					doc ? {document : doc} : ctx,
+					illustID
+				).src);
+
+			if (/の漫画 \[pixiv\]$/.test(title)) {
+				url = url.replace(
+					/img\/[^\/]+\/\d+/,
+					'$&_big_p' + this.getMangaPageNumber(ctx)
+				);
+			}
+
+			return {
+				imageURL  : url,
+				pageTitle : title,
+				illustID  : illustID
+			};
+		},
+		fixImageExtensionFromAPI : function (info) {
+			return request(
+				this.API_URL + info.illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
+			).addCallback(res => {
+				var extension = res.responseText.trim().split(',')[2].replace(/"/g, '');
+
+				info.imageURL = info.imageURL.replace(
+					/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
+				);
+
+				return info;
+			});
+		},
+		isImagePage : function (target, mode) {
+			if (target && this.IMG_PAGE_RE.test(target.href)) {
+				let queries = queryHash(target.search);
+
+				if (queries.illust_id && (mode ? queries.mode === mode : queries.mode)) {
+					return true;
+				}
+			}
+
+			return false;
+		},
+		getImageElement : function (ctx, illustID) {
+			return ctx.document.querySelector([
+				'a[href*="illust_id=' +
+					(illustID || queryHash(ctx.search).illust_id) + '"] > img',
+				// mode=big and mode=manga_big in login
+				'body > img:only-child',
+				// mode=manga
+				'.image',
+				// r18 in logout
+				'.cool-work-main > .sensored > img'
+			].join(', '));
+		},
+		getFullSizeImageURL : function (url) {
+			var pageNum;
+
+			url = url
+				.replace(/works\/\d+x\d+/, 'img')
+				.replace(/(img\/[^\/]+\/)mobile\/(\d+)/, '$1$2');
+
+			pageNum = url.extract(/img\/[^\/]+\/\d+(?:_[^_]+)?_p(\d+)/);
+
+			url = url.replace(/(img\/[^\/]+\/\d+)(?:_[^.]+)?/, '$1');
+
+			if (pageNum) {
+				url = url.replace(/img\/[^\/]+\/\d+/, '$&_big_p' + pageNum);
+			}
+
+			return url;
+		},
+		getIllustID : function (ctx, noCheckCtx) {
+			return (() => {
+				var isImageOnly = /^image/.test(ctx.document.contentType);
+
+				if (ctx.onImage || isImageOnly || ctx.onLink) {
+					let {target, link} = ctx, url;
+
+					if (ctx.onImage && target) {
+						url = target.src;
+					} else if (isImageOnly) {
+						url = ctx.href;
+					} else {
+						url = link.href;
+					}
+
+					if (this.IMG_RE.test(url)) {
+						url = this.getFullSizeImageURL(url);
+						return url.extract(/img\/[^\/]+\/(\d+)/);
+					} else if (this.IMG_THUMB_RE.test(url)) {
+						return url.extract(/\/(\d+)(?:_[^.]+)?\./);
+					}
+
+					if (this.isImagePage(link)) {
+						return queryHash(link.search).illust_id;
+					}
+				} else if (!noCheckCtx && this.isImagePage(ctx)) {
+					return queryHash(ctx.search).illust_id;
+				}
+			})() || '';
+		},
+		getMangaPageNumber : function (ctx) {
+			return (() => {
+				var isImageOnly = /^image/.test(ctx.document.contentType);
+
+				if (ctx.onImage || isImageOnly || ctx.onLink) {
+					let {target, link} = ctx, url;
+
+					if (ctx.onImage && target) {
+						url = target.src;
+					} else if (isImageOnly) {
+						url = ctx.href;
+					} else {
+						url = link.href;
+					}
+
+					if (this.IMG_RE.test(url)) {
+						url = this.getFullSizeImageURL(url);
+						return url.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
+					} else if (this.isImagePage(link, 'manga_big')) {
+						return queryHash(link.search).page;
+					}
+				} else if (this.isImagePage(ctx, 'manga_big')) {
+					return queryHash(ctx.search).page;
+				}
+			})() || '0';
+		}
+	},
+	
+	{
 		name : 'Photo - Lightbox',
 		ICON : 'chrome://tombfix/skin/photo.png',
 		PATTERNS : [

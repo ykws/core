@@ -2622,3 +2622,51 @@ function downloadWithReferrer(url, referrer) {
 		return download(url, getTempDir());
 	});
 }
+
+// support pixiv unofficial API's format
+function getCSVList(csv) {
+	var frags, results, start, end, doublequote, comma;
+
+	frags = csv.split('');
+	results = [];
+	start = end = doublequote = 0;
+	comma = true;
+
+	for (let i = 0, len = frags.length; i < len; i += 1) {
+		let frag = frags[i];
+
+		if (frag === '"') {
+			if (start + 1 !== i) {
+				if (comma) {
+					comma = false;
+					start = i;
+					results.push(frag);
+				} else {
+					if (end + 1 === i && doublequote !== end - 1) {
+						doublequote = i - 1;
+					}
+
+					end = i;
+					results[results.length - 1] += frag;
+				}
+			} else {
+				doublequote = i;
+				results[results.length - 1] += frag;
+			}
+		} else if (frag === ',') {
+			if (start < end && doublequote + 1 !== end) {
+				if (comma) {
+					results.push('');
+				} else {
+					comma = true;
+				}
+			} else {
+				results[results.length - 1] += frag;
+			}
+		} else {
+			results[results.length - 1] += frag;
+		}
+	}
+
+	return results;
+}
