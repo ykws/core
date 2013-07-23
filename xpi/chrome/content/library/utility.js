@@ -959,7 +959,7 @@ function queryString(params, question) {
 	for (let key in params) {
 		if (params.hasOwnProperty(key)) {
 			let value = params[key];
-			if (value === null) {
+			if (value == null) {
 				continue;
 			} else if (Array.isArray(value)) {
 				value.forEach(function (val) {
