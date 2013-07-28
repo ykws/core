@@ -18,3 +18,5 @@
 <!ENTITY label.dataDir "Data/Scripts Directory">
 <!ENTITY label.example "e.g.">
 <!ENTITY label.browse "Browse...">
+
+<!ENTITY label.action.changeAccount "Change Account">

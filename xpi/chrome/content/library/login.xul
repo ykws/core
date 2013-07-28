@@ -15,7 +15,8 @@ listitem {
 	padding: 0.5em 0.2em;
 }
 " type="text/css"?>
-<dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="Change Account">
+<!DOCTYPE dialog SYSTEM "chrome://tombfix/locale/tombfix.dtd" >
+<dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&label.action.changeAccount;">
 	<hbox flex="1">
 		<radiogroup id="models">
 		</radiogroup>
