@@ -2577,11 +2577,10 @@ function getTextContent(node) {
 	return node ? node.textContent : '';
 }
 
-// can't get localStorage on SSL site
 function getLocalStorage(origin) {
-  return DOMStorageManager.getLocalStorageForPrincipal(
-    ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
-  );
+	return DOMStorageManager.createStorage(
+		ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
+	);
 }
 
 function getLocalStorageValue(hostname, key) {

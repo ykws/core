@@ -2073,12 +2073,18 @@ Models.register({
 	},
 
 	getInfo : function(){
-		return getLocalStorageValue('delicious.com', 'user').addCallback(function(user){
-			if(!user || !user.isLoggedIn) {
-				throw new Error(getMessage('error.notLoggedin'));
+		return succeed().addCallback(function(){
+			var {user} = getLocalStorage('https://delicious.com');
+
+			if (user) {
+				user = JSON.parse(user);
+
+				if (user.isLoggedIn) {
+					return user;
+				}
 			}
 
-			return user;
+			throw new Error(getMessage('error.notLoggedin'));
 		});
 	},
 
