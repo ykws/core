@@ -12,8 +12,8 @@
 <!ENTITY label.shortcutkey.quickPost.link "Shortcutkey - Link Quick Post">
 <!ENTITY label.shortcutkey.quickPost.regular "Shortcutkey - Text Quick Post">
 <!ENTITY label.shortcutkey.checkAndPost "Mouse Shortcut - Suitable Type for Executed Point">
-<!ENTITY label.accesskey.share "Access Key - Share">
-<!ENTITY label.contextMenu.top "Display at the top of context menu">
+<!ENTITY label.accesskey.share "Access Key - Share(require a browser restart)">
+<!ENTITY label.contextMenu.top "Display at the top of context menu(require a browser restart)">
 <!ENTITY label.ignoreError "Ignore Errors(RegExp)">
 <!ENTITY label.dataDir "Data/Scripts Directory">
 <!ENTITY label.example "e.g.">
