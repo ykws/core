@@ -2583,7 +2583,7 @@ function getLocalStorage(origin) {
 	);
 }
 
-function getLocalStorageValue(hostname, key) {
+function getLocalStorageValueBySQL(hostname, key) {
 	var info;
 	return succeed().addCallback(function(){
 		var file, storage, stmt, value;
