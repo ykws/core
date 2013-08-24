@@ -1335,20 +1335,24 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - Vimeo',
-		ICON : 'http://vimeo.com/favicon.ico',
-		check : function(ctx){
-			return ctx.host.match('vimeo.com');
+		ICON : 'https://vimeo.com/favicon.ico',
+		check : function (ctx) {
+			return ctx.hostname === 'vimeo.com' && /^\/\d+$/.test(ctx.pathname) &&
+				this.getAuthor(ctx.document);
 		},
-		extract : function(ctx){
-			var author = $x('//div[@class="byline"]/a');
+		extract : function (ctx) {
+			var author = this.getAuthor(ctx.document);
 			return {
 				type      : 'video',
 				item      : ctx.title.replace(/ on Vimeo$/, ''),
 				itemUrl   : ctx.href,
 				author    : author.textContent,
-				authorUrl : author.href,
+				authorUrl : author.href
 			};
 		},
+		getAuthor : function (doc) {
+			return doc.querySelector('.byline > a');
+		}
 	},
 	
 	{
