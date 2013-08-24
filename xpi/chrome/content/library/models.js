@@ -2038,28 +2038,28 @@ Models.register(update({
 Models.register({
 	name    : 'Delicious',
 	ICON    : 'https://delicious.com/favicon.ico',
+	ORIGIN  : 'https://delicious.com',
 	API_URL : 'https://avosapi.delicious.com/api/v1/',
 
-	check : function(ps){
+	check : function (ps) {
 		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
 	},
 
-	post : function(ps){
+	post : function (ps) {
 		var that = this, retry = true;
 
 		return this.getInfo().addCallback(function AddBookmark(user) {
 			return request(that.API_URL + 'posts/addoredit', {
-				queryString : {
+				responseType : 'json',
+				queryString  : {
 					description : ps.item,
 					url         : ps.itemUrl,
 					note        : joinText([ps.body, ps.description], ' ', true),
 					tags        : joinText(ps.tags),
-					private     : ps.private,
-					replace     : true
+					private     : ps.private ? 'on' : '',
+					replace     : 'true'
 				}
-			}).addCallback(function(res){
-				var info = JSON.parse(res.responseText);
-
+			}).addCallback(({ response : info }) => {
 				if (info.error) {
 					if (retry) {
 						retry = false;
@@ -2072,9 +2072,9 @@ Models.register({
 		});
 	},
 
-	getInfo : function(){
-		return succeed().addCallback(function(){
-			var {user} = getLocalStorage('https://delicious.com');
+	getInfo : function () {
+		return succeed().addCallback(() => {
+			var {user} = getLocalStorage(this.ORIGIN);
 
 			if (user) {
 				user = JSON.parse(user);
@@ -2088,14 +2088,13 @@ Models.register({
 		});
 	},
 
-	updateSession : function(user){
+	updateSession : function (user) {
 		var {username, password_hash} = user;
 
 		return request(
-			this.API_URL + 'account/webloginhash/' + username + '/' + password_hash
-		).addCallback(function(res){
-			return JSON.parse(res.responseText);
-		});
+			this.API_URL + 'account/webloginhash/' + username + '/' + password_hash,
+			{ responseType : 'json' }
+		).addCallback(res => res.response);
 	},
 
 	/**
@@ -2103,25 +2102,28 @@ Models.register({
 	 *
 	 * @return {Array}
 	 */
-	getUserTags : function(){
-		return Delicious.getInfo().addCallback(function(user){
-			return request('http://feeds.delicious.com/v2/json/tags/' + user.username);
-		}).addCallback(function(res){
-			var tags = JSON.parse(res.responseText);
+	getUserTags : function () {
+		return this.getInfo().addCallback(() => {
+			return request(this.API_URL + 'posts/you/tags', {
+				responseType : 'json'
+			});
+		}).addCallback(res => {
+			var {tags} = res.response.pkg;
 
 			// タグが無いか?(取得失敗時も発生)
 			if (!tags || isEmpty(tags)) {
 				return [];
 			}
 
-			return reduce(function(memo, tag){
+			return reduce((memo, tag) => {
 				memo.push({
 					name      : tag[0],
 					frequency : tag[1]
 				});
+
 				return memo;
 			}, tags, []);
-		}).addErrback(function(err){
+		}).addErrback(err => {
 			// Delicious移管によりfeedが停止されタグの取得に失敗する
 			// 再開時に動作するように接続を試行し、失敗したら空にしてエラーを回避する
 			error(err);
@@ -2137,36 +2139,38 @@ Models.register({
 	 * @param {String} url 関連情報を取得する対象のページURL。
 	 * @return {Object}
 	 */
-	getSuggestions : function(url){
-		var that = this;
-
+	getSuggestions : function (url) {
 		return new DeferredHash({
 			tags : this.getUserTags(),
-			suggestions : this.getInfo().addCallback(function(){
+			suggestions : this.getInfo().addCallback(() => {
 				// フォームを開いた時点でブックマークを追加し過去のデータを修正可能にするか?
 				// 過去データが存在すると、お勧めタグは取得できない
 				// (現時点で保存済みか否かを確認する手段がない)
-				return request(that.API_URL + 'posts/compose', {
-					queryString : { url : url }
+				return request(this.API_URL + 'posts/compose', {
+					responseType : 'json',
+					queryString  : { url : url }
 				});
-			}).addCallback(function(res){
-				var {pkg} = JSON.parse(res.responseText);
+			}).addCallback(res => {
+				var {pkg} = res.response;
+
 				return {
-					editPage : 'https://delicious.com/save?url=' + url,
-					form : {
+					editPage : this.ORIGIN + '/save?url=' + url,
+					form     : {
 						item        : pkg.suggested_title,
 						description : pkg.note,
 						tags        : pkg.suggested_tags/*,
 						private     : null*/
 					},
 
-					duplicated : pkg.previously_saved,
+					duplicated  : pkg.previously_saved,
 					recommended : pkg.suggested_tags
-				}
+				};
 			})
-		}).addCallback(function(ress){
+		}).addCallback(ress => {
 			var res = ress.suggestions[1];
+
 			res.tags = ress.tags[1];
+
 			return res;
 		});
 	}
