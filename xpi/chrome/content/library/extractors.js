@@ -987,7 +987,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return this.getMediumPage(ctx).addCallback(function getImage(info){
 				var {imageURL, pageTitle, illustID} = info;
 
-				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file =>{
+				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
 					ctx.href = that.PAGE_URL + illustID;
 					return {
 						type    : 'photo',
