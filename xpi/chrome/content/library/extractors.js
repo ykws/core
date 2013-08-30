@@ -1063,12 +1063,15 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		},
 		getImageElement : function (ctx, illustID) {
 			return ctx.document.querySelector([
+				// mode=medium in login
 				'a[href*="illust_id=' +
 					(illustID || queryHash(ctx.search).illust_id) + '"] > img',
 				// mode=big and mode=manga_big in login
 				'body > img:only-child',
 				// mode=manga
 				'.image',
+				// non-r18 illust in logout
+				'.cool-work-main > .img-container > a.medium-image > img',
 				// r18 in logout
 				'.cool-work-main > .sensored > img'
 			].join(', '));
