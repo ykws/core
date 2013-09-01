@@ -1360,30 +1360,31 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - YouTube',
-		ICON : 'http://youtube.com/favicon.ico',
-		check : function(ctx){
-			return ctx.host.match('youtube.com');
+		ICON : 'https://www.youtube.com/favicon.ico',
+
+		check : function (ctx) {
+			if (
+				!ctx.selection && !ctx.onImage && !ctx.onLink &&
+				/^https?:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
+			) {
+				return queryHash(createLink(ctx.href).search).v && this.getCanonical(ctx.document);
+			}
 		},
-		extract : function(ctx){
-			ctx.title = ctx.title.replace(/[\n\r\t]+/gm, ' ').trim();
-			
-			var ps = {
+		extract : function (ctx) {
+			var doc = ctx.document,
+				author = doc.querySelector('#watch7-user-header > .yt-user-name');
+
+			return {
 				type      : 'video',
-				item      : $x('//meta[@property="og:title"]/@content') || ctx.title.extract(/(.*) - /),
-				itemUrl   : ctx.href,
-			}
-			
-			var elmAuthor = 
-				$x('id("watch-channel-stats")/a') || 
-				$x('id("watch-username")') || 
-				$x('id("watch-uploader-info")/descendant::a[contains(concat(" ", normalize-space(@rel), " "), " author ")]');
-			if(elmAuthor){
-				ps.authorUrl = elmAuthor.href;
-				ps.author = elmAuthor.textContent.trim();
-			}
-			
-			return ps;
+				item      : doc.querySelector('meta[name="title"]').content,
+				itemUrl   : this.getCanonical(ctx.document).href,
+				author    : author.textContent.trim(),
+				authorUrl : author.href.split('?')[0]
+			};
 		},
+		getCanonical : function (doc) {
+			return doc.querySelector('link[rel="canonical"]');
+		}
 	},
 	
 	{
