@@ -1448,22 +1448,23 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Video - Nico Nico Douga',
+		name : 'Video - Nicovideo',
 		ICON : Models.Nicovideo.ICON,
-		check : function(ctx){
-			return ctx.href.match('^http://www\.nicovideo\.jp/watch/');
+
+		check : function (ctx) {
+			if (!ctx.selection && !ctx.onImage && !ctx.onLink) {
+				return /^http:\/\/www\.nicovideo\.jp\/watch\//.test(ctx.href);
+			}
 		},
-		extract : function(ctx){
-			var embedUrl = resolveRelativePath($x('//a[starts-with(@href, "/embed/")]/@href'), ctx.href);
-			return request(embedUrl, {charset : 'utf-8'}).addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
-				return {
-					type    : 'video',
-					item    : ctx.title,
-					itemUrl : ctx.href,
-					body    : $x('//input[@name="script_code"]/@value', doc),
-				};
-			});
+		extract : function (ctx) {
+			var externalPlayerURL = 'http://ext.nicovideo.jp/thumb_' + ctx.pathname.slice(1) + '?thumb_mode=swf&ap=1&c=1';
+
+			return {
+				type    : 'video',
+				item    : ctx.title,
+				itemUrl : ctx.href,
+				body    : '<embed type="application/x-shockwave-flash" width="485" height="385" src="' + externalPlayerURL + '">'
+			};
 		}
 	},
 	
