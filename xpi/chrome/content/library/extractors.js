@@ -1485,6 +1485,34 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
+		name  : 'Quote - textarea',
+		ICON  : 'chrome://tombfix/skin/quote.png',
+
+		check : function (ctx) {
+			if (!ctx.selection) {
+				let target = ctx.target;
+
+				return target && ('selectionStart' in target) &&
+					target.selectionStart !== target.selectionEnd;
+			}
+		},
+		extract : function (ctx) {
+			var target = ctx.target,
+				text = target.value.slice(
+					Math.min(target.selectionStart, target.selectionEnd),
+					Math.max(target.selectionStart, target.selectionEnd)
+				);
+
+			return {
+				type    : 'quote',
+				item    : ctx.title,
+				itemUrl : ctx.href,
+				body    : createFlavoredString(document.createTextNode(text))
+			};
+		}
+	},
+	
+	{
 		name : 'Link - trim parameters',
 		ICON : 'chrome://tombfix/skin/link.png',
 		TARGET_SITES : [
