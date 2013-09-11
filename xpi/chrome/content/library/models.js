@@ -2731,67 +2731,34 @@ Models.register({
 
 
 Models.register({
-	name : 'YahooBookmarks',
-	ICON : 'http://bookmarks.yahoo.co.jp/favicon.ico',
-	
-	check : function(ps){
-		return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
+	name     : 'YahooBookmarks',
+	ICON     : 'http://i.yimg.jp/images/sicons/ybm16.gif',
+	POST_URL : 'http://bookmarks.yahoo.co.jp/action/post',
+
+	check : function (ps) {
+		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
 	},
-	
-	post : function(ps){
-		return request('http://bookmarks.yahoo.co.jp/action/post').addCallback(function(res){
-			if(res.responseText.indexOf('login_form')!=-1)
+
+	post : function (ps) {
+		return request(this.POST_URL, {
+			responseType : 'document'
+		}).addCallback(({ response : doc }) => {
+			var crumbs = doc.querySelector('[name="crumbs"]');
+
+			if (!crumbs && doc.getElementById('login_form')) {
 				throw new Error(getMessage('error.notLoggedin'));
-			
-			return formContents($x('(id("addbookmark")//form)[1]', convertToHTMLDocument(res.responseText)));
-		}).addCallback(function(fs){
-			return request('http://bookmarks.yahoo.co.jp/action/post/done', {
-				redirectionLimit : 0,
-				sendContent  : {
-					title      : ps.item,
-					url        : ps.itemUrl,
-					desc       : joinText([ps.body, ps.description], ' ', true),
-					tags       : joinText(ps.tags, ' '),
-					crumbs     : fs.crumbs,
-					visibility : ps.private==null? fs.visibility : (ps.private? 0 : 1),
-				},
+			}
+
+			return request(this.POST_URL + '/done', {
+				sendContent : {
+					title  : ps.item,
+					url    : ps.itemUrl,
+					desc   : joinText([ps.body, ps.description], ' ', true),
+					crumbs : crumbs.value
+				}
 			});
 		});
-	},
-	
-	/**
-	 * タグ、おすすめタグを取得する。
-	 * ブックマーク済みでも取得することができる。
-	 *
-	 * @param {String} url 関連情報を取得する対象のページURL。
-	 * @return {Object}
-	 */
-	getSuggestions : function(url){
-		return request('http://bookmarks.yahoo.co.jp/bookmarklet/showpopup', {
-			queryString : {
-				u : url,
-			}
-		}).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			if(!$x('id("bmtsave")', doc))
-				throw new Error(getMessage('error.notLoggedin'));
-			
-			function getTags(part){
-				return evalInSandbox(unescapeHTML(res.responseText.extract(RegExp('^' + part + ' ?= ?(.+)(;|$)', 'm'))), 'http://bookmarks.yahoo.co.jp/') || [];
-			}
-			
-			return {
-				duplicated : !!$x('//input[@name="docid"]', doc),
-				popular : getTags('rectags'),
-				tags : getTags('yourtags').map(function(tag){
-					return {
-						name      : tag,
-						frequency : -1,
-					}
-				}),
-			};
-		});
-	},
+	}
 });
 
 
