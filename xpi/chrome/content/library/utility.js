@@ -1376,14 +1376,6 @@ function populateForm(form, values){
 	}
 }
 
-function createSet(keys){
-	keys = (keys instanceof Array) ? keys : keys.split(/\s/);
-	return reduce(function(memo, val){
-		memo[val]=val;
-		return memo;
-	}, keys, {})
-}
-
 function pickUp(a, pop){
 	var i = random(a.length);
 	return pop ? a.splice(i, 1)[0] : a[i];
