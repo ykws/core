@@ -26,6 +26,16 @@ update(Number.prototype, {
 	},
 });
 
+update(Array.prototype, {
+	split : function(step){
+		var res = [];
+		for(var i=0,len=this.length ; i<len ;)
+			res.push(this.slice(i, i+=step));
+		
+		return res;
+	},
+});
+
 update(String.prototype, {
 	pad :function(len, ch){
 		len = len-this.length;

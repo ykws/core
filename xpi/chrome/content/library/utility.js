@@ -1256,18 +1256,6 @@ String.katakana = {
 }
 
 
-
-Array.prototype = update(Array.prototype, {
-	split : function(step){
-		var res = [];
-		for(var i=0,len=this.length ; i<len ;)
-			res.push(this.slice(i, i+=step));
-		
-		return res;
-	},
-});
-
-
 // ----[General]-------------------------------------------------
 function debug(msg){
 	if(!getPref('debug'))
