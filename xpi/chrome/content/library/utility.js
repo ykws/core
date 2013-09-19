@@ -1276,10 +1276,11 @@ function debug(msg){
 	return log(msg);
 }
 
-function log(msg){
-	firebug('log', arguments) ||
-		ConsoleService.logStringMessage(''+msg);
-	
+function log(msg) {
+	if (!firebug('log', arguments)) {
+		console[typeof msg === 'object' ? 'dir' : 'log'](msg);
+	}
+
 	return msg;
 }
 
@@ -1290,10 +1291,13 @@ function error(err){
 	return err;
 }
 
-function warn(msg){
-	firebug('warn', arguments) ||
-		ConsoleService.logMessage(new ScriptError(msg, null, null, null, null, ScriptError.warningFlag, null));
-	
+function warn(msg) {
+	if (!firebug('warn', arguments)) {
+		console.log(
+			new ScriptError(msg, null, null, null, null, ScriptError.warningFlag, null)
+		);
+	}
+
 	return msg;
 }
 

@@ -21,9 +21,10 @@ const SCRIPT_FILES = [
 	'ui.js'
 ];
 
+var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {});
+
 var ILocalFile = Ci.nsILocalFile;
 
-ConsoleService      = getService('/consoleservice;1', Ci.nsIConsoleService);
 AppShellService     = getService('/appshell/appShellService;1', Ci.nsIAppShellService);
 ScriptLoader        = getService('/moz/jssubscript-loader;1', Ci.mozIJSSubScriptLoader);
 IOService           = getService('/network/io-service;1', Ci.nsIIOService);
@@ -97,8 +98,8 @@ function forwardToWindow(method){
 }
 
 // ----[Utility]--------------------------------------------
-function log(msg){
-	ConsoleService.logStringMessage(''+msg);
+function log(msg) {
+	console[typeof msg === 'object' ? 'dir' : 'log'](msg);
 }
 
 function getService(clsName, ifc){

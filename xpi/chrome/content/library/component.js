@@ -16,6 +16,8 @@ if(typeof(update)=='undefined'){
 	}
 }
 
+var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {});
+
 var IWebProgressListener = Ci.nsIWebProgressListener;
 var IFile                = Ci.nsIFile;
 var ILocalFile           = Ci.nsILocalFile;
@@ -28,7 +30,6 @@ var IContentPolicy       = Ci.nsIContentPolicy;
 var IHttpChannel         = Ci.nsIHttpChannel;
 
 [
-	['ConsoleService',      'nsIConsoleService',         '/consoleservice;1'],
 	['ExtensionManager',    'nsIExtensionManager',       '/extensions/manager;1'],
 	['StorageService',      'mozIStorageService',        '/storage/service;1'],
 	['DirectoryService',    'nsIProperties',             '/file/directory_service;1'],
