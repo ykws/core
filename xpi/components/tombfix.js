@@ -148,7 +148,7 @@ function getContents(file){
 
 function simpleIterator(e, ifc, func){
 	if(typeof(ifc)=='string')
-		ifc = Components.interfaces[ifc];
+		ifc = Ci[ifc];
 	
 	try{
 		while(e.hasMoreElements()){
@@ -202,7 +202,7 @@ function exposeProperties(o, recursive){
 var getContentDir;
 ExtensionManager = getService('/extensions/manager;1', Ci.nsIExtensionManager);
 if (!ExtensionManager) {  // for firefox4
-	Components.utils.import("resource://gre/modules/AddonManager.jsm");
+	Cu.import("resource://gre/modules/AddonManager.jsm");
 	let dir = null;
 	AddonManager.getAddonByID(EXTENSION_ID, function (addon) {
 		let root = addon.getResourceURI('/');
@@ -327,7 +327,7 @@ Module = {
 		try{
 			// Scriptishサンドボックスの拡張
 			var scope = {};
-			Components.utils.import('resource://scriptish/api.js', scope);
+			Cu.import('resource://scriptish/api.js', scope);
 			scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
 			scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
 		}catch(e){

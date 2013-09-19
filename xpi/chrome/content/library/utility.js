@@ -64,8 +64,8 @@ function reload(){
  *         'var obj = {};'のようなAPI返り値を処理しやすくする。
  */
 function evalInSandbox(js, url){
-	var sandbox = (url.importFunction)? url : Components.utils.Sandbox(url);
-	var res = Components.utils.evalInSandbox(js, sandbox);
+	var sandbox = (url.importFunction)? url : Cu.Sandbox(url);
+	var res = Cu.evalInSandbox(js, sandbox);
 	return (typeof(res)=='undefined')? sandbox : res;
 }
 
@@ -1285,7 +1285,7 @@ function log(msg){
 
 function error(err){
 	firebug('error', arguments) ||
-		Components.utils.reportError(err);
+		Cu.reportError(err);
 	
 	return err;
 }

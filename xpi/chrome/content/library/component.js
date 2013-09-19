@@ -229,7 +229,7 @@ function createQueryInterface(ifcNames){
 			return this;
 		}
 		
-		throw Components.results.NS_NOINTERFACE;
+		throw Cr.NS_NOINTERFACE;
 	}
 }
 
@@ -245,8 +245,8 @@ function createQueryInterface(ifcNames){
  *        関数の場合、生成されたインスタンスをthisとして呼び出される。
  */
 function createConstructor(clsName, ifc, init){
-	var cls = Components.classes['@mozilla.org' + clsName];
-	ifc = typeof(ifc)=='string'? Components.interfaces[ifc] : ifc;
+	var cls = Cc['@mozilla.org' + clsName];
+	ifc = typeof(ifc)=='string'? Ci[ifc] : ifc;
 	
 	var cons = function(){
 		var obj = cls.createInstance(ifc);
@@ -433,7 +433,7 @@ var getExtensionDir;
 {
 	// Firefox 4以降
 	if(typeof(ExtensionManager) == 'undefined' || !ExtensionManager){
-		Components.utils.import('resource://gre/modules/AddonManager.jsm');
+		Cu.import('resource://gre/modules/AddonManager.jsm');
 		
 		getExtensionDir = function(id){
 			// 最終的にXPIProvider.jsmのXPIDatabase.getVisibleAddonForIDにて
