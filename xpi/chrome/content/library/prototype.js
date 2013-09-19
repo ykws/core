@@ -43,10 +43,6 @@ update(String.prototype, {
 		return prefix + this + suffix;
 	},
 	
-	repeat : function(n){
-		return new Array(n+1).join(this);
-	},
-	
 	extract : function(re, group){
 		group = group==null? 1 : group;
 		var res = this.match(re);
