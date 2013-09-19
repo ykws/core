@@ -2,9 +2,7 @@ var XUL_NS  = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 var HTML_NS = 'http://www.w3.org/1999/xhtml';
 var XML_NS  = 'http://www.w3.org/XML/1998/namespace';
 
-var Ci = Components.interfaces;
-var Cc = Components.classes;
-var Cr = Components.results;
+var {interfaces: Ci, classes: Cc, results: Cr} = Components;
 
 var INTERFACES = [];
 for(var i in Ci)

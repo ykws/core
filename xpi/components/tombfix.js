@@ -1,8 +1,6 @@
 const EXTENSION_ID = 'tombfix@tombfix.github.io';
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cr = Components.results;
+const {interfaces: Ci, classes: Cc, results: Cr} = Components;
 
 const SCRIPT_FILES = [
 	// library/third_party
