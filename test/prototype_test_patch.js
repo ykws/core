@@ -4,7 +4,7 @@ log(Date.TIME_HOUR === 3600000);
 log(Date.TIME_DAY === 86400000);
 log((10).pad(10) === '0000000010');
 log((10).pad(10, 'a') === 'aaaaaaaa10');
-// log((10).pad(0) === '10');
+log((10).pad(0) === '10');
 log((100).toHexString() === '64');
 log(['a', 'b', 'c'].split(1).length === 3);
 log(['a', 'b', 'c'].split(1).join(', ') === 'a, b, c');
@@ -24,7 +24,7 @@ log(['a', 'b', 'c'].split(0).every(function (val, idx) { return val[0] === this[
 log(typeof String.katakana === 'object');
 log('a'.pad(2) === ' a');
 log('a'.pad(2, '0') === '0a');
-// log('a'.pad(0) === 'a');
+log('a'.pad(0) === 'a');
 log('a'.indent(2) === '  a');
 log('a'.indent(2, '	') === '		a');
 log('a\na'.indent(2) === '  a\n  a');

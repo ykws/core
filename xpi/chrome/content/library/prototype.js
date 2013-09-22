@@ -273,7 +273,7 @@
       len = len - this.length;
 
       if (len <= 0) {
-        return this;
+        return this.toString();
       }
 
       return (ch || ' ').repeat(len) + this;
