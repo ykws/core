@@ -36,7 +36,15 @@
 
   extendBuiltInObject(Array.prototype, {
     split : function split(step) {
-      var res = [], i = 0, len = this.length;
+      var res, i, len;
+
+      if (!step) {
+        return this.slice();
+      }
+
+      res = [];
+      i = 0;
+      len = this.length;
 
       while (i < len) {
         res.push(this.slice(i, i += step));

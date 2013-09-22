@@ -18,9 +18,9 @@ log(['a', 'b', 'c'].split(3).every(function (val, idx) { return val[0] === this[
 log(['a', 'b', 'c'].split(100).length === 1);
 log(['a', 'b', 'c'].split(100).join(', ') === 'a,b,c');
 log(['a', 'b', 'c'].split(100).every(function (val, idx) { return val[0] === this[idx][0]; }, [['a', 'b', 'c']]));
-/*log(['a', 'b', 'c'].split(0).length === 3);
+log(['a', 'b', 'c'].split(0).length === 3);
 log(['a', 'b', 'c'].split(0).join(', ') === 'a, b, c');
-log(['a', 'b', 'c'].split(0).every(function (val, idx) { return val[0] === this[idx][0]; }, ['a', 'b', 'c']));*/
+log(['a', 'b', 'c'].split(0).every(function (val, idx) { return val[0] === this[idx][0]; }, ['a', 'b', 'c']));
 log(typeof String.katakana === 'object');
 log('a'.pad(2) === ' a');
 log('a'.pad(2, '0') === '0a');
