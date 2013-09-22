@@ -13,10 +13,6 @@ if(typeof(update)=='undefined'){
 	}
 }
 
-Math.hypot = function(x, y){
-	return Math.sqrt(x*x + y*y);
-}
-
 update(Number.prototype, {
 	pad : function(len, ch){
 		return ('' + this).pad(len, ch || '0');
