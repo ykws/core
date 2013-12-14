@@ -1367,7 +1367,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				!ctx.selection && !ctx.onImage && !ctx.onLink &&
 				/^https?:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
 			) {
-				return queryHash(createLink(ctx.href).search).v && this.getCanonical(ctx.document);
+				return queryHash(new URL(ctx.href).search).v && this.getCanonical(ctx.document);
 			}
 		},
 		extract : function (ctx) {

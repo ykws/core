@@ -2595,16 +2595,3 @@ function getCSVList(csv) {
 
 	return results;
 }
-
-// via Taberareloo 3.0.4's createURI()
-// https://github.com/Constellation/taberareloo/blob/3.0.4/src/lib/utils.js#L592
-var createLink = (() => {
-	var anchor = document.createElement('a');
-
-	return function createLink(url) {
-		var link = anchor.cloneNode(false);
-		link.href = url;
-
-		return link;
-	};
-})();
