@@ -2931,58 +2931,52 @@ Models.register({
 
 
 Models.register(update({
-	name : 'HatenaBookmark',
-	ICON : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
-	POST_URL : 'http://b.hatena.ne.jp/add',
-	
-	check : function(ps){
-		return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
+	name   : 'HatenaBookmark',
+	ICON   : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
+	ORIGIN : 'http://b.hatena.ne.jp',
+
+	check : function (ps) {
+		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
 	},
-	
-	post : function(ps){
-		// タイトルは共有されているため送信しない
-		return this.addBookmark(ps.itemUrl, null, ps.tags, joinText([ps.body, ps.description], ' ', true));
-	},
-	
-	getEntry : function(url){
-		var self = this;
-		return request('http://b.hatena.ne.jp/my.entry', {
-			queryString : {
-				url : url
-			}
-		}).addCallback(function(res){
-			return JSON.parse(res.responseText);
-		});
-	},
-	
-	getUserTags : function(user){
-		return request('http://b.hatena.ne.jp/' + user + '/tags.json').addCallback(function(res){
-			var tags = JSON.parse(res.responseText)['tags'];
-			return items(tags).map(function(pair){
-				return {
-					name      : pair[0],
-					frequency : pair[1].count
+
+	post : function (ps) {
+		return Hatena.getToken().addCallback(token => {
+			var description = joinText([ps.body, ps.description], ' ', true);
+
+			return request(this.ORIGIN + '/bookmarklet.edit', {
+				sendContent : {
+					rks     : token,
+					url     : ps.itemUrl.replace(/%[0-9a-f]{2}/g, str => str.toUpperCase()),
+					// タイトルは共有されているため送信しない
+					title   : null,
+					comment : Hatena.reprTags(ps.tags) + description.replace(/[\n\r]+/g, ' ')
 				}
 			});
 		});
 	},
-	
-	addBookmark : function(url, title, tags, description){
-		return Hatena.getToken().addCallback(function(token){
-			return request('http://b.hatena.ne.jp/bookmarklet.edit', {
-				redirectionLimit : 0,
-				sendContent : {
-					rks     : token,
-					url     : url.replace(/%[0-9a-f]{2}/g, function(s){
-						return s.toUpperCase();
-					}),
-					title   : title, 
-					comment : Hatena.reprTags(tags) + description.replace(/[\n\r]+/g, ' '),
-				},
-			});
+
+	getEntry : function (url) {
+		return request(this.ORIGIN + '/my.entry', {
+			responseType : 'json',
+			queryString  : {
+				url : url
+			}
+		}).addCallback(res => res.response);
+	},
+
+	getUserTags : function (user) {
+		return request(this.ORIGIN + '/' + user + '/tags.json', {
+			responseType : 'json'
+		}).addCallback(res => {
+			var {tags} = res.response;
+
+			return Object.keys(tags).map(tag => ({
+				name      : tag,
+				frequency : tags[tag].count
+			}));
 		});
 	},
-	
+
 	/**
 	 * タグ、おすすめタグ、キーワードを取得する
 	 * ページURLが空の場合、タグだけが返される。
@@ -2990,40 +2984,37 @@ Models.register(update({
 	 * @param {String} url 関連情報を取得する対象のページURL。
 	 * @return {Object}
 	 */
-	getSuggestions : function(url){
-		var self = this;
-		return Hatena.getCurrentUser().addCallback(function(user){
+	getSuggestions : function (url) {
+		return Hatena.getCurrentUser().addCallback(user => {
 			return new DeferredHash({
-				tags : self.getUserTags(user),
-				entry : self.getEntry(url),
+				tags  : this.getUserTags(user),
+				entry : this.getEntry(url)
 			});
-		}).addCallback(function(ress){
-			var entry = ress.entry[1];
-			var tags = ress.tags[1];
-			
-			var duplicated = !!entry.bookmarked_data;
-			var endpoint = HatenaBookmark.POST_URL + '?' + queryString({
-				mode : 'confirm',
-				url  : url,
-			});
-			var form = {item : entry.title};
-			if(duplicated){
+		}).addCallback(ress => {
+			var entry = ress.entry[1],
+				duplicated = !!entry.bookmarked_data,
+				form = { item : entry.title };
+
+			if (duplicated) {
 				form = update(form, {
 					description : entry.bookmarked_data.comment,
 					tags        : entry.bookmarked_data.tags,
-					private     : entry.bookmarked_data.private,
+					private     : entry.bookmarked_data.private
 				});
 			}
-			
+
 			return {
 				form        : form,
-				editPage    : endpoint,
-				tags        : tags,
+				editPage    : this.ORIGIN + '/add?' + queryString({
+					mode : 'confirm',
+					url  : url
+				}),
+				tags        : ress.tags[1],
 				duplicated  : duplicated,
-				recommended : entry.recommend_tags,
-			}
+				recommended : entry.recommend_tags
+			};
 		});
-	},
+	}
 }, AbstractSessionService));
 
 
