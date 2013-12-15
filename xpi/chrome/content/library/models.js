@@ -2048,7 +2048,7 @@ Models.register({
 	post : function (ps) {
 		var that = this, retry = true;
 
-		return this.getInfo().addCallback(function AddBookmark(user) {
+		return this.getInfo().addCallback(function addBookmark(user) {
 			return request(that.API_URL + 'posts/addoredit', {
 				responseType : 'json',
 				queryString  : {
@@ -2063,7 +2063,7 @@ Models.register({
 				if (info.error) {
 					if (retry) {
 						retry = false;
-						return that.updateSession(user).addCallback(AddBookmark);
+						return that.updateSession(user).addCallback(addBookmark);
 					}
 
 					throw new Error(info.error);
