@@ -17,7 +17,7 @@ TomblooがインストールされていてもTombfixのインストールに大
 
 * Mozilla Firefox on Windows 7 Home Premium SP1 64bit
 
-基本的にFirefoxの最新の安定版のみに対応しますが、Beta、Aurora、Nightlyで不具合が発生した場合、確認でき次第修正を試みたいと考えています。[ESR](http://www.mozilla.jp/business/downloads/)については対応しません。  
+基本的にFirefoxの最新の安定版のみに対応しますが、Beta、Aurora、Nightlyで不具合が発生した場合、確認でき次第修正を試みたいと考えています。[ESR](http://www.mozilla.jp/business/downloads/)については[対応しません](https://github.com/tombfix/core/issues/70)。  
 また、OSに関してはWindows 7 Home Premium SP1 64bitでしか確認していない為、その他の環境の設定ダイアログのデザインなどは崩れている可能性があります。
 
 ## ライセンス
