@@ -7,6 +7,10 @@
 <!ENTITY label.thumbnailTemplate "Linkポストのサムネイルテンプレート">
 <!ENTITY label.model.tumblr.trimReblogInfo "Tumblr: Reblog情報を除去する">
 <!ENTITY label.model.tumblr.appendContentSource "Tumblr: ソース情報を付加する">
+<!ENTITY label.model.twitter.truncateStatus "Twitter: Textポスト以外で文字数制限を超えた文字は削除する">
+<!ENTITY label.model.twitter.template.prefix "Twitter: プレフィックス(コメント入力時に省略)">
+<!ENTITY label.model.twitter.template "Twitter: テンプレート">
+<!ENTITY label.model.twitter.example.template.prefix "見てる:">
 <!ENTITY label.tagProvider "クイックポストで使うタグの取得元">
 <!ENTITY label.tagAutoComplete "タグの自動決定">
 <!ENTITY label.shortcutkey.quickPost.link "ショートカット - Linkクイックポスト">

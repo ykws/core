@@ -1,0 +1,8 @@
+NOTICE for third party library
+
+Tombfix includes MochiKit, a JavaScript Library, developed by Bob Ippolito, under MIT License.
+http://mochi.github.io/mochikit/
+https://github.com/mochi/mochikit
+
+Tombfix includes twitter-text-js, a JavaScript Library, developed by Twitter, under Apache License 2.0.
+https://github.com/twitter/twitter-text-js

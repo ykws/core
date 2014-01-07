@@ -1405,110 +1405,319 @@ Models.register({
 });
 
 
-Models.register({
-	name : 'Twitter',
-	ICON : 'http://twitter.com/favicon.ico',
-	URL  : 'https://twitter.com',
-	SHORTEN_SERVICE : 'bit.ly',
-	
-	check : function(ps){
-		return (/(regular|photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
+Models.register(update({
+	name              : 'Twitter',
+	ICON              : 'https://twitter.com/favicon.ico',
+	ORIGIN            : 'https://twitter.com',
+	ACCOUT_URL        : 'https://twitter.com/settings/account',
+	TWEET_API_URL     : 'https://twitter.com/i/tweet',
+	UPLOAD_API_URL    : 'https://upload.twitter.com/i/tweet/create_with_media.iframe',
+	STATUS_MAX_LENGTH : 140,
+	OPTIONS           : {
+		short_url_length       : 22,
+		short_url_length_https : 23
 	},
-	
-	post : function(ps){
-		return this.update(joinText([ps.description, (ps.body)? '"' + ps.body + '"' : '', ps.item, ps.itemUrl], ' '));
+
+	check : function (ps) {
+		return /^(?:regular|photo|quote|link|conversation|video)$/.test(ps.type);
 	},
-	
-	update : function(status){
-		var self = this;
-		var POST_URL = self.URL + '/i/tweet/create';
-		
-		return maybeDeferred((status.length < 140)? 
-			status : 
-			shortenUrls(status, Models[this.SHORTEN_SERVICE])
-		).addCallback(function(shortend){
-			status = shortend;
-			
-			return Twitter.getToken();
-		}).addCallback(function(token){
-			token.status = status;
-			
-			return request(POST_URL, {
-				sendContent : token,
-			});
-		}).addErrback(function(res){
-			throw new Error(JSON.parse(res.message.responseText).message);
-		}).addCallback(function(res){
-			return JSON.parse(res.responseText);
-		});
+
+	post : function (ps) {
+		var status = this.createStatus(ps);
+
+		return this.getToken().addCallback(token => ps.type === 'photo' ?
+			this.upload(ps, token, status) :
+			this.update(token, status)
+		);
 	},
-	
-	favor : function(ps){
-		return this.addFavorite(ps.favorite.id);
-	},
-	
-	getToken : function(){
-		return request(this.URL + '/account/settings').addCallback(function(res){
-			var html = res.responseText;
-			if(~html.indexOf('class="signin"'))
+
+	getToken : function () {
+		return request(this.ACCOUT_URL, {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			if (doc.body.classList.contains('logged-out')) {
 				throw new Error(getMessage('error.notLoggedin'));
-			
-			return {
-				authenticity_token : html.extract(/authenticity_token.+value="(.+?)"/),
-				siv                : html.extract(/logout\?siv=(.+?)"/),
 			}
+
+			return {
+				authenticity_token : doc.querySelector('.authenticity_token').value
+			};
 		});
 	},
-	
-	changePicture : function(url){
-		var self = this;
-		return ((url instanceof IFile)? succeed(url) : download(url, getTempDir())).addCallback(function(file){
-			return request(self.URL + '/account/settings').addCallback(function(res){
-				var form = convertToHTMLDocument(res.responseText).getElementById('account_settings_form');
-				var ps = formContents(form);
-				var endpoint = self.URL + '/settings/profile';
-				return request(endpoint, {
-					referrer : endpoint,
-					sendContent : update(ps, {
-						'profile_image[uploaded_data]' : file,
-					}),
+
+	createStatus : function (ps) {
+		var contents, maxLen, status;
+
+		contents = {
+			desc  : (ps.description || '').trim(),
+			quote : ps.type !== 'video' && ps.body ? ps.body.trim().wrap('"') : '',
+			title : ps.item.trim(),
+			url   : ps.itemUrl || '',
+			tags  : (ps.tags || []).map(tag => '#' + tag)
+		};
+		maxLen = this.STATUS_MAX_LENGTH;
+
+		if (ps.type === 'photo') {
+			contents.url = ps.pageUrl;
+			maxLen -= this.OPTIONS.short_url_length + 1;
+		}
+
+		status = this.joinContents(contents);
+
+		if (ps.type !== 'regular' && getPref('model.twitter.truncateStatus')) {
+			let over = this.getTweetLength(status) - maxLen;
+
+			if (over > 0) {
+				return this.truncateStatus(contents, over);
+			}
+		}
+
+		return status;
+	},
+
+	getTweetLength : function (str) {
+		return twttr.txt.getTweetLength(str, this.OPTIONS);
+	},
+
+	joinContents : function ({desc, quote, title, url, tags}) {
+		var prefix = desc ? '' : getPref('model.twitter.template.prefix'),
+			template = getPref('model.twitter.template');
+
+		return template ?
+			this.extractTemplate(prefix, template, arguments[0]) :
+			joinText([prefix, desc, quote, title, url, ...tags], ' ');
+	},
+
+	extractTemplate : function (prefix, template, contents) {
+		contents.usage = {};
+
+		template = template.replace(/%(desc|quote|title|url|tags|br)%/g, (match, name) => {
+			if (name === 'br') {
+				return '\n';
+			}
+
+			contents.usage[name] = true;
+
+			return contents[name].length ? match : '';
+		}).trim().replace(/^ +| +$/mg, '').replace(/ +/g, ' ');
+
+		return joinText([prefix, ...(template.split(' '))].map(content => {
+			return content.replace(/%(desc|quote|title|url|tags)%/g, (match, name) => name === 'tags' ?
+				contents.tags.join(' ') :
+				contents[name]
+			);
+		}), ' ');
+	},
+
+	truncateStatus : function (contents, over) {
+		var truncator = {
+			tags  : tags => {
+				contents.tags = tags = tags.reverse().filter(tag => {
+					if (over <= 0) {
+						return true;
+					}
+
+					over -= tag.charLength + 1;
+				}).reverse();
+
+				if (tags.length || over <= 0) {
+					return true;
+				}
+			},
+			title : title => {
+				title = this.truncateContent(title, over);
+
+				if (title) {
+					contents.title = title + '…';
+				} else {
+					over -= this.getTweetLength(contents.title) + 1;
+					contents.title = title;
+
+					if (over > 0) {
+						return false;
+					}
+				}
+
+				return true;
+			},
+			quote : quote => {
+				quote = this.truncateContent(quote.slice(1, -1), over);
+
+				if (quote) {
+					contents.quote = (quote + '…').wrap('"');
+				} else {
+					over -= this.getTweetLength(contents.quote) + 1;
+					contents.quote = quote;
+
+					if (over > 0) {
+						return false;
+					}
+				}
+
+				return true;
+			},
+			desc  : desc => {
+				contents.desc = this.truncateContent(desc, over) + '…';
+			}
+		};
+
+		for (let name of Object.keys(truncator)) {
+			if (contents.usage && !contents.usage[name]) {
+				contents[name] = name === 'tags' ? [] : '';
+			}
+
+			let content = contents[name];
+
+			if (content.length && truncator[name](content)) {
+				break;
+			}
+		}
+
+		return this.joinContents(contents);
+	},
+
+	truncateContent : function (content, over) {
+		var strArr = [...content], // for surrogate pair
+			urls = twttr.txt.extractUrlsWithIndices(content).reverse(),
+			twLen = this.getTweetLength(content);
+
+		if (!urls.length || twLen <= over + 1) {
+			return strArr.slice(0, -(over + 1)).join('');
+		}
+
+		for (let {indices} of urls) {
+			let [start, end] = indices,
+				len = strArr.length;
+
+			if (over < len - end) {
+				break;
+			}
+
+			strArr = strArr.slice(0, start - (len === end ? end : len));
+			over -= twLen - this.getTweetLength(strArr.join(''));
+
+			if (over < 0) {
+				break;
+			}
+
+			twLen = this.getTweetLength(strArr.join(''));
+		}
+
+		if (over >= 0) {
+			strArr = strArr.slice(0, -(over + 1));
+		}
+
+		return strArr.join('');
+	},
+
+	update : function (token, status) {
+		token.status = status;
+
+		return request(this.TWEET_API_URL + '/create', {
+			responseType : 'json',
+			sendContent : token
+		}).addErrback(({message : req}) => {
+			throw new Error(req.response.message.trimTag());
+		});
+	},
+
+	upload : function (ps, token, status) {
+		return (ps.file ? succeed(ps.file) : download(ps.itemUrl, getTempDir())).addCallback(file => {
+			var bis = new BinaryInputStream(new FileInputStream(file, -1, 0, false));
+
+			return request(this.UPLOAD_API_URL, {
+				responseType : 'document',
+				sendContent  : {
+					status                  : status,
+					'media_data[]'          : btoa(bis.readBytes(bis.available())),
+					iframe_callback         : 'window.top.swift_tweetbox_tombfix',
+					post_authenticity_token : token.authenticity_token
+				}
+			}).addErrback(({message : req}) => {
+				var doc = req.response;
+
+				if (doc) {
+					let json = JSON.parse(doc.scripts[0].textContent.extract(
+						/window.top.swift_tweetbox_tombfix\((\{.+\})\);/
+					));
+
+					throw new Error(json.error);
+				}
+
+				// image is over 3MB
+				throw new Error(getMessage('message.model.twitter.upload'));
+			});
+		});
+	},
+
+	favor : function (ps) {
+		return this.getToken().addCallback(token => {
+			token.id = ps.favorite.id;
+
+			return request(this.TWEET_API_URL + '/favorite', {
+				sendContent : token
+			});
+		});
+	},
+
+	login : function (user, password) {
+		notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
+
+		return (this.getCurrentUser() ? this.logout() : succeed()).addCallback(() => {
+			return request(this.ORIGIN, {
+				responseType : 'document'
+			}).addCallback(({response : doc}) => {
+				var form = doc.querySelector('form.signin');
+
+				notify(this.name, getMessage('message.changeAccount.login'), this.ICON);
+
+				return request(this.ORIGIN + '/sessions', {
+					sendContent : update(formContents(form), {
+						'session[username_or_email]' : user,
+						'session[password]'          : password
+					})
 				});
 			});
+		}).addCallback(() => {
+			this.updateSession();
+			this.user = user;
+
+			notify(this.name, getMessage('message.changeAccount.done'), this.ICON);
 		});
 	},
-	
-	remove : function(id){
-		var self = this;
-		return Twitter.getToken().addCallback(function(ps){
-			ps._method = 'delete';
-			return request(self.URL + '/status/destroy/' + id, {
-				redirectionLimit : 0,
-				referrer : self.URL + '/',
-				sendContent : ps,
+
+	logout : function () {
+		return request(this.ACCOUT_URL, {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			return request(this.ORIGIN + '/logout', {
+				sendContent : formContents(doc.getElementById('signout-form'))
 			});
 		});
 	},
-	
-	addFavorite : function(id){
-		var self = this;
-		return Twitter.getToken().addCallback(function(ps){
-			return request(self.URL + '/favourings/create/' + id, {
-				redirectionLimit : 0,
-				referrer : self.URL + '/',
-				sendContent : ps,
-			});
+
+	getAuthCookie : function () {
+		return getCookieString('twitter.com', 'auth_token');
+	},
+
+	getCurrentUser : function () {
+		return request(this.ACCOUT_URL, {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			var user = doc.getElementsByName('user[screen_name]')[0].value;
+
+			if (!/[^\w]/.test(user)) {
+				this.user = user;
+			}
+
+			return user;
 		});
 	},
-	
-	getRecipients : function(){
-		var self = this;
-		return request(this.URL + '/direct_messages/recipients_list?twttr=true').addCallback(function(res){
-			return map(function([id, name]){
-				return {id:id, name:name};
-			}, evalInSandbox('(' + res.responseText + ')', self.URL));
-		});
-	},
-});
+
+	getPasswords : function () {
+		return getPasswords(this.ORIGIN);
+	}
+}, AbstractSessionService));
 
 
 Models.register(update({

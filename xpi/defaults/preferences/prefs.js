@@ -25,3 +25,6 @@ pref('extensions.tombfix.shortcutkey.checkAndPost',     '');
 
 pref('extensions.tombfix.model.evernote.clipFullPage',  true);
 pref('extensions.tombfix.model.picasa.defaultAlbum',    '');
+pref('extensions.tombfix.model.twitter.truncateStatus', false);
+pref('extensions.tombfix.model.twitter.template.prefix','');
+pref('extensions.tombfix.model.twitter.template',       '');

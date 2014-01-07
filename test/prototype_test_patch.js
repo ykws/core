@@ -73,3 +73,6 @@ log('あいうえお'.toRoma() === 'aiueo');
 log('かきくけこ'.toRoma() === 'kakikukeko');
 log('アイウエオ'.toRoma() === 'aiueo');
 log('カキクケコ'.toRoma() === 'kakikukeko');
+log('123abc'.charLength === 6);
+log('吉野家'.charLength === 3);
+log('𠮷野家'.charLength === 3);

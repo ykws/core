@@ -7,6 +7,10 @@
 <!ENTITY label.thumbnailTemplate "Link thumbnail template">
 <!ENTITY label.model.tumblr.trimReblogInfo "Tumblr: Trim reblog info">
 <!ENTITY label.model.tumblr.appendContentSource "Tumblr: Append content source">
+<!ENTITY label.model.twitter.truncateStatus "Twitter: Remove strings exceeded character limit except Text Post">
+<!ENTITY label.model.twitter.template.prefix "Twitter: Prefix(it's omitted this if input Description)">
+<!ENTITY label.model.twitter.template "Twitter: Template">
+<!ENTITY label.model.twitter.example.template.prefix "Now browsing:">
 <!ENTITY label.tagProvider "Tag Provider">
 <!ENTITY label.tagAutoComplete "Tag Auto Complete">
 <!ENTITY label.shortcutkey.quickPost.link "Shortcutkey - Link Quick Post">

@@ -379,4 +379,17 @@
       return res.replace(/ltu(.)/g, '$1$1');
     }
   });
+
+  Object.defineProperties(String.prototype, {
+    charLength : {
+      set : function returnCharLength() {
+        return this.charLength;
+      },
+      get : function getCharLength() {
+        return this.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ').length;
+      },
+      enumerable   : false,
+      configurable : true
+    }
+  });
 }());

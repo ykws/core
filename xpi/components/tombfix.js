@@ -5,6 +5,7 @@ const {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components;
 const SCRIPT_FILES = [
 	// library/third_party
 	'MochiKit.js',
+	'twitter-text.js',
 	// library
 	'component.js',
 	'prototype.js',
@@ -287,6 +288,10 @@ Module = {
 		env.MochiKit = {};
 		
 		setupEnvironment(env);
+		
+		// for twttr
+		env.twttr = env.window.twttr = {};
+		
 		env.loadAllSubScripts();
 		
 		var GM_Tombloo = copy({

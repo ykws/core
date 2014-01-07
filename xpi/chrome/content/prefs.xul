@@ -22,6 +22,18 @@
 				name="extensions.tombfix.model.tumblr.appendContentSource"
 				type="bool"/>
 			<preference
+				id="model.twitter.truncateStatus"
+				name="extensions.tombfix.model.twitter.truncateStatus"
+				type="bool"/>
+			<preference
+				id="model.twitter.template.prefix"
+				name="extensions.tombfix.model.twitter.template.prefix"
+				type="string"/>
+			<preference
+				id="model.twitter.template"
+				name="extensions.tombfix.model.twitter.template"
+				type="string"/>
+			<preference
 				id="amazonAffiliateId"
 				name="extensions.tombfix.amazonAffiliateId"
 				type="string"/>
@@ -178,6 +190,28 @@
 							<row align="center">
 								<label value="&label.model.tumblr.appendContentSource;"/>
 								<checkbox preference="model.tumblr.appendContentSource" />
+							</row>
+							<row align="center">
+								<label value="&label.model.twitter.truncateStatus;"/>
+								<checkbox preference="model.twitter.truncateStatus" />
+							</row>
+							<row align="center">
+								<label value="&label.model.twitter.template.prefix;"/>
+								<hbox>
+									<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
+								</hbox>
+							</row>
+							<row align="center" style="margin-top: -0.3em;">
+								<spacer />
+								<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
+							</row>
+							<row align="center">
+								<label value="&label.model.twitter.template;"/>
+								<textbox preference="model.twitter.template" maxlength="140" />
+							</row>
+							<row align="center" style="margin-top: -0.3em;">
+								<spacer />
+								<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
 							</row>
 							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
 							<row align="center">
