@@ -1386,23 +1386,25 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				!ctx.selection && !ctx.onImage && !ctx.onLink &&
 				/^https?:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
 			) {
-				return queryHash(new URL(ctx.href).search).v && this.getCanonical(ctx.document);
+				return queryHash(ctx.search).v && this.getAuthor(ctx.document);
 			}
 		},
 		extract : function (ctx) {
 			var doc = ctx.document,
-				author = doc.querySelector('#watch7-user-header > .yt-user-name');
+				name = doc.querySelector('meta[itemprop="name"]'),
+				url = doc.querySelector('link[itemprop="url"]'),
+				author = this.getAuthor(doc);
 
 			return {
 				type      : 'video',
-				item      : doc.querySelector('meta[name="title"]').content,
-				itemUrl   : this.getCanonical(ctx.document).href,
+				item      : name ? name.content : doc.title.replace(/^▶ | - YouTube$/, ''),
+				itemUrl   : (url || ctx).href,
 				author    : author.textContent.trim(),
 				authorUrl : author.href.split('?')[0]
 			};
 		},
-		getCanonical : function (doc) {
-			return doc.querySelector('link[rel="canonical"]');
+		getAuthor : function (doc) {
+			return doc.querySelector('#watch7-user-header > .yt-user-name');
 		}
 	},
 	
