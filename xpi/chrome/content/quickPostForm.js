@@ -219,7 +219,7 @@ State.make(DialogPanel, {
 		
 		onDragStart : function(e){
 			var cursor = window.getComputedStyle(e.target, '').cursor;
-			if(cursor != '-moz-grab')
+			if(cursor != '-moz-grab' && cursor != 'grab')
 				return;
 			
 			this.grab = {
@@ -232,7 +232,7 @@ State.make(DialogPanel, {
 		
 		onClick : function(e){
 			var cursor = window.getComputedStyle(e.target, '').cursor;
-			if(cursor == '-moz-grab'){
+			if(cursor == '-moz-grab' || cursor == 'grab'){
 				// ウィンドウにフォーカスを移しラベル編集を終了させる
 				cancel(e);
 				this.elmWindow.focus();
