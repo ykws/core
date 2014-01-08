@@ -169,61 +169,50 @@
 							<column flex="1"/>
 						</columns>
 						<rows>
-							<row align="center">
+							<vbox>
 								<label value="&label.amazonAffiliateId;"/>
 								<hbox>
 									<textbox preference="amazonAffiliateId" size="35" />
 								</hbox>
-							</row>
-							<row align="center">
+							</vbox>
+							<vbox>
 								<label value="&label.thumbnailTemplate;"/>
 								<textbox preference="thumbnailTemplate" />
-							</row>
-							<row align="center" style="margin-top: -0.3em;">
 								<spacer />
 								<textbox readonly="true" value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;" />
-							</row>
-							<row align="center">
-								<label value="&label.model.tumblr.trimReblogInfo;"/>
-								<checkbox preference="model.tumblr.trimReblogInfo" />
-							</row>
-							<row align="center">
-								<label value="&label.model.tumblr.appendContentSource;"/>
-								<checkbox preference="model.tumblr.appendContentSource" />
-							</row>
-							<row align="center">
-								<label value="&label.model.twitter.truncateStatus;"/>
-								<checkbox preference="model.twitter.truncateStatus" />
-							</row>
-							<row align="center">
-								<label value="&label.model.twitter.template.prefix;"/>
-								<hbox>
-									<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
-								</hbox>
-							</row>
-							<row align="center" style="margin-top: -0.3em;">
-								<spacer />
-								<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
-							</row>
-							<row align="center">
-								<label value="&label.model.twitter.template;"/>
-								<textbox preference="model.twitter.template" maxlength="140" />
-							</row>
-							<row align="center" style="margin-top: -0.3em;">
-								<spacer />
-								<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
-							</row>
+							</vbox>
+							<groupbox>
+								<caption label="Tumblr"/>
+								<checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
+								<checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
+							</groupbox>
+							<groupbox>
+								<caption label="Twitter"/>
+								<checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
+								<vbox>
+									<label value="&label.model.twitter.template.prefix;"/>
+									<hbox>
+										<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
+									</hbox>
+									<spacer />
+									<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
+								</vbox>
+								<vbox>
+									<label value="&label.model.twitter.template;"/>
+									<textbox preference="model.twitter.template" maxlength="140" />
+									<spacer />
+									<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
+								</vbox>
+							</groupbox>
 							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
-							<row align="center">
+							<vbox>
 								<label value="&label.dataDir;"/>
 								<hbox>
 									<textbox preference="dataDir" flex="1"/><button label="&label.browse;"/>
 								</hbox>
-							</row>
-							<row align="center" style="margin-top: -0.3em;">
 								<spacer />
 								<textbox readonly="true" value="&label.example; {ProfD}/tombfix" />
-							</row>
+							</vbox>
 						</rows>
 					</grid>
 				</tabpanel>
