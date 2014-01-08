@@ -17,7 +17,7 @@ const SCRIPT_FILES = [
 	'repository.js',
 	'models.js',
 	'Tombfix.Service.js',
-	'Tombfix.Service.actions.js',
+	'actions.js',
 	'extractors.js',
 	'ui.js'
 ];
