@@ -2495,6 +2495,47 @@ AbstractSessionService = {
 	},
 }
 
+var openInActionBase = {
+	check : function check() {
+		return true;
+	},
+	execute : function execute(ctx) {
+		var app = this.getFile(getPrefValue(this.prefKey));
+
+		if (!app) {
+			while (true) {
+				let path = prompt(this.prompt);
+
+				if (path === null) {
+					return;
+				}
+
+				app = this.getFile(path);
+
+				if (app) {
+					setPrefValue(this.prefKey, path);
+
+					break;
+				}
+			}
+		}
+
+		try {
+			new Process(app).run(false, [ctx.href], 1);
+		} catch (err) {
+			alert(err);
+			setPrefValue(this.prefKey, '');
+		}
+	},
+	getFile : function getFile(path) {
+		try {
+			let file = getLocalFile(path);
+
+			return file.exists() && file.isFile() && file;
+		} catch (err) {}
+	}
+};
+
 function commentToText(commentFunc) {
 	return commentFunc.toString().replace(/^.*?\r?\n/, '').replace(/\r?\n.*?$/, '');
 }

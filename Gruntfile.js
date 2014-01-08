@@ -7,9 +7,8 @@ module.exports = function (grunt) {
       all: [
         'Gruntfile.js',
         // 'xpi/components/tombfix.js',
-        // 'xpi/chrome/content/library/third_party/MochiKit.js',
         // 'xpi/chrome/content/library/component.js',
-        'xpi/chrome/content/library/prototype.js'
+        'xpi/chrome/content/library/prototype.js',
         // 'xpi/chrome/content/library/utility.js',
         // 'xpi/chrome/content/library/database.js',
         // 'xpi/chrome/content/library/progress.js',
@@ -18,7 +17,7 @@ module.exports = function (grunt) {
         // 'xpi/chrome/content/library/repository.js',
         // 'xpi/chrome/content/library/models.js',
         // 'xpi/chrome/content/library/Tombfix.Service.js',
-        // 'xpi/chrome/content/library/actions.js',
+        'xpi/chrome/content/library/actions.js'
         // 'xpi/chrome/content/library/extractors.js',
         // 'xpi/chrome/content/library/ui.js',
         // 'xpi/chrome/content/quickPostForm.js',
