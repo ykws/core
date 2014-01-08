@@ -13,7 +13,7 @@ pref('extensions.tombfix.model.tumblr.trimReblogInfo',    false);
 pref('extensions.tombfix.model.tumblr.appendContentSource', true);
 
 pref('extensions.tombfix.ignoreError',       '');
-pref('extensions.tombfix.ignoreCanonical',   'twitter.com|^https?://www\\.youtube\\.com/');
+pref('extensions.tombfix.ignoreCanonical',   '^https?://(?:twitter\\.com|www\\.youtube\\.com)/');
 
 pref('extensions.tombfix.contextMenu.top',   false);
 
