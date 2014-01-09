@@ -215,7 +215,6 @@ connect(grobal, 'browser-load', function(e){
 	
 	connectToBrowser(cwin);
 	
-	var top = getPref('contextMenu.top');
 	var context;
 	var menuContext = doc.getElementById('contentAreaContextMenu');
 	var menuShare   = doc.getElementById('tombfix-menu-share');
@@ -223,9 +222,7 @@ connect(grobal, 'browser-load', function(e){
 	var menuAction  = doc.getElementById('tombfix-menu-action');
 	var separator = doc.createElement('menuseparator');
 	
-	menuShare.setAttribute('accesskey', getPref('accesskey.share'));
-	
-	if(top) {
+	if (getPref('contextMenu.top')) {
 		insertSiblingNodesAfter(menuAction.parentNode, separator);
 	}
 	
@@ -283,6 +280,7 @@ connect(grobal, 'browser-load', function(e){
 		menuShare.label = 'Share - ' + exts[0].name;
 		menuShare.extractor = exts[0].name;
 		menuShare.setAttribute('image', exts[0].ICON || 'chrome://tombfix/skin/empty.png');
+		menuShare.setAttribute('accesskey', getPref('accesskey.share'));
 		
 		if(exts.length<=1){
 			menuSelect.parentNode.disabled = true;
@@ -298,14 +296,19 @@ connect(grobal, 'browser-load', function(e){
 		}
 		
 		// Menu Editorが有効になっている場合は衝突を避ける(表示されなくなる)
-		if(!top && !menuEditor){
-			// リンク上とそれ以外で表示されるメニューが異なる
-			// 常に上から2ブロック目あたりに表示する
-			var insertPoint;
-			['context-sep-open', 'context-sep-copyimage', 'context-sep-stop', 'context-sep-selectall'].some(function(id){
-				insertPoint = cwin.document.getElementById(id);
-				return insertPoint && !insertPoint.hidden;
-			});
+		if (!menuEditor) {
+			let insertPoint;
+			
+			if (getPref('contextMenu.top')) {
+				insertPoint = cwin.document.getElementById('page-menu-separator');
+			} else {
+				// リンク上とそれ以外で表示されるメニューが異なる
+				// 常に上から2ブロック目あたりに表示する
+				['context-sep-open', 'context-sep-copyimage', 'context-sep-stop', 'context-sep-selectall'].some(function(id){
+					insertPoint = cwin.document.getElementById(id);
+					return insertPoint && !insertPoint.hidden;
+				});
+			}
 			
 			// 表示される逆順に移動する
 			insertSiblingNodesAfter(insertPoint, separator);
