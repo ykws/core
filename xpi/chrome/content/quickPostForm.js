@@ -1081,7 +1081,7 @@ DescriptionBox.prototype = {
 	},
 	
 	refreshLength : function(){
-		this.elmLength.value = this.elmDescription.value.length;
+		this.elmLength.value = this.elmDescription.value.charLength;
 	},
 	
 	onResize : function(direction){
