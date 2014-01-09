@@ -592,6 +592,7 @@ function TagsPanel(elmPanel, formPanel){
 		self.elmPanel = elmPanel = getElement(elmPanel);
 		self.elmCompletion = elmPanel.appendChild(BOX({
 			emptytext : elmPanel.getAttribute('emptytext'),
+			value : elmPanel.getAttribute('value'),
 			class : 'completion',
 		}));
 	});
