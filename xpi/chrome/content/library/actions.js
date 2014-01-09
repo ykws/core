@@ -67,6 +67,18 @@
 
     {
       type : 'menu,context',
+      name : getMessage('label.action.openScriptFolder'),
+      execute : function execute() {
+        try {
+          getPatchDir().launch();
+        } catch (err) {
+          alert('Error! ' + (err && err.message || err));
+        }
+      }
+    },
+
+    {
+      type : 'menu,context',
       name : '----'
     },
 
