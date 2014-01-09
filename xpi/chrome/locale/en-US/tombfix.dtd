@@ -18,6 +18,7 @@
 <!ENTITY label.shortcutkey.checkAndPost "Mouse Shortcut - Suitable Type for Executed Point">
 <!ENTITY label.accesskey.share "Access Key - Share(require a browser restart)">
 <!ENTITY label.contextMenu.top "Display at the top of context menu(require a browser restart)">
+<!ENTITY label.contextMenu.disableMenuShare "Don't show &quot;Share - XXX&quot;">
 <!ENTITY label.ignoreError "Ignore Errors(RegExp)">
 <!ENTITY label.dataDir "Data/Scripts Directory">
 <!ENTITY label.example "e.g.">

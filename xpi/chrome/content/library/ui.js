@@ -259,6 +259,12 @@ connect(grobal, 'browser-load', function(e){
 			return;
 		}
 		
+		if (getPref('contextMenu.disableMenuShare')) {
+			menuShare.hidden = menuShare.disabled = true;
+		} else {
+			menuShare.hidden = false;
+		}
+		
 		// command時にはクリック箇所などの情報が失われるためコンテキストを保持しておく
 		context = update({}, cwin.gContextMenu, win.location, {
 			document  : doc,
