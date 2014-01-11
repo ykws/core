@@ -257,7 +257,11 @@ var Tumblr = update({}, AbstractSessionService, {
 	appendTags : function(form, ps){
 		if(ps.private!=null)
 			form['post[state]'] = (ps.private)? 'private' : 0;
-
+		
+		if (ps.type !== 'regular' && getPref('model.tumblr.queue')) {
+			form['post[state]'] = 2;
+		}
+		
 		if (getPref('model.tumblr.appendContentSource')) {
 			if (!ps.favorite || !ps.favorite.name || ps.favorite.name !== 'Tumblr') {
 				// not reblog post
@@ -269,7 +273,7 @@ var Tumblr = update({}, AbstractSessionService, {
 				}
 			}
 		}
-
+		
 		return update(form, {
 			'post[tags]' : (ps.tags && ps.tags.length)? joinText(ps.tags, ',') : '',
 		});

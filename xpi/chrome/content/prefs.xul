@@ -14,6 +14,10 @@
 	<prefpane flex="1" id="main">
 		<preferences>
 			<preference
+				id="model.tumblr.queue"
+				name="extensions.tombfix.model.tumblr.queue"
+				type="bool"/>
+			<preference
 				id="model.tumblr.trimReblogInfo"
 				name="extensions.tombfix.model.tumblr.trimReblogInfo"
 				type="bool"/>
@@ -191,6 +195,7 @@
 							</vbox>
 							<groupbox>
 								<caption label="Tumblr"/>
+								<checkbox label="&label.model.tumblr.queue;" preference="model.tumblr.queue" />
 								<checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
 								<checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
 							</groupbox>
