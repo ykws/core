@@ -21,6 +21,7 @@
 <!ENTITY label.contextMenu.top "Display at the top of context menu">
 <!ENTITY label.contextMenu.disableMenuShare "Don't show &quot;Share - XXX&quot;">
 <!ENTITY label.ignoreError "Ignore Errors(RegExp)">
+<!ENTITY label.disableAllScripts "Disable all scripts">
 <!ENTITY label.dataDir "Data/Scripts Directory">
 <!ENTITY label.example "e.g.">
 <!ENTITY label.browse "Browse...">

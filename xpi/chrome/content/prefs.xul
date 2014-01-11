@@ -82,6 +82,10 @@
 				name="extensions.tombfix.tagAutoComplete"
 				type="bool"/>
 			<preference
+				id="disableAllScripts"
+				name="extensions.tombfix.disableAllScripts"
+				type="bool"/>
+			<preference
 				id="dataDir"
 				name="extensions.tombfix.dataDir"
 				type="string"/>
@@ -219,6 +223,7 @@
 							</groupbox>
 							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
 							<vbox>
+								<checkbox label="&label.disableAllScripts;" preference="disableAllScripts" />
 								<label value="&label.dataDir;"/>
 								<hbox>
 									<textbox preference="dataDir" flex="1"/><button label="&label.browse;"/>

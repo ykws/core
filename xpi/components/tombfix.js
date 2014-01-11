@@ -115,7 +115,10 @@ function getService(clsName, ifc){
 
 function loadAllSubScripts(){
 	loadSubScripts(getLibraries(), this);
-	loadSubScripts(getScriptFiles(this.getPatchDir()), this);
+	
+	if (!this.getPref('disableAllScripts')) {
+		loadSubScripts(getScriptFiles(this.getPatchDir()), this);
+	}
 }
 
 function loadSubScripts(files, global){

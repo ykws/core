@@ -1,3 +1,4 @@
+pref('extensions.tombfix.disableAllScripts',  false);
 pref('extensions.tombfix.dataDir',           '{ProfD}/tombfix');
 
 pref('extensions.tombfix.debug',             false);
