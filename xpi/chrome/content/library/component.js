@@ -42,7 +42,6 @@ var IHttpChannel         = Ci.nsIHttpChannel;
 	['PromptService',       'nsIPromptService',          '/embedcomp/prompt-service;1'],
 	['CacheService',        'nsICacheService',           '/network/cache-service;1'],
 	['AppShellService',     'nsIAppShellService',        '/appshell/appShellService;1'],
-	['DownloadManager',     'nsIDownloadManager',        '/download-manager;1'],
 	['UnescapeHTML',        'nsIScriptableUnescapeHTML', '/feed-unescapehtml;1'],
 	['CookieService',       'nsICookieService',          '/cookieService;1'],
 	['CookieManager',       'nsICookieManager',          '/cookiemanager;1'],
@@ -516,7 +515,7 @@ function getDownloadDir(){
 			return dir
 	} catch(e) {}
 	
-	return DownloadManager.userDownloadsDirectory;
+	return DirectoryService.get('DfltDwnld', IFile);
 }
 
 /**
