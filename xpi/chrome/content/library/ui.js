@@ -412,7 +412,6 @@ function connectToBrowser(win){
 	var Tombfix = win.Tombfix = (win.Tombfix || {});
 	var hooked = Tombfix.hooked = (Tombfix.hooked || {});
 	var tabbrowser = win.getBrowser();
-	var version = parseFloat(AppInfo.version);
 	
 	if(!hooked.contentReady && connected(grobal, 'content-ready')){
 		constant.tabWatcher = constant.tabWatcher || new TabWatcher();
