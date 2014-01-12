@@ -1,6 +1,11 @@
 // ----[Application]-------------------------------------------------
-var getPref = partial(getPrefValue, 'extensions.tombfix.');
-var setPref = partial(setPrefValue, 'extensions.tombfix.');
+function getPref(pref) {
+	return getPrefValue('extensions.tombfix.' + pref);
+}
+
+function setPref(pref, value) {
+	setPrefValue('extensions.tombfix.' + pref, value);
+}
 
 var CHROME_DIR = 'chrome://tombfix';
 var CHROME_CONTENT_DIR = CHROME_DIR + '/content';

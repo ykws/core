@@ -16,7 +16,9 @@ if(typeof(update)=='undefined'){
 	}
 }
 
-var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {});
+var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {}),
+	// http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Preferences.jsm
+	{Preferences} = Cu.import('resource://gre/modules/Preferences.jsm', {});
 
 var IWebProgressListener = Ci.nsIWebProgressListener;
 var IFile                = Ci.nsIFile;
@@ -49,7 +51,6 @@ var IHttpChannel         = Ci.nsIHttpChannel;
 	['MIMEService',         'nsIMIMEService',            '/mime;1'],
 	['CategoryManager',     'nsICategoryManager',        '/categorymanager;1'],
 	['ThreadManager',       'nsIThreadManager',          '/thread-manager;1'],
-	['PrefService',         null,                        '/preferences-service;1'],
 	['AppInfo',             null,                        '/xre/app-info;1'],
 	['DOMStorageManager',   'nsIDOMStorageManager',      '/dom/localStorage-manager;1'],
 	['ScriptSecurityManager', 'nsIScriptSecurityManager', '/scriptsecuritymanager;1']
@@ -69,10 +70,6 @@ var SupportsString =
 	createConstructor('/supports-string;1', 'nsISupportsString', function(data){
 		this.data = data;
 	});
-
-var PrefBranch = function () {
-	return PrefService.getBranch('');
-}
 
 var LocalFile =
 	createConstructor('/file/local;1', 'nsILocalFile', 'initWithPath');
@@ -429,51 +426,12 @@ var getExtensionDir = (() => {
 	};
 })();
 
-function getPrefType(key){
-	with(PrefBranch()){
-		switch(getPrefType(key)){
-			case PREF_STRING:
-				return 'string';
-			case PREF_BOOL:
-				return 'boolean';
-			case PREF_INT:
-				return 'number';
-			case PREF_INVALID:
-				return 'undefined';
-		}
-	}
+function setPrefValue(prefName, value) {
+	Preferences.set(prefName, value);
 }
 
-function setPrefValue(){
-	var value = Array.pop(arguments);
-	var key = Array.join(arguments, '');
-	
-	var prefType = getPrefType(key);
-	with(PrefBranch()){
-		switch(prefType!='undefined'? prefType : typeof(value)){
-			case 'string':
-				return setCharPref(key, unescape(encodeURIComponent(value)));
-			case 'boolean':
-				return setBoolPref(key, value);
-			case 'number':
-				return setIntPref(key, value);
-		}
-	}
-}
-
-function getPrefValue(){
-	var key = Array.join(arguments, '');
-	
-	with(PrefBranch()){
-		switch(getPrefType(key)){
-			case PREF_STRING:
-				return decodeURIComponent(escape(getCharPref(key)));
-			case PREF_BOOL:
-				return getBoolPref(key);
-			case PREF_INT:
-				return getIntPref(key);
-		}
-	}
+function getPrefValue(prefName) {
+	return Preferences.get(prefName);
 }
 
 /**
