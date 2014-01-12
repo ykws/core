@@ -16,9 +16,13 @@ if(typeof(update)=='undefined'){
 	}
 }
 
-var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {}),
+var {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
+	{XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {}),
+	{console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {}),
 	// http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Preferences.jsm
 	{Preferences} = Cu.import('resource://gre/modules/Preferences.jsm', {});
+
+var {appinfo: AppInfo} = Services;
 
 var IWebProgressListener = Ci.nsIWebProgressListener;
 var IFile                = Ci.nsIFile;
@@ -51,14 +55,11 @@ var IHttpChannel         = Ci.nsIHttpChannel;
 	['MIMEService',         'nsIMIMEService',            '/mime;1'],
 	['CategoryManager',     'nsICategoryManager',        '/categorymanager;1'],
 	['ThreadManager',       'nsIThreadManager',          '/thread-manager;1'],
-	['AppInfo',             null,                        '/xre/app-info;1'],
 	['DOMStorageManager',   'nsIDOMStorageManager',      '/dom/localStorage-manager;1'],
 	['ScriptSecurityManager', 'nsIScriptSecurityManager', '/scriptsecuritymanager;1']
 ].forEach(function([name, ifc, cid]){
-	defineLazyServiceGetter(this, name, '@mozilla.org' + cid, ifc);
+	XPCOMUtils.defineLazyServiceGetter(this, name, '@mozilla.org' + cid, ifc);
 }, this);
-
-broad(AppInfo, [Ci.nsIXULRuntime]);  // nsIXULRuntime => AppInfo.OS
 
 var HTMLFormatConverter =
 	createConstructor('/widget/htmlformatconverter;1', 'nsIFormatConverter');
@@ -247,29 +248,6 @@ function createConstructor(clsName, ifc, init){
 		cons[prop] = ifc[prop];
 	
 	return cons;
-}
-
-/**
- * XPCOMサービスを定義する。
- * XPCOMUtils.defineLazyServiceGetterより。
- * Firefox 3.5では存在しないため別途作成した。
- *
- * @param {Object} obj サービスを取得するプロパティを付加するオブジェクト。
- * @param {String} name プロパティ名称。
- * @param {String} cid Contract ID。
- * @param {String} ifc インターフェイス名。
- */
-function defineLazyServiceGetter(obj, name, cid, ifc){
-	var cls = Cc[cid];
-	if(!cls)
-		return;
-	
-	obj.__defineGetter__(name, function(){
-		delete this[name];
-		try{
-			return this[name] = (ifc)? cls.getService(Ci[ifc]) : broad(cls.getService());
-		} catch(e){}
-	});
 }
 
 /**
