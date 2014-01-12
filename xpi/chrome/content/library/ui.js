@@ -226,15 +226,7 @@ connect(grobal, 'browser-load', function(e){
 		insertSiblingNodesAfter(menuAction.parentNode, separator);
 	}
 	
-	var menuEditor;
-	var extensionId = '{EDA7B1D7-F793-4e03-B074-E6F303317FB0}';
-	if(FuelApplication && FuelApplication.extensions){
-		menuEditor = FuelApplication.extensions.get(extensionId);
-		menuEditor = menuEditor && menuEditor.enabled;
-	} else {
-		// Firefox 4以降
-		menuEditor = !!getExtensionDir(extensionId);
-	}
+	var menuEditor = !!getExtensionDir('{EDA7B1D7-F793-4e03-B074-E6F303317FB0}');
 
 	// Menu Editor拡張によって個別メニューのイベントを取得できなくなる現象を回避
 	menuContext.addEventListener('popupshowing', function(e){

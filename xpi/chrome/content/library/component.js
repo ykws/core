@@ -24,13 +24,11 @@ var ILocalFile           = Ci.nsILocalFile;
 var IURI                 = Ci.nsIURI;
 var IFileURL             = Ci.nsIFileURL;
 var IInputStream         = Ci.nsIInputStream;
-var ICache               = Ci.nsICache;
 var ISelectionListener   = Ci.nsISelectionListener;
 var IContentPolicy       = Ci.nsIContentPolicy;
 var IHttpChannel         = Ci.nsIHttpChannel;
 
 [
-	['ExtensionManager',    'nsIExtensionManager',       '/extensions/manager;1'],
 	['StorageService',      'mozIStorageService',        '/storage/service;1'],
 	['DirectoryService',    'nsIProperties',             '/file/directory_service;1'],
 	['IOService',           'nsIIOService',              '/network/io-service;1'],
@@ -38,25 +36,16 @@ var IHttpChannel         = Ci.nsIHttpChannel;
 	['ChromeRegistry',      'nsIXULChromeRegistry',      '/chrome/chrome-registry;1'],
 	['WindowMediator',      'nsIWindowMediator',         '/appshell/window-mediator;1'],
 	['AlertsService',       'nsIAlertsService',          '/alerts-service;1'],
-	['MIMEService',         'nsIMIMEService',            '/uriloader/external-helper-app-service;1'],
 	['PromptService',       'nsIPromptService',          '/embedcomp/prompt-service;1'],
-	['CacheService',        'nsICacheService',           '/network/cache-service;1'],
-	['AppShellService',     'nsIAppShellService',        '/appshell/appShellService;1'],
 	['UnescapeHTML',        'nsIScriptableUnescapeHTML', '/feed-unescapehtml;1'],
-	['CookieService',       'nsICookieService',          '/cookieService;1'],
 	['CookieManager',       'nsICookieManager',          '/cookiemanager;1'],
-	['PasswordManager',     'nsIPasswordManager',        '/passwordmanager;1'],
 	['LoginManager',        'nsILoginManager',           '/login-manager;1'],
 	['StringBundleService', 'nsIStringBundleService',    '/intl/stringbundle;1'],
 	['NavBookmarksService', 'nsINavBookmarksService',    '/browser/nav-bookmarks-service;1'],
 	['NavHistoryService',   'nsINavHistoryService',      '/browser/nav-history-service;1'],
 	['AnnotationService',   'nsIAnnotationService',      '/browser/annotation-service;1'],
 	['ObserverService',     'nsIObserverService',        '/observer-service;1'],
-	['WindowWatcher',       'nsIWindowWatcher',          '/embedcomp/window-watcher;1'],
 	['ClipboardHelper',     'nsIClipboardHelper',        '/widget/clipboardhelper;1'],
-	['FaviconService',      'nsIFaviconService',         '/browser/favicon-service;1'],
-	['StyleSheetService',   'nsIStyleSheetService',      '/content/style-sheet-service;1'],
-	['FuelApplication',     'fuelIApplication',          '/fuel/application;1'],
 	['MIMEService',         'nsIMIMEService',            '/mime;1'],
 	['CategoryManager',     'nsICategoryManager',        '/categorymanager;1'],
 	['ThreadManager',       'nsIThreadManager',          '/thread-manager;1'],
@@ -170,13 +159,6 @@ var FileOutputStream =
 
 var HTMLCopyEncoder =
 	createConstructor('/layout/htmlCopyEncoder;1', 'nsIDocumentEncoder', 'init');
-
-var DocumentEncoder = function(document, mimeType, flags){
-	var encoder = Cc['@mozilla.org/layout/documentEncoder;1?type=' + mimeType].createInstance(Ci.nsIDocumentEncoder);
-	encoder.init(document, mimeType, flags);
-	return encoder;
-}
-update(DocumentEncoder, Ci.nsIDocumentEncoder);
 
 
 // ----[Utility]-------------------------------------------------
@@ -429,33 +411,23 @@ function getLocalFile(uri){
  *         展開しない拡張はjarファイルが返る。
  *         拡張が見つからない場合はnullが返る。
  */
-var getExtensionDir;
-{
-	// Firefox 4以降
-	if(typeof(ExtensionManager) == 'undefined' || !ExtensionManager){
-		Cu.import('resource://gre/modules/AddonManager.jsm');
+var getExtensionDir = (() => {
+	var {AddonManager} = Cu.import('resource://gre/modules/AddonManager.jsm', {});
+	return function getExtensionDir(id) {
+		// 最終的にXPIProvider.jsmのXPIDatabase.getVisibleAddonForIDにて
+		// statement.executeAsyncを使った問い合わせで取得される
+		var dir = false;
+		AddonManager.getAddonByID(id, function(addon){
+			dir = (!addon)? null : getLocalFile(addon.getResourceURI('/'));
+		});
 		
-		getExtensionDir = function(id){
-			// 最終的にXPIProvider.jsmのXPIDatabase.getVisibleAddonForIDにて
-			// statement.executeAsyncを使った問い合わせで取得される
-			let dir = false;
-			AddonManager.getAddonByID(id, function(addon){
-				dir = (!addon)? null : getLocalFile(addon.getResourceURI('/'));
-			});
-			
-			till(function(){
-				return dir !== false;
-			});
-			
-			return dir;
-		}
-	} else {
-		getExtensionDir = function(id){
-			var location = ExtensionManager.getInstallLocation(id);
-			return location? location.getItemLocation(id).QueryInterface(ILocalFile) : null;
-		}
-	}
-}
+		till(function(){
+			return dir !== false;
+		});
+		
+		return dir;
+	};
+})();
 
 function getPrefType(key){
 	with(PrefBranch()){
@@ -539,47 +511,6 @@ function getMostRecentWindow(){
 	return WindowMediator.getMostRecentWindow('navigator:browser');
 }
 
-function findCacheFile(url){
-	var entry;
-	CacheService.visitEntries({
-		visitDevice : function(deviceID, deviceInfo){
-			if(deviceID == 'disk')
-				return true;
-		},
-		visitEntry : function(deviceID, info){
-			if(info.key != url)
-				return true;
-			
-			entry = {
-				clientID    : info.clientID,
-				key         : info.key,
-				streamBased : info.isStreamBased(),
-			};
-		},
-	});
-	
-	if(!entry)
-		return;
-	
-	try{
-		var session = CacheService.createSession(
-			entry.clientID,
-			ICache.STORE_ANYWHERE,
-			entry.streamBased);
-		session.doomEntriesIfExpired = false;
-		var descriptor = session.openCacheEntry(
-			entry.key,
-			ICache.ACCESS_READ,
-			false);
-		
-		return descriptor.file;
-	} finally{
-		// [FIXME] copy to temp
-		// descriptor && descriptor.doom();
-		descriptor && descriptor.close();
-	}
-}
-
 /**
  * ストリームを処理する。
  * 実行後に必ずストリームが閉じられる。
@@ -616,33 +547,4 @@ function sanitizeHTML(html){
 
 function serializeToString(xml){
 	return (new XMLSerializer()).serializeToString(xml);
-}
-
-function convertFromUnplaceableHTML(str){
-	var arr = [];
-	for(var i=0,len=str.length ; i<len ;i++)
-		arr.push(str.charCodeAt(i));
-	return convertFromByteArray(arr, str.match('charset=([^"; ]+)'));
-}
-
-function convertFromByteArray(arr, charset){
-	return new UnicodeConverter(charset).convertFromByteArray(text);
-}
-
-function registerSheet(css){
-	var sss = StyleSheetService;
-	var uri = (css instanceof IURI)? css : createURI(('data:text/css,' + css).replace(/[\n\r\t ]+/g, ' '));
-	
-	if(!sss.sheetRegistered(uri, sss.AGENT_SHEET))
-		sss.loadAndRegisterSheet(uri, sss.AGENT_SHEET);
-	
-	return partial(unregisterSheet, uri);
-}
-
-function unregisterSheet(uri){
-	var sss = StyleSheetService;
-	var uri = (css instanceof IURI)? css : createURI(('data:text/css,' + css).replace(/[\n\r\t ]+/g, ' '));
-	
-	if(sss.sheetRegistered(uri, sss.AGENT_SHEET))
-		sss.unregisterSheet(uri, sss.AGENT_SHEET);
 }

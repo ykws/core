@@ -447,17 +447,7 @@
 				<parameter name="y"/>
 				<parameter name="cands"/>
 				<body><![CDATA[
-					// Firefox 3
-					if(this.openPopup){
-						this.openPopup(anchor, 'after_start', x, y, false);
-					} else {
-						anchor = anchor.boxObject;
-						
-						// ポップアップ位置の基点を設定する
-						var doc = this.ownerDocument;
-						doc.popupNode = doc.documentElement;
-						this.showPopup(doc.documentElement, anchor.x + x, anchor.y + anchor.height + y, 'popup');
-					}
+					this.openPopup(anchor, 'after_start', x, y, false);
 					
 					if(cands){
 						this.listbox.removeAll();

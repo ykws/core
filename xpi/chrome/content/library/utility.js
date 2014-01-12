@@ -1267,10 +1267,6 @@ function firebug(method, args){
  * @return {Array} プロパティ名のリスト。
  */
 function getAllPropertyNames(obj, ancestor){
-	// Firefox 3.6以前か?
-	if(!Object.getOwnPropertyNames)
-		return keys(obj);
-	
 	var props = {};
 	while (obj !== null && obj !== ancestor){
 		Object.getOwnPropertyNames(obj).forEach(function(prop){
@@ -1816,30 +1812,6 @@ function convertToHTMLDocument(html, doc) {
 	doc.documentElement.appendChild(range.createContextualFragment(html));
 	
 	return doc
-}
-
-function convertToXULElement(str){
-	var xul = (
-		'<box xmlns="'+XUL_NS+'" >'+
-			str +
-		'</box>').replace(/^  +/gm, '').replace(/\n/g, '');
-	var parser = new DOMParser();
-	var elms = parser.parseFromString(xul, 'text/xml').documentElement.childNodes;
-	var result = currentDocument().createDocumentFragment();
-	for(var i=0 ; i<elms.length ; i++)
-		result.appendChild(elms[i]);
-	
-	// Firefox 3でstyle属性が適用されないため再設定を行う(暫定パッチ)
-	if(parseFloat(AppInfo.version) >= 3){
-		for(var style, w = currentDocument().createTreeWalker(result, NodeFilter.SHOW_ELEMENT, null, true) ; e = w.nextNode() ; ){
-			if(style = e.getAttribute('style')){
-				e.setAttribute('style', '');
-				e.setAttribute('style', style);
-			}
-		}
-	}
-	
-	return result;
 }
 
 /**

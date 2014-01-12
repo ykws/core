@@ -28,7 +28,6 @@ var ILocalFile = Ci.nsILocalFile;
 
 AppShellService     = getService('/appshell/appShellService;1', Ci.nsIAppShellService);
 ScriptLoader        = getService('/moz/jssubscript-loader;1', Ci.mozIJSSubScriptLoader);
-IOService           = getService('/network/io-service;1', Ci.nsIIOService);
 WindowMediator      = getService('/appshell/window-mediator;1', Ci.nsIWindowMediator);
 CategoryManager     = getService('/categorymanager;1', Ci.nsICategoryManager);
 FileProtocolHandler = getService('/network/protocol;1?name=file', Ci.nsIFileProtocolHandler);
@@ -133,25 +132,6 @@ function loadSubScripts(files, global){
 	}
 }
 
-function getContents(file){
-	try{
-		var fis = Cc['@mozilla.org/network/file-input-stream;1']
-			.createInstance(Ci.nsIFileInputStream);
-		fis.init(file, -1, 0, false);
-		
-		var cis = Cc['@mozilla.org/intl/converter-input-stream;1']
-			.createInstance(Ci.nsIConverterInputStream);
-		cis.init(fis, 'UTF-8', fis.available(), Ci.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER);
-		
-		var out = {};
-		cis.readString(fis.available(), out);
-		return out.value;
-	} finally {
-		fis && fis.close();
-		cis && cis.close();
-	}
-}
-
 function simpleIterator(e, ifc, func){
 	if(typeof(ifc)=='string')
 		ifc = Ci[ifc];
@@ -205,35 +185,25 @@ function exposeProperties(o, recursive){
 }
 
 
-var getContentDir;
-ExtensionManager = getService('/extensions/manager;1', Ci.nsIExtensionManager);
-if (!ExtensionManager) {  // for firefox4
-	Cu.import("resource://gre/modules/AddonManager.jsm");
-	let dir = null;
+var getContentDir = (() => {
+	var {AddonManager} = Cu.import('resource://gre/modules/AddonManager.jsm', {});
+	var dir = null;
 	AddonManager.getAddonByID(EXTENSION_ID, function (addon) {
-		let root = addon.getResourceURI('/');
-		let url = root.QueryInterface(Ci.nsIFileURL)
-		let target = url.file.QueryInterface(ILocalFile);
+		var root = addon.getResourceURI('/');
+		var url = root.QueryInterface(Ci.nsIFileURL);
+		var target = url.file.QueryInterface(ILocalFile);
 		target.setRelativeDescriptor(target, 'chrome/content');
 		dir = target;
 	});
 	// using id:piro (http://piro.sakura.ne.jp/) method
-	let thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
+	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
 	while (dir === null) {
 		thread.processNextEvent(true);
 	}
-	getContentDir = function getContentDirInFirefox4() {
+	return function getContentDir() {
 		return dir.clone();
-	}
-} else {
-	getContentDir = function() {
-		var dir = ExtensionManager
-			.getInstallLocation(EXTENSION_ID)
-			.getItemLocation(EXTENSION_ID).QueryInterface(ILocalFile);
-		dir.setRelativeDescriptor(dir, 'chrome/content');
-		return dir.clone();
-	}
-}
+	};
+})();
 
 
 Module = {

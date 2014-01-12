@@ -414,9 +414,6 @@
 					return;
 				
 				this.elmTree.style.cursor = cursor;
-				
-				// Firefox 2でカーソルを更新するために必要
-				this.box.clearStyleAndImageCaches();
 			},
 			
 			setProp :function(pos, prop){
