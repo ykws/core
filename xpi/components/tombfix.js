@@ -1,366 +1,434 @@
-const EXTENSION_ID = 'tombfix@tombfix.github.io';
+/* jshint camelcase:false, nomen:false, latedef:false, forin:false */
+/* jshint maxparams:4 */
+/* global Components */
 
-const {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components;
+(function executeTombfixService(global) {
+  'use strict';
 
-const SCRIPT_FILES = [
-	// library/third_party
-	'MochiKit.js',
-	'twitter-text.js',
-	// library
-	'component.js',
-	'prototype.js',
-	'utility.js',
-	'database.js',
-	'progress.js',
-	'tabWatcher.js',
-	'Tombfix.js',
-	'repository.js',
-	'models.js',
-	'Tombfix.Service.js',
-	'actions.js',
-	'extractors.js',
-	'ui.js'
-];
+  const EXTENSION_ID = 'tombfix@tombfix.github.io',
+        {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
+        // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
+        {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
+        // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
+        {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {}),
+        // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
+        /* jshint ignore:start */
+        {console} = Cu.import(
+          'resource://gre/modules/devtools/Console.jsm',
+          {}
+        ),
+        /* jshint ignore:end */
+        {
+          appShell: AppShellService,
+          scriptloader: ScriptLoader,
+          wm: WindowMediator
+        } = Services,
+        FileProtocolHandler = getService(
+          'network/protocol;1?name=file',
+          Ci.nsIFileProtocolHandler
+        ),
+        {nsILocalFile: ILocalFile} = Ci;
 
-var {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {});
+  const SCRIPT_FILES = [
+    // library/third_party
+    'MochiKit.js',
+    'twitter-text.js',
+    // library
+    'component.js',
+    'prototype.js',
+    'utility.js',
+    'database.js',
+    'progress.js',
+    'tabWatcher.js',
+    'Tombfix.js',
+    'repository.js',
+    'models.js',
+    'Tombfix.Service.js',
+    'actions.js',
+    'extractors.js',
+    'ui.js'
+  ];
 
-var ILocalFile = Ci.nsILocalFile;
+  var getContentDir, Module, ModuleImpl;
 
-AppShellService     = getService('/appshell/appShellService;1', Ci.nsIAppShellService);
-ScriptLoader        = getService('/moz/jssubscript-loader;1', Ci.mozIJSSubScriptLoader);
-WindowMediator      = getService('/appshell/window-mediator;1', Ci.nsIWindowMediator);
-CategoryManager     = getService('/categorymanager;1', Ci.nsICategoryManager);
-FileProtocolHandler = getService('/network/protocol;1?name=file', Ci.nsIFileProtocolHandler);
+  // ----[Application]--------------------------------------------
+  function getScriptFiles(dir) {
+    var scripts = [];
 
+    simpleIterator(dir.directoryEntries, ILocalFile, file => {
+      if (/\.js$/.test(file.leafName)) {
+        scripts.push(file);
+      }
+    });
 
-// ----[Application]--------------------------------------------
-function getScriptFiles(dir){
-	var scripts = [];
-	simpleIterator(dir.directoryEntries, ILocalFile, function(file){
-		if(file.leafName.match(/\.js$/))
-			scripts.push(file);
-	})
-	return scripts;
-}
+    return scripts;
+  }
 
-function getLibraries(){
-	var libDir = getContentDir();
-	libDir.append('library');
+  function getLibraries() {
+    var libDir, thirdPartyDir, scripts;
 
-	var thirdPartyDir = getContentDir();
-	thirdPartyDir.setRelativeDescriptor(thirdPartyDir, 'library');
-	thirdPartyDir.append('third_party');
+    libDir = getContentDir();
+    libDir.append('library');
 
-	var scripts = getScriptFiles(thirdPartyDir).concat(getScriptFiles(libDir));
+    thirdPartyDir = getContentDir();
+    thirdPartyDir.setRelativeDescriptor(thirdPartyDir, 'library');
+    thirdPartyDir.append('third_party');
 
-	return SCRIPT_FILES.map(function(scriptName){
-		for (let idx = 0, len = scripts.length; idx < len; idx += 1) {
-			let script = scripts[idx];
-			if (script.leafName === scriptName) {
-				return script;
-			}
-		}
-	});
-}
+    scripts = getScriptFiles(thirdPartyDir).concat(getScriptFiles(libDir));
 
-function setupEnvironment(global){
-	var win = AppShellService.hiddenDOMWindow;
-	
-	// 変数/定数はhiddenDOMWindowのものを直接使う
-	[
-		'navigator document window screen',
-		'XMLHttpRequest XPathResult Node Element KeyEvent Event',
-		'DOMParser XSLTProcessor XMLSerializer NodeFilter URL'
-	].join(' ').split(' ').forEach(function(p){
-		global[p] = win[p];
-	});
-	
-	// メソッドはthisが変わるとエラーになることがあるためbindして使う
-	[
-		'setTimeout setInterval clearTimeout clearInterval',
-		'open openDialog',
-		'atob btoa',
-	].join(' ').split(' ').forEach(function(p){
-		global[p] = bind(p, win);
-	});
-	
-	// モーダルにするためhiddenDOMWindowdではなく最新のウィンドウのメソッドを使う
-	[
-		'alert confirm prompt',
-	].join(' ').split(' ').forEach(function(p){
-		global[p] = bind(forwardToWindow, null, p);
-	});
-}
+    return SCRIPT_FILES.map(scriptName => {
+      return scripts.find(file => file.leafName === scriptName);
+    });
+  }
 
-function forwardToWindow(method){
-	var args = Array.slice(arguments, 1);
-	var win = WindowMediator.getMostRecentWindow('navigator:browser');
-	return win[method].apply(win, args);
-}
+  function setupEnvironment(env) {
+    var win = AppShellService.hiddenDOMWindow;
 
-// ----[Utility]--------------------------------------------
-function log(msg) {
-	console[typeof msg === 'object' ? 'dir' : 'log'](msg);
-}
+    // 変数/定数はhiddenDOMWindowのものを直接使う
+    [
+      'navigator', 'document', 'window', 'screen', 'XMLHttpRequest',
+      'XPathResult', 'Node', 'Element', 'KeyEvent', 'Event', 'DOMParser',
+      'XSLTProcessor', 'XMLSerializer', 'URL'
+    ].forEach(propName => {
+      env[propName] = win[propName];
+    });
 
-function getService(clsName, ifc){
-	try{
-		var cls = Cc['@mozilla.org' + clsName];
-		return !cls? null : cls.getService(ifc);
-	} catch(e) {
-		return null;
-	}
-}
+    // メソッドはthisが変わるとエラーになることがあるためbindして使う
+    [
+      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'open',
+      'openDialog', 'atob', 'btoa'
+    ].forEach(propName => {
+      env[propName] = win[propName].bind(win);
+    });
 
-function loadAllSubScripts(){
-	loadSubScripts(getLibraries(), this);
-	
-	if (!this.getPref('disableAllScripts')) {
-		loadSubScripts(getScriptFiles(this.getPatchDir()), this);
-	}
-}
+    // モーダルにするためhiddenDOMWindowdではなく最新のウィンドウのメソッドを使う
+    [
+      'alert', 'confirm', 'prompt'
+    ].forEach(propName => {
+      env[propName] = forwardToWindow.bind(null, propName);
+    });
+  }
 
-function loadSubScripts(files, global){
-	global || (global = function(){});
-	files = [].concat(files);
-	
-	var now = Date.now();
-	for(var i=0,len=files.length ; i<len ; i++){
-		// クエリを付加しキャッシュを避ける
-		ScriptLoader.loadSubScript(
-			FileProtocolHandler.getURLSpecFromFile(files[i]) + '?time=' + now, global, 'UTF-8');
-	}
-}
+  function forwardToWindow(propName, ...args) {
+    var win = WindowMediator.getMostRecentWindow('navigator:browser');
 
-function simpleIterator(e, ifc, func){
-	if(typeof(ifc)=='string')
-		ifc = Ci[ifc];
-	
-	try{
-		while(e.hasMoreElements()){
-			var value = e.getNext();
-			func(ifc? value.QueryInterface(ifc) : value);
-		}
-	} catch(e if e==StopIteration) {}
-}
+    return win[propName].apply(win, args);
+  }
 
-function bind(func, obj) {
-	var args = Array.slice(arguments, 2);
-	func = (typeof(func) == 'string')? obj[func] : func;
-	if(args.length){
-		return function() {
-			return func.apply(obj, Array.concat(args, Array.slice(arguments)));
-		}
-	} else {
-		return function() {
-			return func.apply(obj, arguments);
-		}
-	}
-}
+  // ----[Utility]--------------------------------------------
+  /* jshint ignore:start */
+  function log(msg) {
+    console[typeof msg === 'object' ? 'dir' : 'log'](msg);
+  }
+  /* jshint ignore:end */
 
-function copy(t, s, re){
-	for(var p in s)
-		if(!re || re.test(p))
-			t[p] = s[p];
-	return t;
-}
+  function getService(clsName, ifc) {
+    try {
+      let cls = Cc['@mozilla.org/' + clsName];
 
-function exposeProperties(o, recursive){
-	if(o == null)
-		return;
-	
-	Object.defineProperty(o, '__exposedProps__', {
-		value : {},
-		writable : true,
-		enumerable : false,
-		configurable : true
-	});
-	
-	for(var p in o){
-		o.__exposedProps__[p] = 'r';
-		
-		if(recursive && typeof(o[p]) === 'object')
-			exposeProperties(o[p], true);
-	}
-}
+      return cls ? (ifc ? cls.getService(ifc) : cls.getService()) : null;
+    } catch (err) {
+      return null;
+    }
+  }
 
+  function loadAllSubScripts() {
+    /* jshint validthis:true */
+    // libraryの読み込み
+    loadSubScripts(getLibraries(), this);
 
-var getContentDir = (() => {
-	var {AddonManager} = Cu.import('resource://gre/modules/AddonManager.jsm', {});
-	var dir = null;
-	AddonManager.getAddonByID(EXTENSION_ID, function (addon) {
-		var root = addon.getResourceURI('/');
-		var url = root.QueryInterface(Ci.nsIFileURL);
-		var target = url.file.QueryInterface(ILocalFile);
-		target.setRelativeDescriptor(target, 'chrome/content');
-		dir = target;
-	});
-	// using id:piro (http://piro.sakura.ne.jp/) method
-	var thread = Cc['@mozilla.org/thread-manager;1'].getService().mainThread;
-	while (dir === null) {
-		thread.processNextEvent(true);
-	}
-	return function getContentDir() {
-		return dir.clone();
-	};
-})();
+    if (!this.getPref('disableAllScripts')) {
+      // パッチの読み込み
+      loadSubScripts(getScriptFiles(this.getPatchDir()), this);
+    }
+  }
 
+  function loadSubScripts(files, global = function () {}) {
+    var now = Date.now();
 
-Module = {
-	CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
-	NAME : 'TombfixService',
-	PID  : '@tombfix.github.io/tombfix-service;1',
-	
-	initialized : false,
-	
-	onRegister : function(){
-		CategoryManager.addCategoryEntry('content-policy', this.NAME, this.PID, true, true);
-	},
-	
-	instance : {
-		shouldLoad : function(contentType, contentLocation, requestOrigin, context, mimeTypeGuess, extra){
-			return Ci.nsIContentPolicy.ACCEPT;
-		},
-		
-		shouldProcess : function(aContentType, aContentLocation, aRequestOrigin, aContext, aMimeTypeGuess, aExtra){
-			return Ci.nsIContentPolicy.ACCEPT;
-		},
-		
-		QueryInterface : function(iid){
-			if(iid.equals(Ci.nsIContentPolicy) || iid.equals(Ci.nsISupports) || iid.equals(Ci.nsISupportsWeakReference))
-				return this;
-			
-			throw Cr.NS_NOINTERFACE;
-		},
-	},
-	
-	createInstance : function(outer, iid){
-		// nsIContentPolicyはhiddenDOMWindowの準備ができる前に取得される
-		// 仮に応答できるオブジェクトを返し環境を構築できるまでの代替とする
-		if(iid.equals(Ci.nsIContentPolicy))
-			return this.instance;
-		
-		// ブラウザが開かれるタイミングでインスタンスの要求を受け環境を初期化する
-		// 2個目以降のウィンドウからは生成済みの環境を返す
-		if(this.initialized)
-			return this.instance;
-		
-		// 以降のコードはアプリケーション起動後に一度だけ通過する
-		var env = this.instance;
-		
-		// アプリケーション全体で、同じloadSubScripts関数を使いまわし汚染を防ぐ
-		env.loadSubScripts = loadSubScripts;
-		env.loadAllSubScripts = loadAllSubScripts;
-		env.getContentDir = getContentDir;
-		env.getLibraries = getLibraries;
-		env.PID = this.PID;
-		env.CID = this.CID;
-		env.NAME = this.NAME;
-		
-		// MochiKit内部で使用しているinstanceofで異常が発生するのを避ける
-		env.MochiKit = {};
-		
-		setupEnvironment(env);
-		
-		// for twttr
-		env.twttr = env.window.twttr = {};
-		
-		env.loadAllSubScripts();
-		
-		var GM_Tombloo = copy({
-			Tombloo : {
-				Service : copy({}, env.Tombloo.Service, /(check|share|posters|extractors)/),
-			},
-		}, env, /(Deferred|DeferredHash|copyString|notify)/);
-		
-		var GM_Tombfix = copy({
-			Tombfix : {
-				Service : copy({}, env.Tombfix.Service, /(check|share|posters|extractors)/),
-			},
-		}, env, /(Deferred|DeferredHash|copyString|notify)/);
-		
-		for(var name in env.Models)
-			if(env.Models.hasOwnProperty(name))
-				GM_Tombfix[name] = GM_Tombloo[name] = copy({}, env.Models[name], /^(?!.*(password|cookie))/i);
-		
-		// 他拡張からの読み取りを許可する(Firefox 17用)
-		exposeProperties(GM_Tombloo, true);
-		exposeProperties(GM_Tombfix, true);
-		
-		// Greasemonkeyサンドボックスの拡張
-		var greasemonkey = Cc['@greasemonkey.mozdev.org/greasemonkey-service;1'];
-		if(greasemonkey){
-			greasemonkey = greasemonkey.getService().wrappedJSObject;
-			
-			env.addBefore(greasemonkey, 'evalInSandbox', function(){
-				for(var i=0, len=arguments.length ; i<len ; i++){
-					var arg = arguments[i];
-					if(typeof(arg) == 'object'){
-						arg.GM_Tombloo = GM_Tombloo;
-						arg.GM_Tombfix = GM_Tombfix;
-						return;
-					}
-				}
-			});
-		}
-		
-		try{
-			// Scriptishサンドボックスの拡張
-			var scope = {};
-			Cu.import('resource://scriptish/api.js', scope);
-			scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
-			scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
-		}catch(e){
-			// インストールされていない場合や無効になっている場合にエラーになる
-		}
-		
-		env.signal(env, 'environment-load');
-		
-		this.initialized = true;
-		return env;
-	},
-}
+    for (let file of files) {
+      // クエリを付加しキャッシュを避ける
+      ScriptLoader.loadSubScript(
+        FileProtocolHandler.getURLSpecFromFile(file) + '?time=' + now,
+        global,
+        'UTF-8'
+      );
+    }
+  }
 
+  function simpleIterator(directoryEntries, ifc, func) {
+    if (typeof ifc === 'string') {
+      ifc = Ci[ifc];
+    }
 
-var ModuleImpl = {
-	registerSelf : function(compMgr, fileSpec, location, type) {
-		compMgr.QueryInterface(Ci.nsIComponentRegistrar).registerFactoryLocation(
-			Module.CID, Module.NAME, Module.PID,
-			fileSpec, location, type);
-		
-		Module.onRegister && Module.onRegister(compMgr, fileSpec, location, type);
-	},
-	canUnload : function(compMgr) {
-		return true;
-	},
-	getClassObject : function(compMgr, cid, iid){
-		if(!cid.equals(Module.CID))
-			throw Cr.NS_ERROR_NO_INTERFACE;
-		
-		if(!iid.equals(Ci.nsIFactory))
-			throw Cr.NS_ERROR_NOT_IMPLEMENTED;
-		
-		Module.onInit && Module.onInit(compMgr, cid, iid);
-		
-		return this.factory;
-	},
-	factory: {
-		createInstance: function(outer, iid) {
-			if(outer != null)
-				throw Cr.NS_ERROR_NO_AGGREGATION;
-			
-			var obj = Module.createInstance(outer, iid);
-			obj.Module = Module;
-			obj.wrappedJSObject = obj;
-			return obj;
-		}
-	}
-};
+    try {
+      while (directoryEntries.hasMoreElements()) {
+        let value = directoryEntries.getNext();
+        func(ifc ? value.QueryInterface(ifc) : value);
+      }
+    } catch (err) {}
+  }
 
-function NSGetModule(compMgr, fileSpec) {
-	return ModuleImpl;
-}
+  function copy(target, obj, re) {
+    for (let propName in obj) {
+      if (!re || re.test(propName)) {
+        target[propName] = obj[propName];
+      }
+    }
 
-function NSGetFactory(cid) {
-	return ModuleImpl.factory;
-}
+    return target;
+  }
+
+  function exposeProperties(obj, recursive) {
+    if (obj == null) {
+      return;
+    }
+
+    Object.defineProperty(obj, '__exposedProps__', {
+      value        : {},
+      enumerable   : false,
+      writable     : true,
+      configurable : true
+    });
+
+    for (let propName in obj) {
+      obj.__exposedProps__[propName] = 'r';
+
+      if (recursive && typeof obj[propName] === 'object') {
+        exposeProperties(obj[propName], true);
+      }
+    }
+  }
+
+  getContentDir = (function executeFunc() {
+    var {AddonManager} = Cu.import(
+          'resource://gre/modules/AddonManager.jsm',
+          {}
+        ),
+        dir = null,
+        thread;
+
+    AddonManager.getAddonByID(EXTENSION_ID, addon => {
+      var target = addon.getResourceURI('/').QueryInterface(Ci.nsIFileURL)
+        .file.QueryInterface(ILocalFile);
+
+      target.setRelativeDescriptor(target, 'chrome/content');
+
+      dir = target;
+    });
+
+    // using id:piro (http://piro.sakura.ne.jp/) method
+    thread = getService('thread-manager;1').mainThread;
+
+    while (dir === null) {
+      thread.processNextEvent(true);
+    }
+
+    return function getContentDir() {
+      return dir.clone();
+    };
+  }());
+
+  Module = {
+    CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
+    NAME : 'TombfixService',
+    PID  : '@tombfix.github.io/tombfix-service;1',
+
+    initialized : false,
+
+    onRegister : function onRegister() {
+      XPCOMUtils.categoryManager.addCategoryEntry(
+        'content-policy',
+        this.NAME,
+        this.PID,
+        true,
+        true
+      );
+    },
+
+    instance : {
+      // http://mxr.mozilla.org/mozilla-central/source/content/base/public/nsIContentPolicy.idl
+      shouldLoad : function shouldLoad() {
+        return Ci.nsIContentPolicy.ACCEPT;
+      },
+
+      shouldProcess : function shouldProcess() {
+        return Ci.nsIContentPolicy.ACCEPT;
+      },
+
+      QueryInterface : function queryInterface(iid) {
+        if (
+          iid.equals(Ci.nsIContentPolicy) || iid.equals(Ci.nsISupports) ||
+            iid.equals(Ci.nsISupportsWeakReference)
+        ) {
+          return this;
+        }
+
+        throw Cr.NS_NOINTERFACE;
+      }
+    },
+
+    createInstance : function initialize(outer, iid) {
+      var env, GM_Tombloo, GM_Tombfix;
+
+      // nsIContentPolicyはhiddenDOMWindowの準備ができる前に取得される
+      // 仮に応答できるオブジェクトを返し環境を構築できるまでの代替とする
+      if (iid.equals(Ci.nsIContentPolicy)) {
+        return this.instance;
+      }
+
+      // ブラウザが開かれるタイミングでインスタンスの要求を受け環境を初期化する
+      // 2個目以降のウィンドウからは生成済みの環境を返す
+      if (this.initialized) {
+        return this.instance;
+      }
+
+      // 以降のコードはアプリケーション起動後に一度だけ通過する
+      env = this.instance;
+
+      // アプリケーション全体で、同じloadSubScripts関数を使いまわし汚染を防ぐ
+      env.loadSubScripts    = loadSubScripts;
+      env.loadAllSubScripts = loadAllSubScripts;
+      env.getContentDir     = getContentDir;
+      env.getLibraries      = getLibraries;
+      env.PID               = this.PID;
+      env.CID               = this.CID;
+      env.NAME              = this.NAME;
+
+      // ここでwindowやdocumentなどをenvに持ってくる
+      setupEnvironment(env);
+
+      // MochiKit内部で使用しているinstanceofで異常が発生するのを避ける
+      env.MochiKit = {};
+
+      // for twttr
+      env.twttr = env.window.twttr = {};
+
+      // libraryとパッチを読み込む
+      env.loadAllSubScripts();
+
+      /* ここから他拡張用の処理 */
+      GM_Tombloo = copy({
+        Tombloo : {
+          Service : copy(
+            {},
+            env.Tombloo.Service,
+            /(check|share|posters|extractors)/
+          ),
+        },
+      }, env, /(Deferred|DeferredHash|copyString|notify)/);
+      GM_Tombfix = copy({
+        Tombfix : {
+          Service : copy(
+            {},
+            env.Tombfix.Service,
+            /(check|share|posters|extractors)/
+          ),
+        },
+      }, env, /(Deferred|DeferredHash|copyString|notify)/);
+
+      for (let modelName in env.Models) {
+        if (env.Models.hasOwnProperty(modelName)) {
+          GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
+            {},
+            env.Models[modelName],
+            /^(?!.*(password|cookie))/i
+          );
+        }
+      }
+
+      // 他拡張からの読み取りを許可する(Firefox 17用)
+      exposeProperties(GM_Tombloo, true);
+      exposeProperties(GM_Tombfix, true);
+
+      // Greasemonkeyサンドボックスの拡張
+      {
+        let gmService = Cc['@greasemonkey.mozdev.org/greasemonkey-service;1'];
+
+        if (gmService) {
+          let gm = gmService.getService().wrappedJSObject;
+
+          env.addBefore(gm, 'evalInSandbox', function createGMAPI(...args) {
+            for (let arg of args) {
+              if (typeof arg === 'object') {
+                arg.GM_Tombloo = GM_Tombloo;
+                arg.GM_Tombfix = GM_Tombfix;
+
+                return;
+              }
+            }
+          });
+        }
+      }
+
+      // Scriptishサンドボックスの拡張
+      try {
+        let scope = Cu.import('resource://scriptish/api.js', {});
+
+        scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
+        scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
+      } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
+      /* 他拡張用の処理ここまで */
+
+      // 以降は初期化の最終処理
+      env.signal(env, 'environment-load');
+
+      this.initialized = true;
+
+      return env;
+    }
+  };
+
+  // http://mxr.mozilla.org/mozilla-central/source/xpcom/components/nsIModule.idl
+  ModuleImpl = {
+    registerSelf : function registerSelf(compMgr, fileSpec, location, type) {
+      compMgr.QueryInterface(Ci.nsIComponentRegistrar)
+        .registerFactoryLocation(
+          Module.CID, Module.NAME, Module.PID,
+            fileSpec, location, type
+        );
+
+      if (Module.onRegister) {
+        Module.onRegister(compMgr, fileSpec, location, type);
+      }
+    },
+    canUnload : function canUnload() {
+      return true;
+    },
+    getClassObject : function getClassObject(compMgr, cid, iid) {
+      if (!cid.equals(Module.CID)) {
+        throw Cr.NS_ERROR_NO_INTERFACE;
+      }
+
+      if (!iid.equals(Ci.nsIFactory)) {
+        throw Cr.NS_ERROR_NOT_IMPLEMENTED;
+      }
+
+      if (Module.onInit) {
+        Module.onInit(compMgr, cid, iid);
+      }
+
+      return this.factory;
+    },
+    factory : {
+      createInstance: function createInstance(outer, iid) {
+        var obj;
+
+        if (outer != null) {
+          throw Cr.NS_ERROR_NO_AGGREGATION;
+        }
+
+        obj = Module.createInstance(outer, iid);
+        obj.Module = Module;
+        obj.wrappedJSObject = obj;
+
+        return obj;
+      }
+    }
+  };
+
+  // https://developer.mozilla.org/en-US/docs/Mozilla/XPCOM/XPCOM_changes_in_Gecko_2.0#JavaScript_components
+  global.NSGetFactory = function NSGetFactory() {
+    return ModuleImpl.factory;
+  };
+}(this));
