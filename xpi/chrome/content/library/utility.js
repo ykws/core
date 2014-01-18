@@ -1,3 +1,292 @@
+// ----[Utility]-------------------------------------------------
+function createMock(sample, proto){
+	var non = function(){};
+	sample = typeof(sample)=='object'? sample : Cc[sample].createInstance();
+	
+	var ifcs = getInterfaces(sample);
+	var Mock = function(){};
+	
+	for(var key in sample){
+		try{
+			if(sample.__lookupGetter__(key))
+				continue;
+			
+			var val = sample[key];
+			switch (typeof(val)){
+			case 'number':
+			case 'string':
+				Mock.prototype[key] = val;
+				continue;
+			
+			case 'function':
+				Mock.prototype[key] = non;
+				continue;
+			}
+		} catch(e){
+			// コンポーネント実装により発生するプロパティ取得エラーを無視する
+		}
+	}
+	
+	Mock.prototype.QueryInterface = createQueryInterface(ifcs);
+	
+	// FIXME: extendに変える(アクセサをコピーできない)
+	update(Mock.prototype, proto);
+	update(Mock, Mock.prototype);
+	
+	return Mock;
+}
+
+function createQueryInterface(ifcNames){
+	var ifcs = ['nsISupports'].concat(ifcNames).map(function(ifcName){
+		return Ci[''+ifcName];
+	});
+	
+	return function(iid){
+		if(ifcs.some(function(ifc){
+			return iid.equals(ifc);
+		})){
+			return this;
+		}
+		
+		throw Cr.NS_NOINTERFACE;
+	}
+}
+
+/**
+ * XPCOMインスタンスの実装しているインターフェース一覧を取得する。
+ *
+ * @param {Object} obj XPCOMインスタンス。
+ * @return {Array} インターフェースのリスト。
+ */
+function getInterfaces(obj){
+	var result = [];
+	
+	for(var i=0,len=INTERFACES.length ; i<len ; i++){
+		var ifc = INTERFACES[i];
+		try {
+			if (obj instanceof ifc) {
+				result.push(ifc);
+			}
+		} catch(e) { }
+	}
+	
+	return result;
+}
+
+/**
+ * XPCOMインスタンスの実装しているインターフェースを全て利用できるようにする。
+ * パフォーマンスに注意する箇所では、インターフェースのリストを渡し検査範囲を限定して使う。
+ *
+ * @param {Object} obj XPCOMインスタンス。
+ * @param {optional Array} ifcs インターフェースのリスト。指定されない場合、全インターフェイスが検査される。
+ */
+function broad(obj, ifcs){
+	ifcs = ifcs || INTERFACES;
+	for(var i=0,len=ifcs.length ; i<len ; i++) {
+		try {
+			if(obj instanceof ifcs[i]);
+		} catch(e) { }
+	}
+	return obj;
+};
+
+/**
+ * スレッドを使って非ブロックで待機する。
+ *
+ * @param {Function} cond 待機終了判定処理。trueを返すと待機が終了する。
+ */
+function till(cond){
+	let thread = ThreadManager.mainThread;
+	
+	do{
+		thread.processNextEvent(true);
+	}while(cond && !cond());
+}
+
+/**
+ * 通知バブルを表示する。
+ * 処理完了やエラーなどを通知するために用いる。
+ * MacのFirefox 3ではGrowlになる。
+ *
+ * @param {String} title タイトル。
+ * @param {String} msg メッセージ。
+ * @param {String} icon アイコン種類。定数の中から選択するか、独自のURLを渡す。
+ */
+function notify(title, msg, icon){
+	AlertsService && AlertsService.showAlertNotification(
+		icon, title, msg,
+		false, '', null);
+}
+notify.ICON_DOWNLOAD = 'chrome://mozapps/skin/downloads/downloadIcon.png';
+notify.ICON_INFO     = 'chrome://global/skin/console/bullet-question.png';
+notify.ICON_ERROR    = 'chrome://global/skin/console/bullet-error.png';
+notify.ICON_WORN     = 'chrome://global/skin/console/bullet-warning.png';
+
+/**
+ * URIを生成する。
+ *
+ * @param {String || nsIFile || nsIURI} path URLまたはファイルまたはディレクトリパス。nsIURIの場合、そのまま返す。
+ */
+function createURI(path){
+	if(!path)
+		return;
+	
+	if (path instanceof IURI) {
+		return path;
+	}
+	
+	try{
+		var path = (path instanceof IFile) ? path : new LocalFile(path);
+		return broad(IOService.newFileURI(path));
+	}catch(e){}
+	
+	try {
+		var uri = IOService.newFileURI(path, null, null);
+		uri instanceof Ci.nsIURL;
+	} catch(e) {
+		uri = IOService.newURI(path, null, null);
+		uri instanceof Ci.nsIURL;
+	}
+	return uri;
+}
+
+/**
+ * ファイルを取得する。
+ *
+ * @param {String || nsIFile || nsIURI} uri
+ *        URI。file:またはchrome:から始まるアドレスを指定する。
+ *        c:\のようなパスも動作する。
+ *        nsIFileの場合、そのまま返す。
+ */
+function getLocalFile(uri){
+	if(uri instanceof ILocalFile)
+		return uri;
+	
+	uri = createURI(uri);
+	
+	if(uri.scheme == 'chrome')
+		uri = ChromeRegistry.convertChromeURL(uri);
+	
+	if(uri.scheme == 'jar')
+		uri = createURI(uri.spec.replace(/(^jar:|!\/$)/g, ''));
+	
+	if(uri.scheme != 'file')
+		return;
+	
+	return IOService.getProtocolHandler('file').
+		QueryInterface(Ci.nsIFileProtocolHandler).
+		getFileFromURLSpec(uri.spec).
+		QueryInterface(ILocalFile);
+}
+
+/**
+ * 拡張のインストールされているディレクトリを取得する。
+ *
+ * @param {String} id 拡張ID。
+ * @return {String} 
+ *         拡張のリソースディレクトリ。
+ *         展開しない拡張はjarファイルが返る。
+ *         拡張が見つからない場合はnullが返る。
+ */
+var getExtensionDir = (() => {
+	var {AddonManager} = Cu.import('resource://gre/modules/AddonManager.jsm', {});
+	return function getExtensionDir(id) {
+		// 最終的にXPIProvider.jsmのXPIDatabase.getVisibleAddonForIDにて
+		// statement.executeAsyncを使った問い合わせで取得される
+		var dir = false;
+		AddonManager.getAddonByID(id, function(addon){
+			dir = (!addon)? null : getLocalFile(addon.getResourceURI('/'));
+		});
+		
+		till(function(){
+			return dir !== false;
+		});
+		
+		return dir;
+	};
+})();
+
+function setPrefValue(prefName, value) {
+	Preferences.set(prefName, value);
+}
+
+function getPrefValue(prefName) {
+	return Preferences.get(prefName);
+}
+
+/**
+ * ユーザが通常利用しているダウンロードディレクトリを取得する。
+ * Firefoxオプションで指定したディレクトリ、または、最後にダウンロードしたディレクトリになる。
+ */
+function getDownloadDir(){
+	try {
+		var dir = new LocalFile(getPrefValue('browser.download.dir') || getPrefValue('browser.download.lastDir'));
+		if(dir.exists())
+			return dir
+	} catch(e) {}
+	
+	return DirectoryService.get('DfltDwnld', IFile);
+}
+
+/**
+ * 現在利用しているプロファイルディレクトリを取得する。
+ */
+function getProfileDir(){
+	return DirectoryService.get('ProfD', IFile);
+}
+
+/**
+ * テンポラリディレクトリを取得する。
+ */
+function getTempDir(){
+	return DirectoryService.get('TmpD', IFile);
+}
+
+/**
+ * 直近にアクティブだったブラウザウィンドウを取得する。
+ */
+function getMostRecentWindow(){
+	return WindowMediator.getMostRecentWindow('navigator:browser');
+}
+
+/**
+ * ストリームを処理する。
+ * 実行後に必ずストリームが閉じられる。
+ *
+ * @param {Object} stream ストリーム。
+ * @param {Function} func ストリームを利用する処理。ストリームが渡される。
+ */
+function withStream(stream, func){
+	try{
+		return func(stream);
+	} finally{
+		stream && stream.close && stream.close();
+	}
+}
+
+/**
+ * HTML文字列からobject/script/body/styleなどの要素を取り除く。
+ * また不完全なタグなどを整形し正しいHTMLへ変換する。
+ *
+ * @param {String} html HTML文字列。
+ * @return {String} 整形されたHTML文字列。
+ */
+function sanitizeHTML(html){
+	var doc = document.implementation.createDocument('', '', null);
+	var root = doc.appendChild(doc.createElement('root'));
+	
+	var fragment = UnescapeHTML.parseFragment(html, false, null, doc.documentElement);
+	doc.documentElement.appendChild(fragment);
+	
+	if(!root.childNodes.length)
+		return '';
+	return serializeToString(root).match(/^<root>(.*)<\/root>$/)[1];
+}
+
+function serializeToString(xml){
+	return (new XMLSerializer()).serializeToString(xml);
+}
+
 // ----[Application]-------------------------------------------------
 function getPref(pref) {
 	return getPrefValue('extensions.tombfix.' + pref);
@@ -11,6 +300,9 @@ var CHROME_DIR = 'chrome://tombfix';
 var CHROME_CONTENT_DIR = CHROME_DIR + '/content';
 
 var EXTENSION_ID = 'tombfix@tombfix.github.io';
+
+var XUL_NS  = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+var HTML_NS = 'http://www.w3.org/1999/xhtml';
 
 var KEY_ACCEL = (AppInfo.OS == 'Darwin')? 'META' : 'CTRL';
 var PATH_DELIMITER = (navigator.appVersion.indexOf('Windows') != -1)? '\\' : '/';

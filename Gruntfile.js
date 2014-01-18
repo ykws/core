@@ -7,7 +7,7 @@ module.exports = function (grunt) {
       all: [
         'Gruntfile.js',
         'xpi/components/tombfix.js',
-        // 'xpi/chrome/content/library/component.js',
+        'xpi/chrome/content/library/component.js',
         'xpi/chrome/content/library/prototype.js',
         // 'xpi/chrome/content/library/utility.js',
         // 'xpi/chrome/content/library/database.js',
