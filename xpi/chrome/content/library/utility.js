@@ -1513,9 +1513,12 @@ function log(msg) {
 	return msg;
 }
 
-function error(err){
-	firebug('error', arguments) ||
+function error(err) {
+	if (!firebug('error', arguments)) {
+		console.trace();
+		console.log(err);
 		Cu.reportError(err);
+	}
 	
 	return err;
 }
