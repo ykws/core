@@ -2886,63 +2886,65 @@ Models.register({
 
 
 Models.register(update({
-	name : 'Hatena',
-	ICON : 'http://www.hatena.ne.jp/favicon.ico',
-	
-	getPasswords : function(){
-		return getPasswords('https://www.hatena.ne.jp');
+	name    : 'Hatena',
+	ICON    : 'https://www.hatena.ne.jp/favicon.ico',
+	ORIGIN  : 'https://www.hatena.ne.jp',
+	API_URL : 'http://b.hatena.ne.jp/my.name',
+
+	getPasswords : function () {
+		return getPasswords(this.ORIGIN);
 	},
-	
-	login : function(user, password){
-		var self = this;
-		notify(self.name, getMessage('message.changeAccount.logout'), self.ICON);
-		return (this.getAuthCookie()? this.logout() : succeed()).addCallback(function(){
-			notify(self.name, getMessage('message.changeAccount.login'), self.ICON);
-			return request('https://www.hatena.ne.jp/login', {
+
+	login : function (user, password) {
+		notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
+
+		return (this.getAuthCookie() ? this.logout() : succeed()).addCallback(() => {
+			notify(this.name, getMessage('message.changeAccount.login'), this.ICON);
+
+			return request(this.ORIGIN + '/login', {
 				sendContent : {
-					name : user,
-					password : password,
-					persistent : 1,
-					location : 'http://www.hatena.ne.jp/',
-				},
+					name       : user,
+					password   : password,
+					persistent : 1
+				}
 			});
-		}).addCallback(function(){
-			self.updateSession();
-			self.user = user;
-			delete self.userInfo;
-			notify(self.name, getMessage('message.changeAccount.done'), self.ICON);
+		}).addCallback(() => {
+			this.updateSession();
+			this.user = user;
+
+			delete this.userInfo;
+
+			notify(this.name, getMessage('message.changeAccount.done'), this.ICON);
 		});
 	},
-	
-	logout : function(){
-		return request('http://www.hatena.ne.jp/logout');
+
+	logout : function () {
+		return request(this.ORIGIN + '/logout');
 	},
-	
-	getAuthCookie : function(){
+
+	getAuthCookie : function () {
 		return getCookieString('.hatena.ne.jp', 'rk');
 	},
-	
-	getToken : function(){
-		return this.getUserInfo().addCallback(itemgetter('rks'));
+
+	getToken : function () {
+		return this.getUserInfo().addCallback(json => json.rks);
 	},
-	
-	getCurrentUser : function(){
-		return this.getUserInfo().addCallback(itemgetter('name'));
+
+	getCurrentUser : function () {
+		return this.getUserInfo().addCallback(json => json.name);
 	},
-	
-	getUserInfo : function(){
-		return this.getSessionValue('userInfo', function(){
-			return request('http://b.hatena.ne.jp/my.name').addCallback(function(res){
-				return JSON.parse(res.responseText);
-			});
+
+	getUserInfo : function () {
+		return this.getSessionValue('userInfo', () => {
+			return request(this.API_URL, {
+				responseType : 'json'
+			}).addCallback(res => res.response);
 		});
 	},
-	
+
 	reprTags: function (tags) {
-		return tags ? tags.map(function(t){
-			return '[' + t + ']';
-		}).join('') : '' ;
-	},
+		return (tags || []).map(tag => tag.wrap('[', ']')).join('');
+	}
 }, AbstractSessionService));
 
 
