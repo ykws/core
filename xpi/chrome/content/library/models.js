@@ -2951,36 +2951,34 @@ Models.register(update({
 Models.register({
 	name : 'HatenaFotolife',
 	ICON : 'http://f.hatena.ne.jp/favicon.ico',
-	
-	check : function(ps){
-		return ps.type=='photo';
+
+	check : function (ps) {
+		return ps.type === 'photo';
 	},
-	
-	post : function(ps){
-		// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
-		return (ps.file? succeed(ps.file) : download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))).addCallback(function(file){
-			return Models.HatenaFotolife.upload({
-				fototitle1 : ps.item || ps.page,
-				image1     : file,
+
+	post : function (ps) {
+		return (
+			ps.file ?
+				succeed(ps.file) :
+				// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
+				download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))
+		).addCallback(file => {
+			return Hatena.getUserInfo().addCallback(json => {
+				return request('http://f.hatena.ne.jp/' + json.name + '/up', {
+					sendContent : {
+						mode       : 'enter',
+						rkm        : json.rkm,
+						// image1 - image5
+						// fototitle1 - fototitle5 (optional)
+						image1     : file,
+						fototitle1 : ps.item || ps.page,
+						folder     : '',
+						taglist    : Hatena.reprTags(ps.tags)
+					}
+				});
 			});
 		});
-	},
-	
-	// image1 - image5
-	// fototitle1 - fototitle5 (optional)
-	upload : function(ps){
-		return Hatena.getToken().addCallback(function(token){
-			ps.rkm = token;
-			
-			return Hatena.getCurrentUser();
-		}).addCallback(function(user){
-			return request('http://f.hatena.ne.jp/'+user+'/up', {
-				sendContent : update({
-					mode : 'enter',
-				}, ps),
-			});
-		});
-	},
+	}
 });
 
 
