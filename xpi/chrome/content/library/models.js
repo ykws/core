@@ -2573,27 +2573,26 @@ Models.register({
 
 Models.register({
 	name : 'Pocket',
-	ICON : 'http://getpocket.com/favicon.ico',
-	check : function(ps){
-		return /quote|link/.test(ps.type);
+	ICON : 'https://getpocket.com/favicon.ico',
+	check : function (ps) {
+		return /^(?:quote|link)$/.test(ps.type);
 	},
-	post : function(ps){
-		return request('http://getpocket.com/edit.php').addCallback(function(res) {
-			var doc = convertToHTMLDocument(res.responseText);
-			var form = $x('id("content")/form', doc);
-			if(/login/.test(form.action))
+
+	post : function (ps) {
+		if (!getCookieString('.getpocket.com', 'sess_user_id')) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+
+		return request('https://getpocket.com/edit', {
+			responseType : 'document',
+			queryString : {
+				url   : ps.itemUrl,
+				tags  : (ps.tags || []).join()
+			}
+		}).addCallback(({ response : doc }) => {
+			if (new URL(doc.URL).pathname !== '/edit') {
 				throw new Error(getMessage('error.notLoggedin'));
-			
-			return request('http://getpocket.com/edit_process.php', {
-				queryString : {
-					BL : 1
-				},
-				sendContent : update(formContents(form), {
-					tags  : ps.tags? ps.tags.join(',') : '',
-					title : ps.item,
-					url   : ps.itemUrl
-				})
-			});
+			}
 		});
 	}
 });
