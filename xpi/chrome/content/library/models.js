@@ -1057,51 +1057,41 @@ Models.register({
 
 
 Models.register({
-	name : 'WeHeartIt',
-	ICON : 'http://weheartit.com/favicon.ico',
-	URL  : 'http://weheartit.com/',
-	
-	check : function(ps){
-		return ps.type == 'photo' && !ps.file;
+	name      : 'WeHeartIt',
+	ICON      : 'https://weheartit.com/favicon.ico',
+	ORIGIN    : 'https://weheartit.com',
+	ENTRY_URL : 'https://weheartit.com/entry/',
+
+	check : function (ps) {
+		return ps.type === 'photo' && !ps.file;
 	},
-	
-	post : function(ps){
-		if(!this.getAuthCookie())
-			return fail(new Error(getMessage('error.notLoggedin')));
-		
-		return request(this.URL + 'add.php', {
-			redirectionLimit : 0,
-			referrer : ps.pageUrl,
-			queryString : {
-				via   : ps.pageUrl,
+
+	post : function (ps) {
+		this.checkLogin();
+
+		return request(this.ORIGIN + '/create_entry', {
+			sendContent : {
 				title : ps.item,
-				img   : ps.itemUrl,
-			},
+				media : ps.itemUrl,
+				via   : ps.pageUrl,
+				tags  : (ps.tags || []).join()
+			}
 		});
 	},
-	
-	favor : function(ps){
-		return this.iHeartIt(ps.favorite.id);
-	},
-	
-	iHeartIt : function(id){
-		if(!this.getAuthCookie())
-			return fail(new Error(getMessage('error.notLoggedin')));
-		
-		return request(this.URL + 'inc_heartedby.php', {
-			redirectionLimit : 0,
-			referrer : this.URL,
-			queryString : {
-				do    : 'heart',
-				entry : id,
-			},
+
+	favor : function (ps) {
+		this.checkLogin();
+
+		return request(this.ENTRY_URL + ps.favorite.id + '/heart', {
+			method : 'POST'
 		});
 	},
-	
-	getAuthCookie : function(){
-		// クッキーの動作が不安定なため2つをチェックし真偽値を返す
-		return getCookieString('weheartit.com', 'password') && getCookieString('weheartit.com', 'name');
-	},
+
+	checkLogin : function () {
+		if (!getCookieString('.weheartit.com', 'login_token')) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+	}
 });
 
 

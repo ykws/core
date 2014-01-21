@@ -596,31 +596,66 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			};
 		},
 	},
-	
+
 	{
 		name : 'Photo - We Heart It',
-		ICON : Models.WeHeartIt.ICON,
-		check : function(ctx){
-			return ctx.onImage &&
-				ctx.href.match('^http://weheartit.com/entry/') &&
-				ctx.target.src.match('^http://weheartit.com/images/');
+		ICON : WeHeartIt.ICON,
+		RE   : new RegExp(
+			'^https?://' +
+				'(?:data\\d+\\.whicdn\\.com/images|weheartit\\.com/entry)/\\d+'
+		),
+
+		check   : function (ctx) {
+			if (!ctx.selection) {
+				let doc = ctx.document;
+
+				if (
+					/^image/.test(doc.contentType) || !this.RE.test(ctx.href) ||
+					doc.querySelector('meta[itemprop="url"]')
+				) {
+					return this.getEntryID(ctx);
+				}
+			}
 		},
-		extract : function(ctx){
-			var author = $x('(//p[@class="hearters"]/a[@class="user"])[1]');
-			return {
-				type      : 'photo',
-				item      : $x('id("content")//h3/text()'),
-				itemUrl   : ctx.target.src,
-				author    : author.textContent.trim(),
-				authorUrl : author.href,
-				favorite  : {
-					name : 'WeHeartIt',
-					id   : ctx.href.split('/').pop(),
-				},
-			};
+		extract : function (ctx) {
+			var id = this.getEntryID(ctx),
+				url = ctx.href = WeHeartIt.ENTRY_URL + id;
+
+			return request(url, {
+				responseType : 'document'
+			}).addCallback(({ response : doc }) => {
+				var ps = {},
+					author = doc.querySelector('a[itemprop="provider"]');
+
+				if (author) {
+					update(ps, {
+						author    : author.querySelector('.avatar').title,
+						authorUrl : author.href
+					});
+				}
+
+				return update(ps, {
+					type      : 'photo',
+					item      : doc.title,
+					itemUrl   : doc.querySelector('meta[property="og:image"]').content,
+					favorite  : {
+						name : 'WeHeartIt',
+						id   : id
+					}
+				});
+			});
 		},
+		getEntryID : function (ctx) {
+			var url = ctx.onImage ? ctx.target.src : (
+				ctx.onLink ? ctx.link.href : ctx.href
+			);
+
+			if (this.RE.test(url)) {
+				return url.extract(/\/(\d+)/);
+			}
+		}
 	},
-	
+
 	{
 		name : 'Photo - Snipshot',
 		ICON : Models.Snipshot.ICON,
