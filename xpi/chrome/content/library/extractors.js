@@ -1073,10 +1073,15 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		},
 		getInfo : function (ctx, illustID, doc) {
 			var {title} = doc || ctx.document,
-				url = this.getFullSizeImageURL(this.getImageElement(
-					doc ? {document : doc} : ctx,
-					illustID
-				).src);
+				img = this.getImageElement(doc ? {document : doc} : ctx, illustID),
+				url;
+
+			// for limited access about mypixiv
+			if (!img) {
+				throw new Error(getMessage('error.contentsNotFound'));
+			}
+
+			url = this.getFullSizeImageURL(img.src);
 
 			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title)) {
 				url = url.replace(
