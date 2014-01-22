@@ -1284,7 +1284,7 @@ Models.register(update({
 		contents = {
 			desc  : (ps.description || '').trim(),
 			quote : ps.type !== 'video' && ps.body ? ps.body.trim().wrap('"') : '',
-			title : ps.item.trim(),
+			title : (ps.item || '').trim(),
 			url   : ps.itemUrl || '',
 			tags  : (ps.tags || []).map(tag => '#' + tag)
 		};

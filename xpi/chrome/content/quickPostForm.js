@@ -45,6 +45,40 @@ function DialogPanel(position, message){
 	if(!navigator.platform.contains('Linux'))
 		self.elmWindow.style.opacity = 0;
 	
+	if (getPref('model.twitter.showTweetLength')) {
+		let postInfo = update(ps, {}),
+			{descriptionBox, fields} = this.formPanel;
+		
+		function updateTweetLength() {
+			var truncateStatus = getPref('model.twitter.truncateStatus'),
+				tweetLength;
+			
+			setPref('model.twitter.truncateStatus', false);
+			
+			tweetLength = Twitter.getTweetLength(Twitter.createStatus(postInfo));
+			
+			setPref('model.twitter.truncateStatus',  truncateStatus);
+			
+			if (postInfo.type === 'photo') {
+				tweetLength += Twitter.OPTIONS.short_url_length + 1;
+			}
+			
+			descriptionBox.refreshLength();
+			descriptionBox.elmLength.value += ' / ' + tweetLength;
+		}
+		
+		// for XBL load
+		window.addEventListener('DOMContentLoaded', updateTweetLength);
+		
+		Object.keys(fields).forEach(id => {
+			getElement(id).addEventListener('input', () => {
+				postInfo[id] = fields[id].value;
+				
+				updateTweetLength();
+			});
+		});
+	}
+	
 	// コントロールと画像のロード後に体裁を整える
 	window.addEventListener('load', function(){
 		// 画像のロードとサイズ取得を待つ(大抵の場合キャッシュされているので正常に処理される)

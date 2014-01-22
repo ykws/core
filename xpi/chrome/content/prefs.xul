@@ -26,6 +26,10 @@
 				name="extensions.tombfix.model.tumblr.appendContentSource"
 				type="bool"/>
 			<preference
+				id="model.twitter.showTweetLength"
+				name="extensions.tombfix.model.twitter.showTweetLength"
+				type="bool"/>
+			<preference
 				id="model.twitter.truncateStatus"
 				name="extensions.tombfix.model.twitter.truncateStatus"
 				type="bool"/>
@@ -205,6 +209,7 @@
 							</groupbox>
 							<groupbox>
 								<caption label="Twitter"/>
+								<checkbox label="&label.model.twitter.showTweetLength;" preference="model.twitter.showTweetLength" />
 								<checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
 								<vbox>
 									<label value="&label.model.twitter.template.prefix;"/>

@@ -8,6 +8,7 @@
 <!ENTITY label.model.tumblr.queue "Add to queue except Text Post">
 <!ENTITY label.model.tumblr.trimReblogInfo "Trim reblog info">
 <!ENTITY label.model.tumblr.appendContentSource "Append content source">
+<!ENTITY label.model.twitter.showTweetLength "Show character length as tweet in Quick Post Form">
 <!ENTITY label.model.twitter.truncateStatus "Remove strings exceeded character limit except Text Post">
 <!ENTITY label.model.twitter.template.prefix "Prefix(it's omitted this if input Description)">
 <!ENTITY label.model.twitter.template "Template">
