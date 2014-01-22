@@ -1078,7 +1078,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					illustID
 				).src);
 
-			if (/の漫画 \[pixiv\]$/.test(title)) {
+			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title)) {
 				url = url.replace(
 					/img\/[^\/]+\/\d+/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
