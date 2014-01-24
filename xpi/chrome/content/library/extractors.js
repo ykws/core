@@ -619,12 +619,13 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		},
 		extract : function (ctx) {
 			var id = this.getEntryID(ctx),
-				url = ctx.href = WeHeartIt.ENTRY_URL + id;
+				url = WeHeartIt.ENTRY_URL + id;
 
 			return request(url, {
 				responseType : 'document'
 			}).addCallback(({response : doc}) => {
 				var ps = {},
+					{title} = doc,
 					author = doc.querySelector('a[itemprop="provider"]');
 
 				if (author) {
@@ -634,9 +635,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					});
 				}
 
+				ctx.title = title;
+				ctx.href = url;
+
 				return update(ps, {
 					type      : 'photo',
-					item      : doc.title,
+					item      : title,
 					itemUrl   : doc.querySelector('meta[property="og:image"]').content,
 					favorite  : {
 						name : 'WeHeartIt',
@@ -1040,7 +1044,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				var {imageURL, pageTitle, illustID} = info;
 
 				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
+					ctx.title = pageTitle;
 					ctx.href = that.PAGE_URL + illustID;
+
 					return {
 						type    : 'photo',
 						item    : pageTitle,
