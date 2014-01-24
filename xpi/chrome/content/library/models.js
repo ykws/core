@@ -1256,26 +1256,25 @@ Models.register(update({
 	},
 
 	post : function (ps) {
-		var status = this.createStatus(ps);
+		return this.getToken().addCallback(token => {
+			var status = this.createStatus(ps);
 
-		return this.getToken().addCallback(token => ps.type === 'photo' ?
-			this.upload(ps, token, status) :
-			this.update(token, status)
-		);
+			return ps.type === 'photo' ?
+				this.upload(ps, token, status) :
+				this.update(token, status);
+		});
 	},
 
 	getToken : function () {
+		if (!this.getAuthCookie()) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+
 		return request(this.ACCOUT_URL, {
 			responseType : 'document'
-		}).addCallback(({response : doc}) => {
-			if (doc.body.classList.contains('logged-out')) {
-				throw new Error(getMessage('error.notLoggedin'));
-			}
-
-			return {
-				authenticity_token : doc.querySelector('.authenticity_token').value
-			};
-		});
+		}).addCallback(res => ({
+			authenticity_token : res.response.querySelector('.authenticity_token').value
+		}));
 	},
 
 	createStatus : function (ps) {
