@@ -2101,7 +2101,7 @@ Models.register({
 					private     : ps.private ? 'on' : '',
 					replace     : 'true'
 				}
-			}).addCallback(({ response : info }) => {
+			}).addCallback(({response : info}) => {
 				if (info.error) {
 					if (retry) {
 						retry = false;
@@ -2564,6 +2564,7 @@ Models.register({
 Models.register({
 	name : 'Pocket',
 	ICON : 'https://getpocket.com/favicon.ico',
+
 	check : function (ps) {
 		return /^(?:quote|link)$/.test(ps.type);
 	},
@@ -2579,7 +2580,7 @@ Models.register({
 				url   : ps.itemUrl,
 				tags  : (ps.tags || []).join()
 			}
-		}).addCallback(({ response : doc }) => {
+		}).addCallback(({response : doc}) => {
 			if (new URL(doc.URL).pathname !== '/edit') {
 				throw new Error(getMessage('error.notLoggedin'));
 			}
@@ -2783,7 +2784,7 @@ Models.register({
 	post : function (ps) {
 		return request(this.POST_URL, {
 			responseType : 'document'
-		}).addCallback(({ response : doc }) => {
+		}).addCallback(({response : doc}) => {
 			var crumbs = doc.querySelector('[name="crumbs"]');
 
 			if (!crumbs && doc.getElementById('login_form')) {

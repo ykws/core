@@ -623,7 +623,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return request(url, {
 				responseType : 'document'
-			}).addCallback(({ response : doc }) => {
+			}).addCallback(({response : doc}) => {
 				var ps = {},
 					author = doc.querySelector('a[itemprop="provider"]');
 
@@ -867,7 +867,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Photo - Google Image Search',
-		ICON : Models.Google.ICON,
+		ICON : Google.ICON,
 		check : function (ctx) {
 			if (
 				/^www\.google\.(?:co\.jp|com)$/.test(ctx.hostname) &&
@@ -888,9 +888,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return request(ctx.href, {
 				responseType : 'document'
-			}).addCallback(res => {
-				var doc = res.response;
-
+			}).addCallback(({response : doc}) => {
 				ctx.title = doc.title || createURI(itemUrl).fileName;
 
 				return {
