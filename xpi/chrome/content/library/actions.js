@@ -18,7 +18,7 @@
             // GitHubでかつraw以外のリンクの場合は除外する
             /^(?:gist\.)?github\.com$/.test(uri.host) &&
             /\/raw\//.test(uri.path)
-          ) || uri.host === 'raw.github.com');
+          ) || /^raw\d*\.github\.com$/.test(uri.host));
         }
       },
       execute : function execute(ctx) {
