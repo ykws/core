@@ -155,18 +155,18 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       }
     }],
     ['ConverterInputStream',    'intl/converter-input-stream;1',   {
-      init: function (stream, charset = 'UTF-8', bufferSize = 8192) {
+      init: function (stream, charset, bufferSize) {
         this.init(
           stream,
-          charset,
-          bufferSize,
+          charset || 'UTF-8',
+          bufferSize || 8192,
           ConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER
         );
       }
     }],
     ['BufferedInputStream',     'network/buffered-input-stream;1', {
-      init: function (stream, bufferSize = 4096) {
-        this.init(stream, bufferSize);
+      init: function (stream, bufferSize) {
+        this.init(stream, bufferSize || 4096);
       }
     }],
     ['StringInputStream',       'io/string-input-stream;1',        {
@@ -176,8 +176,8 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     }],
     ['UnicodeConverter',        'intl/scriptableunicodeconverter', {
       ifc: 'ScriptableUnicodeConverter',
-      init: function (charset = 'UTF-8') {
-        this.charset = charset;
+      init: function (charset) {
+        this.charset = charset || 'UTF-8';
       }
     }],
     ['MIMEInputStream',         'network/mime-input-stream;1',     {
@@ -187,8 +187,8 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       }
     }],
     ['MultiplexInputStream',    'io/multiplex-input-stream;1',     {
-      init: function (streams = []) {
-        streams.forEach(stream => {
+      init: function (streams) {
+        (streams || []).forEach(stream => {
           if (stream.join) {
             stream = stream.join('\r\n');
           }
