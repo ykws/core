@@ -50,6 +50,8 @@
               notify.ICON_INFO
             );
           });
+        }).addErrback(err => {
+          alert(err.message.message);
         });
       }
     },
