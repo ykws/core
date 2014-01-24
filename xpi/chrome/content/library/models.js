@@ -2946,13 +2946,12 @@ Models.register({
 	},
 
 	post : function (ps) {
-		return (
-			ps.file ?
+		return Hatena.getUserInfo().addCallback(json => {
+			return (ps.file ?
 				succeed(ps.file) :
 				// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
 				download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))
-		).addCallback(file => {
-			return Hatena.getUserInfo().addCallback(json => {
+			).addCallback(file => {
 				return request('http://f.hatena.ne.jp/' + json.name + '/up', {
 					sendContent : {
 						mode       : 'enter',
