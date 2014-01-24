@@ -1437,7 +1437,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return {
 				type      : 'video',
-				item      : name ? name.content : doc.title.replace(/^▶ | - YouTube$/, ''),
+				item      : name ? name.content : doc.title.replace(/^▶ | - YouTube$/g, ''),
 				itemUrl   : (url || ctx).href,
 				author    : author.textContent.trim(),
 				authorUrl : author.href.split('?')[0]
