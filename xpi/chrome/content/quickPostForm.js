@@ -77,6 +77,14 @@ function DialogPanel(position, message){
 				updateTweetLength();
 			});
 		});
+		
+		window.addEventListener('valuechange', evt => {
+			var {id} = evt.detail;
+			
+			postInfo[id] = fields[id].value;
+			
+			updateTweetLength();
+		});
 	}
 	
 	// コントロールと画像のロード後に体裁を整える
@@ -437,6 +445,10 @@ FormPanel.prototype = {
 				return;
 			
 			field.value = value;
+			
+			if (name !== 'description') {
+				window.dispatchEvent(new CustomEvent('valuechange', {detail : { id : name }}));
+			}
 		});
 	},
 	
@@ -881,6 +893,8 @@ TagsPanel.prototype = {
 			if(!(tag in tags))
 				removeElementClass(elmTag, 'used');
 		});
+		
+		window.dispatchEvent(new CustomEvent('valuechange', {detail : { id : 'tags' }}));
 	},
 	
 	toggleSuggestion : function(){
@@ -903,6 +917,8 @@ TagsPanel.prototype = {
 			addElementClass(elmTag, 'used');
 			this.elmTextbox.injectCandidate(word, true, false);
 		}
+		
+		window.dispatchEvent(new CustomEvent('valuechange', {detail : { id : 'tags' }}));
 	},
 	
 	// ChekboxPanel
@@ -1096,6 +1112,9 @@ DescriptionBox.prototype = {
 	set value(value){
 		var res = this.elmDescription.value = value;
 		this.onInput();
+		
+		window.dispatchEvent(new CustomEvent('valuechange', {detail : { id : 'description' }}));
+		
 		return res;
 	},
 	
