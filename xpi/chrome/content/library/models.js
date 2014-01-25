@@ -1468,7 +1468,7 @@ Models.register(update({
 			}).addErrback(({message : req}) => {
 				var doc = req.response;
 
-				if (doc) {
+				if (doc && doc.scripts) {
 					let json = JSON.parse(doc.scripts[0].textContent.extract(
 						/window.top.swift_tweetbox_tombfix\((\{.+\})\);/
 					));
