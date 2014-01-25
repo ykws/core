@@ -1282,12 +1282,16 @@ Models.register(update({
 
 		contents = {
 			desc  : (ps.description || '').trim(),
-			quote : ps.type !== 'video' && ps.body ? ps.body.trim().wrap('"') : '',
+			quote : ps.type !== 'video' && ps.body ? this.createQuote(ps.body) : '',
 			title : (ps.item || '').trim(),
 			url   : ps.itemUrl || '',
 			tags  : (ps.tags || []).map(tag => '#' + tag)
 		};
 		maxLen = this.STATUS_MAX_LENGTH;
+
+		if (ps.favorite && ps.favorite.name === 'Tumblr' && contents.quote) {
+			contents.quote = this.createQuote(ps.body.trimTag());
+		}
 
 		if (ps.type === 'photo') {
 			contents.url = ps.pageUrl;
@@ -1305,6 +1309,12 @@ Models.register(update({
 		}
 
 		return status;
+	},
+
+	createQuote : function (body) {
+		body = body.trim();
+
+		return body && body.wrap('"');
 	},
 
 	getTweetLength : function (str) {

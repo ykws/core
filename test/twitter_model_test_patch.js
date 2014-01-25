@@ -168,6 +168,32 @@
 		authorUrl   : 'http://www.youtube.com/user/GoogleChromeJapan'
 	}) === 'Google Chrome: Hatsune Miku (初音ミク) http://www.youtube.com/watch?v=MGt25mv4-2Q');
 
+	// Edge Case
+	assert(Twitter.createStatus({
+		type        : 'quote',
+		item        : 'Tombfix',
+		itemUrl     : 'http://tombfix.github.io/',
+		page        : 'Tombfix',
+		pageUrl     : 'http://tombfix.github.io/',
+		body        : ' '
+	}) === 'Tombfix http://tombfix.github.io/');
+	assert(Twitter.createStatus({
+		type        : 'quote',
+		item        : '',
+		itemUrl     : 'http://tsuyuhara.tumblr.com/post/71963590605',
+		page        : '† - test',
+		pageUrl     : 'http://tsuyuhara.tumblr.com/post/71963590605',
+		body        : [
+			'<p><a href="http://tsuyuhara.tumblr.com/post/71963590605" class="tumblr_blog">',
+			'tsuyuhara</a>:</p>\n\n<blockquote><p>test</p></blockquote>\n\n<p></p>'
+		].join(''),
+		favorite    : {
+			name     : 'Tumblr',
+			endpoint : 'http://www.tumblr.com/reblog/71963590605/PrNB53Jd',
+			form     : {}
+		}
+	}) === '"tsuyuhara:\n\ntest" http://tsuyuhara.tumblr.com/post/71963590605');
+
 	// prefix
 	setPref('model.twitter.template.prefix', '見てる:');
 
