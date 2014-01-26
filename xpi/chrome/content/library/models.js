@@ -1247,6 +1247,7 @@ Models.register(update({
 	UPLOAD_API_URL    : 'https://upload.twitter.com/i/tweet/create_with_media.iframe',
 	STATUS_MAX_LENGTH : 140,
 	OPTIONS           : {
+		// for twttr.txt.getTweetLength()
 		short_url_length       : 22,
 		short_url_length_https : 23
 	},
@@ -3046,7 +3047,7 @@ Models.register(update({
 				form = { item : entry.title };
 
 			if (duplicated) {
-				form = update(form, {
+				update(form, {
 					description : entry.bookmarked_data.comment,
 					tags        : entry.bookmarked_data.tags,
 					private     : entry.bookmarked_data.private
