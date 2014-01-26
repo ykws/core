@@ -4,7 +4,7 @@
 /* exported DirectoryService, IOService, WindowMediator, PromptService */
 /* exported CookieManager, LoginManager, StringBundleService, ObserverService */
 /* exported ThreadManager, DOMStorageManager, ScriptSecurityManager */
-/* exported CategoryManager */
+/* exported CategoryManager, CacheService */
 
 var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
@@ -28,7 +28,8 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       obs                   : ObserverService,
       tm                    : ThreadManager,
       domStorageManager     : DOMStorageManager,
-      scriptSecurityManager : ScriptSecurityManager
+      scriptSecurityManager : ScriptSecurityManager,
+      cache                 : CacheService
     } = Services,
     {categoryManager: CategoryManager} = XPCOMUtils;
 
@@ -37,7 +38,8 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
 
   [
     'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IURL', 'IFileURL',
-    'IInputStream', 'ISelectionListener', 'IContentPolicy', 'IHttpChannel'
+    'IInputStream', 'ISelectionListener', 'IContentPolicy', 'IHttpChannel',
+    'ICache'
   ].forEach(name => {
     global[name] = Ci['ns' + name];
   });
@@ -62,6 +64,14 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       'nsI' + (ifc || name)
     );
   });
+
+  // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/exthelper/extIApplication.idl
+  XPCOMUtils.defineLazyServiceGetter(
+    global,
+    'FuelApplication',
+    '@mozilla.org/fuel/application;1',
+    'fuelIApplication'
+  );
 
   /**
    * XPCOMのコンストラクタを生成する。
