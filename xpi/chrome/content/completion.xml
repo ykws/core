@@ -548,6 +548,7 @@
 						return;
 					
 					this.textbox.injectCandidate(item.getAttribute('label'), terminate);
+					window.dispatchEvent(new CustomEvent('valuechange', {detail : { id : 'tags' }}));
 					
 					if(terminate){
 						this.popup.hidePopup();
