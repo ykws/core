@@ -2088,26 +2088,41 @@ Models.register(update({
 
 
 Models.register({
-	name    : 'Delicious',
-	ICON    : 'https://delicious.com/favicon.ico',
-	ORIGIN  : 'https://delicious.com',
-	API_URL : 'https://avosapi.delicious.com/api/v1/',
+	name         : 'Delicious',
+	ICON         : 'https://delicious.com/favicon.ico',
+	ORIGIN       : 'https://delicious.com',
+	API_URL      : 'https://avosapi.delicious.com/api/v1/',
+	// https://delicious.com/rss
+	FEED_API_URL : 'http://feeds.delicious.com/v2/json/',
 
 	check : function (ps) {
-		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
+		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
+			if (ps.file) {
+				return ps.itemUrl;
+			}
+
+			return true;
+		}
 	},
 
 	post : function (ps) {
-		var that = this, retry = true;
+		var user = this.getInfo(), that, retry;
 
-		return this.getInfo().addCallback(function addBookmark(user) {
+		if (!user) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+
+		that = this;
+		retry = true;
+
+		return (function addBookmark() {
 			return request(that.API_URL + 'posts/addoredit', {
 				responseType : 'json',
 				queryString  : {
 					description : ps.item,
 					url         : ps.itemUrl,
-					note        : joinText([ps.body, ps.description], ' ', true),
 					tags        : joinText(ps.tags),
+					note        : joinText([ps.body, ps.description], ' ', true),
 					private     : ps.private ? 'on' : '',
 					replace     : 'true'
 				}
@@ -2115,38 +2130,40 @@ Models.register({
 				if (info.error) {
 					if (retry) {
 						retry = false;
-						return that.updateSession(user).addCallback(addBookmark);
+
+						return that.updateSessionStatus(user).addCallback(addBookmark);
 					}
 
 					throw new Error(info.error);
 				}
 			});
-		});
+		}());
 	},
 
 	getInfo : function () {
-		return succeed().addCallback(() => {
-			var {user} = getLocalStorage(this.ORIGIN);
+		var {user} = getLocalStorage(this.ORIGIN);
 
-			if (user) {
-				user = JSON.parse(user);
+		if (user) {
+			user = JSON.parse(user);
 
-				if (user.isLoggedIn) {
-					return user;
-				}
+			if (user.isLoggedIn) {
+				return user;
 			}
-
-			throw new Error(getMessage('error.notLoggedin'));
-		});
+		}
 	},
 
-	updateSession : function (user) {
-		var {username, password_hash} = user;
-
+	updateSessionStatus : function ({username, password_hash}) {
 		return request(
 			this.API_URL + 'account/webloginhash/' + username + '/' + password_hash,
 			{ responseType : 'json' }
 		).addCallback(res => res.response);
+	},
+
+	getCompose : function (url) {
+		return request(this.API_URL + 'posts/compose', {
+			responseType : 'json',
+			queryString  : { url : url }
+		}).addCallback(res => res.response);
 	},
 
 	/**
@@ -2155,37 +2172,43 @@ Models.register({
 	 * @return {Array}
 	 */
 	getUserTags : function () {
-		return this.getInfo().addCallback(() => {
-			return request(this.API_URL + 'posts/you/tags', {
-				responseType : 'json'
-			});
+		// 下記のAPIではプライベートなタグは取得できない
+		// http://feeds.delicious.com/v2/json/tags/{username}
+		return this.getInfo() ? request(this.API_URL + 'posts/you/tags', {
+			responseType : 'json'
 		}).addCallback(res => {
-			var {tags} = res.response.pkg;
+			var {pkg} = res.response, tags;
 
-			// タグが無いか?(取得失敗時も発生)
-			if (!tags || isEmpty(tags)) {
+			if (!(pkg && pkg.num_tags)) {
 				return [];
 			}
 
-			return reduce((memo, tag) => {
-				memo.push({
-					name      : tag[0],
-					frequency : tag[1]
-				});
+			tags = pkg.tags;
 
-				return memo;
-			}, tags, []);
-		}).addErrback(err => {
-			// Delicious移管によりfeedが停止されタグの取得に失敗する
-			// 再開時に動作するように接続を試行し、失敗したら空にしてエラーを回避する
-			error(err);
+			return Object.keys(tags).map(tag => ({
+				name      : tag,
+				frequency : tags[tag]
+			}));
+		}) : succeed([]);
+	},
 
-			return [];
+	/**
+	 * 人気のタグ一覧を取得する。
+	 *
+	 * @return {Array}
+	 */
+	getPopularTags : function (url) {
+		return request(this.FEED_API_URL + 'urlinfo/' + url.md5(), {
+			responseType : 'json'
+		}).addCallback(res => {
+			var [info] = res.response;
+
+			return info ? Object.keys(info.top_tags) : [];
 		});
 	},
 
 	/**
-	 * タグ、おすすめタグ、ネットワークなどを取得する。
+	 * タグ、人気のタグ、おすすめタグ、ネットワークなどを取得する。
 	 * ブックマーク済みでも取得できる。
 	 *
 	 * @param {String} url 関連情報を取得する対象のページURL。
@@ -2193,37 +2216,31 @@ Models.register({
 	 */
 	getSuggestions : function (url) {
 		return new DeferredHash({
-			tags : this.getUserTags(),
-			suggestions : this.getInfo().addCallback(() => {
-				// フォームを開いた時点でブックマークを追加し過去のデータを修正可能にするか?
-				// 過去データが存在すると、お勧めタグは取得できない
-				// (現時点で保存済みか否かを確認する手段がない)
-				return request(this.API_URL + 'posts/compose', {
-					responseType : 'json',
-					queryString  : { url : url }
-				});
-			}).addCallback(res => {
-				var {pkg} = res.response;
-
-				return {
-					editPage : this.ORIGIN + '/save?url=' + url,
-					form     : {
-						item        : pkg.suggested_title,
-						description : pkg.note,
-						tags        : pkg.suggested_tags/*,
-						private     : null*/
-					},
-
-					duplicated  : pkg.previously_saved,
-					recommended : pkg.suggested_tags
-				};
-			})
+			tags    : this.getUserTags(),
+			popular : this.getPopularTags(url),
+			compose : this.getCompose(url)
 		}).addCallback(ress => {
-			var res = ress.suggestions[1];
+			var {pkg} = ress.compose[1],
+				suggestions = {
+					tags        : ress.tags[1],
+					popular     : ress.popular[1],
+					recommended : pkg.suggested_tags,
+					duplicated  : pkg.previously_saved
+				};
 
-			res.tags = ress.tags[1];
+			if (suggestions.duplicated) {
+				update(suggestions, {
+					form     : {
+						item        : pkg.previously_saved_title,
+						tags        : pkg.previous_tags,
+						description : pkg.previously_saved_note,
+						private     : pkg.previously_saved_privacy
+					},
+					editPage : this.ORIGIN + '/save?url=' + url
+				});
+			}
 
-			return res;
+			return suggestions;
 		});
 	}
 });
