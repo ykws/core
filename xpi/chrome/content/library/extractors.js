@@ -1557,8 +1557,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			if (!ctx.selection) {
 				let target = ctx.target;
 
-				return target && ('selectionStart' in target) &&
-					target.selectionStart !== target.selectionEnd;
+				if (target && ('selectionStart' in target)) {
+					// raise NS_ERROR_FAILURE(DOMException?) in case of input[type="submit"], and so on
+					try {
+						return target.selectionStart !== target.selectionEnd;
+					} catch (err) { }
+				}
 			}
 		},
 		extract : function (ctx) {
