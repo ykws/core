@@ -2998,26 +2998,35 @@ Models.register({
 });
 
 
-Models.register(update({
+Models.register({
 	name   : 'HatenaBookmark',
 	ICON   : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
 	ORIGIN : 'http://b.hatena.ne.jp',
 
 	check : function (ps) {
-		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
+		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
+			if (ps.file) {
+				return ps.itemUrl;
+			}
+
+			return true;
+		}
 	},
 
 	post : function (ps) {
 		return Hatena.getToken().addCallback(token => {
 			var description = joinText([ps.body, ps.description], ' ', true);
 
+			// alternate: http://b.hatena.ne.jp/{username}/add.edit
 			return request(this.ORIGIN + '/bookmarklet.edit', {
 				sendContent : {
 					rks     : token,
 					url     : ps.itemUrl.replace(/%[0-9a-f]{2}/g, str => str.toUpperCase()),
 					// タイトルは共有されているため送信しない
 					title   : null,
-					comment : Hatena.reprTags(ps.tags) + description.replace(/[\n\r]+/g, ' ')
+					// http://b.hatena.ne.jp/help/tag
+					comment : Hatena.reprTags(ps.tags) + description.replace(/[\n\r]+/g, ' '),
+					private : ps.private ? 1 : null
 				}
 			});
 		});
@@ -3026,12 +3035,15 @@ Models.register(update({
 	getEntry : function (url) {
 		return request(this.ORIGIN + '/my.entry', {
 			responseType : 'json',
-			queryString  : {
-				url : url
-			}
+			queryString  : { url : url }
 		}).addCallback(res => res.response);
 	},
 
+	/**
+	 * ユーザーの利用しているタグ一覧を取得する。
+	 *
+	 * @return {Array}
+	 */
 	getUserTags : function (user) {
 		return request(this.ORIGIN + '/' + user + '/tags.json', {
 			responseType : 'json'
@@ -3060,30 +3072,31 @@ Models.register(update({
 			});
 		}).addCallback(ress => {
 			var entry = ress.entry[1],
-				duplicated = !!entry.bookmarked_data,
-				form = { item : entry.title };
+				suggestions = {
+					tags        : ress.tags[1],
+					recommended : entry.recommend_tags,
+					duplicated  : entry.bookmarked_data
+				};
 
-			if (duplicated) {
-				update(form, {
-					description : entry.bookmarked_data.comment,
-					tags        : entry.bookmarked_data.tags,
-					private     : entry.bookmarked_data.private
+			if (suggestions.duplicated) {
+				update(suggestions, {
+					form     : {
+						item        : entry.title,
+						tags        : entry.bookmarked_data.tags,
+						description : entry.bookmarked_data.comment,
+						private     : entry.bookmarked_data.private
+					},
+					editPage : this.ORIGIN + '/add' + queryString({
+						mode : 'confirm',
+						url  : url
+					}, true)
 				});
 			}
 
-			return {
-				form        : form,
-				editPage    : this.ORIGIN + '/add?' + queryString({
-					mode : 'confirm',
-					url  : url
-				}),
-				tags        : ress.tags[1],
-				duplicated  : duplicated,
-				recommended : entry.recommend_tags
-			};
+			return suggestions;
 		});
 	}
-}, AbstractSessionService));
+});
 
 
 Models.register( {
