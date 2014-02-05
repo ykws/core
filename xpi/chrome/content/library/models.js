@@ -639,6 +639,11 @@ Models.register(Tumblr);
 var request_ = request;
 request = function(url, opts){
 	if(/^https?:\/\/(?:\w+\.)*tumblr\..*\/(?:reblog\/|new\/\w+)/.test(url)){
+		if (!(opts && opts.responseType)) {
+			opts = updatetree(opts, {
+				responseType : 'text'
+			});
+		}
 		opts = updatetree(opts, {
 			headers : {
 				'User-Agent' : 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)'

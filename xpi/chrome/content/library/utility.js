@@ -1056,9 +1056,20 @@ function simpleRequest(url, opt) {
 			method = 'POST';
 		}
 		for (let key in sendContent) {
-			if (sendContent[key] instanceof window.File) {
-				multipart = true;
-				break;
+			try {
+				if (sendContent[key] instanceof window.File) {
+					multipart = true;
+					break;
+				}
+			} catch (err) {
+				let file = sendContent[key];
+
+				if (file instanceof IFile) {
+					// https://developer.mozilla.org/en-US/docs/Extensions/Using_the_DOM_File_API_in_chrome_code
+					sendContent[key] = window.File(file.path);
+					multipart = true;
+					break;
+				}
 			}
 		}
 		if (multipart) {
