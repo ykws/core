@@ -261,7 +261,7 @@ State.make(DialogPanel, {
 		
 		onDragStart : function(e){
 			var cursor = window.getComputedStyle(e.target, '').cursor;
-			if(cursor != '-moz-grab' && cursor != 'grab')
+			if(cursor != 'grab')
 				return;
 			
 			this.grab = {
@@ -274,7 +274,7 @@ State.make(DialogPanel, {
 		
 		onClick : function(e){
 			var cursor = window.getComputedStyle(e.target, '').cursor;
-			if(cursor == '-moz-grab' || cursor == 'grab'){
+			if(cursor == 'grab'){
 				// ウィンドウにフォーカスを移しラベル編集を終了させる
 				cancel(e);
 				this.elmWindow.focus();
@@ -290,7 +290,7 @@ State.make(DialogPanel, {
 	
 	dragging : {
 		onChangeState : function(){
-			this.elmWindow.style.cursor = '-moz-grabbing';
+			this.elmWindow.style.cursor = 'grabbing';
 		},
 		
 		onMouseMove : function(e){

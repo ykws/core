@@ -54,7 +54,7 @@ window {
 }
 
 window {
-	cursor: -moz-grab;
+	cursor: grab;
 }
 
 .snap-top-left{
