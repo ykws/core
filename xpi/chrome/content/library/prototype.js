@@ -386,7 +386,7 @@
         return this.charLength;
       },
       get : function getCharLength() {
-        return this.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ' ').length;
+        return [...this].length;
       },
       enumerable   : false,
       configurable : true
