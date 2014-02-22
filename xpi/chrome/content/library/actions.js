@@ -16,7 +16,7 @@
 
           return uri.fileExtension === 'js' && ((
             // GitHubでかつraw以外のリンクの場合は除外する
-            /^(?:gist\.)?github\.com$/.test(uri.host) &&
+            /^(?:gist\.)?github(?:usercontent)?\.com$/.test(uri.host) &&
             /\/raw\//.test(uri.path)
           ) || /^raw\d*\.github\.com$/.test(uri.host));
         }
