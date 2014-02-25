@@ -1478,7 +1478,7 @@ Models.register(update({
 				sendContent  : {
 					status                  : status,
 					'media_data[]'          : btoa(bis.readBytes(bis.available())),
-					iframe_callback         : 'window.top.swift_tweetbox_tombfix',
+					iframe_callback         : 'window.top.swift_tweetbox_' + Date.now(),
 					post_authenticity_token : token.authenticity_token
 				}
 			}).addErrback(({message : req}) => {
@@ -1486,7 +1486,7 @@ Models.register(update({
 
 				if (doc && doc.scripts) {
 					let json = JSON.parse(doc.scripts[0].textContent.extract(
-						/window.top.swift_tweetbox_tombfix\((\{.+\})\);/
+						/window.top.swift_tweetbox_\d+\((\{.+\})\);/
 					));
 
 					throw new Error(json.error);
