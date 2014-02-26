@@ -808,7 +808,7 @@ Models.register(update({
 				delete ps.method;
 			
 			update(ps, page.token);
-			ps.cb = new Date().getTime(),
+			ps.cb = Date.now(),
 			ps.api_sig = (page.secret + keys(ps).sort().filter(function(key){
 				// ファイルを取り除く
 				return typeof(ps[key])!='object';

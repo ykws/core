@@ -617,7 +617,7 @@ function getTempDir(name){
 
 function getTempFile(ext){
 	var file = getTempDir();
-	file.append(joinText(['tombfix_' + (new Date()).getTime(), ext], '.'));
+	file.append(joinText(['tombfix_' + Date.now(), ext], '.'));
 	
 	return file;
 }
@@ -844,7 +844,7 @@ function request(url, opts){
 				new StringInputStream(contents),
 				'application/x-www-form-urlencoded', -1);
 		} else {
-			var boundary = '---------------------------' + (new Date().getTime());
+			var boundary = '---------------------------' + Date.now();
 			var streams = [];
 			
 			for(var name in contents){
