@@ -2960,7 +2960,13 @@ Models.register(update({
 		return this.getSessionValue('userInfo', () => {
 			return request(this.API_URL, {
 				responseType : 'json'
-			}).addCallback(res => res.response);
+			}).addCallback(({response : json}) => {
+				if (json.login === 0) {
+					throw new Error(getMessage('error.notLoggedin'));
+				}
+
+				return json;
+			});
 		});
 	},
 
