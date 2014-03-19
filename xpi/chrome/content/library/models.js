@@ -1146,7 +1146,7 @@ Models.register({
 
 Models.register({
 	name : 'Gyazo',
-	ICON : 'http://gyazo.com/public/img/favicon.ico',
+	ICON : 'chrome://tombfix/skin/favicon/gyazo.ico',
 	
 	check : function(ps){
 		return ps.type=='photo' && ps.file;
