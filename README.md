@@ -20,6 +20,9 @@ TomblooがインストールされていてもTombfixのインストールに大
 基本的にFirefoxの最新の安定版のみに対応しますが、Beta、Aurora、Nightlyで不具合が発生した場合、確認でき次第修正を試みたいと考えています。[ESR](http://www.mozilla.jp/business/downloads/)については[対応しません](https://github.com/tombfix/core/issues/70)。  
 また、OSに関してはWindows 7 Home Premium SP1 64bitでしか確認していない為、その他の環境の設定ダイアログのデザインなどは崩れている可能性があります。
 
+## 不具合や要望の報告
+[Tombfix本体](https://github.com/tombfix/core/issues?state=open)に関しては[こちら](https://github.com/tombfix/core/issues/new)に、[パッチ](https://github.com/tombfix/patch/issues?state=open)に関しては[こちら](https://github.com/tombfix/patch/issues/new)から報告をお願いします。報告の際、[こちら](https://github.com/tombfix/core/blob/master/CONTRIBUTING.md)の「Issueについて」を確認して頂けるとありがたいです。
+
 ## ライセンス
 
 Tomblooと同様、このプロジェクトで作成された全ての成果物はPublic Domainです。  
