@@ -270,7 +270,7 @@ div{
 #posters image.poster{
 	width: 16px;
 	height: 16px;
-	-moz-box-sizing: content-box;
+	box-sizing: content-box;
 	
 	/*
 	横方向の調整にborderを使いマウスオーバーしない時間を減らす。
