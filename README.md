@@ -1,4 +1,4 @@
-# Tombfix[![Build Status](https://travis-ci.org/tombfix/core.png?branch=master)](https://travis-ci.org/tombfix/core)
+# Tombfix[![Build Status](https://travis-ci.org/tombfix/core.svg?branch=master)](https://travis-ci.org/tombfix/core)
 
 TombfixはTomblooの派生版です。主な目的はTomblooのメンテナンスとなります。
 
