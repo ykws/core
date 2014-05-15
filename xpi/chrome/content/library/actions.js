@@ -18,7 +18,7 @@
             // GitHubでかつraw以外のリンクの場合は除外する
             /^(?:gist\.)?github(?:usercontent)?\.com$/.test(uri.host) &&
             /\/raw\//.test(uri.path)
-          ) || /^raw\d*\.github\.com$/.test(uri.host));
+          ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(uri.host));
         }
       },
       execute : function execute(ctx) {
@@ -26,7 +26,11 @@
         return request(ctx.linkURL).addCallback(res => {
           var result;
 
-          if (res.channel.contentType !== 'text/plain') {
+          if (
+            [
+              'text/plain', 'application/javascript'
+            ].indexOf(res.channel.contentType) === -1
+          ) {
             alert(getMessage('message.install.invalid'));
 
             return;
