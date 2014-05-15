@@ -4,7 +4,7 @@ TombfixはTomblooの派生版です。主な目的はTomblooのメンテナン�
 
 ## インストール
 
-* [tombfix.xpi](https://raw.github.com/tombfix/update/master/tombfix.xpi)
+* [tombfix.xpi](https://raw.githubusercontent.com/tombfix/update/master/tombfix.xpi)
 
 上記をダウンロード後、Firefoxにドラッグ・アンド・ドロップするとインストールされます。  
 TomblooがインストールされていてもTombfixのインストールに大きな問題はありませんが、なるべくTomblooを無効にしてからインストールした方が良いかもしれません。
