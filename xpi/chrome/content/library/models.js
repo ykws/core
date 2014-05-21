@@ -1249,7 +1249,7 @@ Models.register(update({
 	ORIGIN            : 'https://twitter.com',
 	ACCOUT_URL        : 'https://twitter.com/settings/account',
 	TWEET_API_URL     : 'https://twitter.com/i/tweet',
-	UPLOAD_API_URL    : 'https://upload.twitter.com/i/tweet/create_with_media.iframe',
+	UPLOAD_API_URL    : 'https://upload.twitter.com/i/media/upload.iframe',
 	STATUS_MAX_LENGTH : 140,
 	OPTIONS           : {
 		// for twttr.txt.getTweetLength()
@@ -1461,11 +1461,29 @@ Models.register(update({
 	update : function (token, status) {
 		token.status = status;
 
+		// can't handle a post error correctly. Twitter's Bug?
+		/*
 		return request(this.TWEET_API_URL + '/create', {
 			responseType : 'json',
 			sendContent : token
 		}).addErrback(({message : req}) => {
 			throw new Error(req.response.message.trimTag());
+		});
+		*/
+
+		return request(this.TWEET_API_URL + '/create', {
+			responseType : 'text',
+			sendContent : token
+		}).addErrback(({message : req}) => {
+			var text = req.responseText, json;
+
+			try {
+				json = JSON.parse(text);
+			} catch (err) {
+				throw new Error(getMessage('error.resultsUnclear'));
+			}
+
+			throw new Error(json.message.trimTag());
 		});
 	},
 
@@ -1475,25 +1493,19 @@ Models.register(update({
 
 			return request(this.UPLOAD_API_URL, {
 				responseType : 'document',
-				sendContent  : {
-					status                  : status,
-					'media_data[]'          : btoa(bis.readBytes(bis.available())),
-					iframe_callback         : 'window.top.swift_tweetbox_' + Date.now(),
-					post_authenticity_token : token.authenticity_token
-				}
-			}).addErrback(({message : req}) => {
-				var doc = req.response;
-
-				if (doc && doc.scripts) {
-					let json = JSON.parse(doc.scripts[0].textContent.extract(
-						/window.top.swift_tweetbox_\d+\((\{.+\})\);/
-					));
-
-					throw new Error(json.error);
-				}
-
-				// image is over 3MB
+				sendContent  : update({
+					media : btoa(bis.readBytes(bis.available()))
+				}, token)
+			}).addErrback(() => {
 				throw new Error(getMessage('message.model.twitter.upload'));
+			}).addCallback(({response : doc}) => {
+				var json = JSON.parse(doc.scripts[0].textContent.extract(
+					/parent\.postMessage\(JSON\.stringify\((\{.+\})\), ".+"\);/
+				));
+
+				return this.update(update({
+					media_ids : json.media_id_string
+				}, token), status);
 			});
 		});
 	},
