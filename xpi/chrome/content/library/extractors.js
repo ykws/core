@@ -154,124 +154,136 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Amazon',
-		getAsin : function(ctx){
-			return $x('id("ASIN")/@value');
+		getAsin : function () {
+			return $x('//input[@name="ASIN" or @name="ASIN.0"]/@value');
 		},
-		normalizeUrl : function(host, asin){
-			return  'http://' + host + '/o/ASIN/' + asin + 
-				(this.affiliateId ? '/' + this.affiliateId + '/ref=nosim' : '');
+		normalizeUrl : function (host, asin) {
+			return  'http://' + host + '/dp/' + asin +
+				(this.affiliateId() ? '?tag=' + this.affiliateId() : '');
 		},
-		get affiliateId(){
+		affiliateId : function () {
 			return getPref('amazonAffiliateId');
 		},
-		preCheck : function(ctx){
-			return ctx.host.match(/amazon\./) && this.getAsin(ctx);
+		preCheck : function (ctx) {
+			// this check code should be strict.
+			return /amazon\./.test(ctx.host) && this.getAsin(ctx);
 		},
-		extract : function(ctx){
+		extract : function (ctx) {
 			// 日本に特化(comの取得方法不明)
-			var date = new Date(ctx.document.body.innerHTML.extract('発売日：.*?</b>.*?([\\d/]+)'));
-			if(!isNaN(date))
+			var date = new Date(ctx.document.body.innerHTML.extract(
+				'発売日：.*?</b>.*?([\\d/]+)'
+			));
+
+			if (!Number.isNaN(date)) {
 				ctx.date = date;
-			
-			ctx.href = this.normalizeUrl(ctx.host, this.getAsin(ctx));
-			
-			var elmTitle = $x('id("btAsinTitle")');
-			if(!elmTitle)
-				return
-			
+			}
+
+			ctx.href = this.normalizeUrl(ctx.host, this.getAsin());
+
+			var productTitle = $x('id("prodImage")/@alt | id("btAsinTitle")/text()');
+
+			if (!productTitle) {
+				return;
+			}
+
 			var authors = $x([
 				'id("handleBuy")/div[@class="buying"]/span//a/text()',
-				'id("handleBuy")/div[@class="buying"]/a/text()'
+				'id("handleBuy")/div[@class="buying"]/a/text()',
+				'//div[@class="buying"]/span[@class="contributorNameTrigger"]/a/text()',
+				'//div[@class="buying"]/h1[@class="parseasinTitle"]/following-sibling::a/text()'
 			].join('|'), currentDocument(), true);
-			
-			ctx.title = 'Amazon: ' + 
-				elmTitle.textContent + 
-				(authors.length? ': ' + authors.join(', ') : '');
-		},
+
+			ctx.title = 'Amazon: ' +
+				productTitle + (authors.length ? ': ' + authors.join(', ') : '');
+		}
 	},
-	
+
 	{
 		name : 'Photo - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
-		check : function(ctx){
-			return Extractors.Amazon.preCheck(ctx) && 
+		check : function (ctx) {
+			return Extractors.Amazon.preCheck(ctx) &&
 				($x('./ancestor::*[@id="prodImageCell" or @id="prodImageOuter" or @id="image-block-widget"]', ctx.target) || ctx.target.id == 'magnifierLens');
 		},
-		extract : function(ctx){
+		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
-			
+
 			var d = new Deferred();
-			
+
 			// 拡大レンズなど画像以外の要素か?
-			if(!ctx.target.src)
-				ctx.target = $x('id("prodImageCell")/img | id("main-image") | id("original-main-image")');
-			
+			if (!ctx.target.src) {
+				ctx.target = $x('id("prodImageCell")/img | id("main-image") | id("original-main-image") | id("landingImage")');
+			}
+
 			// tools4hack
 			// http://tools4hack.santalab.me/new-ipad-get-largeartwork-amazon-img.html
 			var elmImage = IMG({
-				src : 'http://z-ecx.images-amazon.com/images/P/' + 
-					Extractors.Amazon.getAsin(ctx) + 
+				src : 'http://z-ecx.images-amazon.com/images/P/' +
+					Extractors.Amazon.getAsin(ctx) +
 					'.09.MAIN._FMpng_SCRMZZZZZZ_.png'
 			});
-			elmImage.onload = function(){
+			elmImage.onload = () => {
 				// 画像が存在しない場合1ピクセル四方の画像が返される
-				if(elmImage.width < 50 && elmImage.height < 50)
+				if (elmImage.width < 50 && elmImage.height < 50) {
 					return elmImage.onerror();
-				
+				}
+
 				d.callback(elmImage.src);
-			}
-			
+			};
 			// 画像が存在していてもエラーになることがある
-			elmImage.onerror = function(){
+			elmImage.onerror = () => {
 				var url = ctx.target.src.split('.');
+
 				url.splice(-2, 1, 'LZZZZZZZ');
 				url = url.join('.').replace('.L.LZZZZZZZ.', '.L.'); // カスタマーイメージ用
-				
+
 				d.callback(url);
-			}
-			
-			d.addCallback(function(url){
-				with(ctx.target){
-					src = url
-					height = '';
-					width = '';
-					style.height = 'auto';
-					style.width = 'auto';
-				}
-				
+			};
+
+			d.addCallback(url => {
+				var {target} = ctx;
+
+				target.src = url;
+				target.height = '';
+				target.width = '';
+				target.style.height = 'auto';
+				target.style.width = 'auto';
+
 				return {
 					type    : 'photo',
 					item    : ctx.title,
-					itemUrl : url,
+					itemUrl : url
 				};
 			});
-			
+
 			return d;
-		},
+		}
 	},
-	
+
 	{
 		name : 'Quote - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
-		check : function(ctx){
+		check : function (ctx) {
 			return Extractors.Amazon.preCheck(ctx) && ctx.selection;
 		},
-		extract : function(ctx){
+		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
+
 			return Extractors.Quote.extract(ctx);
-		},
+		}
 	},
 
 	{
 		name : 'Link - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
-		check : function(ctx){
+		check : function (ctx) {
 			return Extractors.Amazon.preCheck(ctx);
 		},
-		extract : function(ctx){
+		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
+
 			return Extractors.Link.extract(ctx);
-		},
+		}
 	},
 	
 	{
