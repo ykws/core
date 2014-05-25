@@ -461,13 +461,15 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		name : 'Photo - Flickr',
 		ICON : Models.Flickr.ICON,
 		
-		RE : new RegExp('^http://(?:.+?.)?static.?flickr.com/\\d+?/(\\d+?)_.*'),
+		RE : new RegExp('^https?://(?:.+?.)?static.?flickr.com/\\d+?(?:/\\d+?)?/(\\d+?)_.*'),
 		getImageId : function(ctx){
 			// 他サイトに貼られているFlickrにも対応する
 			if(/flickr\.com/.test(ctx.host)){
 				// ログインしているとphoto-drag-proxyが前面に表示される
 				// アノテーション上の場合はphoto_notesの孫要素となる
-				if(
+				if ($x('./ancestor-or-self::div[contains(concat(" ",normalize-space(@class)," "), " photo-well-view ")]', ctx.target)) {
+					ctx.target = $x('//div[@id="content"]//div[contains(concat(" ",normalize-space(@class)," "), " photo-well-media-view ")]/img') || ctx.target;
+				} else if (
 					(ctx.target.src && ctx.target.src.match('spaceball.gif')) || 
 					ctx.target.id == 'photo-container' || 
 					$x('./ancestor-or-self::div[@id="photo-drag-proxy"]', ctx.target)
