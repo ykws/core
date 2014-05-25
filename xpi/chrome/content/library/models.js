@@ -764,7 +764,7 @@ Models.register(update({
 	ICON : 'http://www.flickr.com/favicon.ico',
 	API_KEY : 'ecf21e55123e4b31afa8dd344def5cc5',
 	API_REST_URL: 'http://flickr.com/services/rest/',
-	API_UPLOAD_URL: 'http://up.flickr.com/services/upload/',
+	API_UPLOAD_URL: 'https://up.flickr.com/services/upload/',
 	
 	check : function(ps){
 		return ps.type == 'photo';
