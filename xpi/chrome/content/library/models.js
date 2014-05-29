@@ -2634,35 +2634,38 @@ Models.register({
 
 
 Models.register(update({
-	name : 'Instapaper',
-	ICON : 'chrome://tombfix/skin/favicon/instapaper.png',
-	POST_URL: 'http://www.instapaper.com/edit',
-	check : function(ps){
-		return (/(quote|link)/).test(ps.type);
+	name     : 'Instapaper',
+	ICON     : 'chrome://tombfix/skin/favicon/instapaper.png',
+	POST_URL : 'https://www.instapaper.com/edit',
+
+	check : function (ps) {
+		return /^(?:quote|link)$/.test(ps.type);
 	},
-	
-	getAuthCookie : function(){
-		return getCookieString('www.instapaper.com', 'pfu');
-	},
-	
-	post : function(ps){
-		var url = this.POST_URL;
-		return this.getSessionValue('token', function(){
-			return request(url).addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
+
+	post : function (ps) {
+		return this.getSessionValue('token', () => {
+			return request(this.POST_URL, {
+				responseType : 'document'
+			}).addCallback(({response : doc}) => {
 				return $x('//input[@id="form_key"]/@value', doc);
 			});
-		}).addCallback(function(token){
-			return request(url, {
-				redirectionLimit: 0,
-				sendContent: {
-					'form_key': token,
-					'bookmark[url]': ps.itemUrl,
-					'bookmark[title]': ps.item,
-					'bookmark[selection]': joinText([ps.body, ps.description])
+		}).addCallback(token => {
+			return request(this.POST_URL, {
+				sendContent : {
+					'form_key'            : token,
+					'bookmark[url]'       : ps.itemUrl,
+					'bookmark[title]'     : ps.item,
+					'bookmark[selection]' : joinText([
+						Twitter.createQuote(ps.body || ''),
+						ps.description
+					], '\n\n')
 				}
 			});
 		});
+	},
+
+	getAuthCookie : function () {
+		return getCookieString('www.instapaper.com', 'pfu');
 	}
 }, AbstractSessionService));
 
