@@ -2671,42 +2671,48 @@ Models.register(update({
 
 
 Models.register({
-	name : 'Readability',
-	ICON : 'chrome://tombfix/skin/favicon/readability.png',
-	URL  : 'http://www.readability.com/',
-	
-	check : function(ps){
-		return ps.type == 'link';
+	name      : 'Readability',
+	ICON      : 'chrome://tombfix/skin/favicon/readability.png',
+	// via https://www.readability.com/bookmarklets
+	QUEUE_URL : 'https://www.readability.com/articles/queue',
+
+	check : function (ps) {
+		return ps.type === 'link';
 	},
-	
-	post : function(ps){
-		return Readability.queue(ps.itemUrl);
-	},
-	
-	getToken : function(){
-		return request(Readability.URL + 'extension/ajax/sync').addCallback(function(res){
-			res = JSON.parse(res.responseText);
-			
-			if(!res.success)
+
+	post : function (ps) {
+		return this.queue(ps.itemUrl).addCallback(res => {
+			if (res.channel.URI.spec === this.QUEUE_URL) {
 				throw new Error(getMessage('error.notLoggedin'));
-			
-			return res.readabilityToken;
+			}
 		});
 	},
-	
-	queue : function(url, read){
-		return Readability.getToken().addCallback(function(token){
-			return request(Readability.URL + 'articles/queue', {
-				redirectionLimit : 0,
-				sendContent : {
-					token : token,
-					url   : url,
-					
-					read  : read? 1 : 0,
-				}
-			});
+
+	queue : function (url, read) {
+		var token;
+
+		if (read) {
+			token = '';
+		} else {
+			token = this.getToken();
+
+			if (!token) {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+		}
+
+		return request(this.QUEUE_URL, {
+			sendContent : {
+				token : token,
+				url   : url,
+				read  : read ? 1 : 0
+			}
 		});
 	},
+
+	getToken : function () {
+		return getCookieValue('readability.com', 'readabilityToken');
+	}
 });
 
 
