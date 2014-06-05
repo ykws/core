@@ -509,7 +509,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					item      : title,
 					itemUrl   : sizes.pop().source,
 					author    : info.owner.username,
-					authorUrl : ctx.href.extract('^(http://.*?flickr.com/photos/.+?/)'),
+					authorUrl : ctx.href.extract('^(https?://.*?flickr.com/photos/.+?/)'),
 					favorite  : {
 						name : 'Flickr',
 						id   : id,
