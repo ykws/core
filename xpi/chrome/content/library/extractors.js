@@ -1462,7 +1462,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			};
 		},
 		getAuthor : function (doc) {
-			return doc.querySelector('#watch7-user-header > .yt-user-name');
+			return doc.querySelector('#watch7-user-header .yt-user-name');
 		}
 	},
 	
