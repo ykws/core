@@ -180,7 +180,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			ctx.href = this.normalizeUrl(ctx.host, this.getAsin());
 
-			var productTitle = $x('id("prodImage")/@alt | id("btAsinTitle")/text()');
+			var productTitle = $x('id("prodImage")/@alt | //span[@id="btAsinTitle" or @id="productTitle"]/text()');
 
 			if (!productTitle) {
 				return;
@@ -190,7 +190,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				'id("handleBuy")/div[@class="buying"]/span//a/text()',
 				'id("handleBuy")/div[@class="buying"]/a/text()',
 				'//div[@class="buying"]/span[@class="contributorNameTrigger"]/a/text()',
-				'//div[@class="buying"]/h1[@class="parseasinTitle"]/following-sibling::a/text()'
+				'//div[@class="buying"]/h1[@class="parseasinTitle"]/following-sibling::a/text()',
+				'//div[@data-feature-name="brandByline"]//a[@id="brand"]/text()'
 			].join('|'), currentDocument(), true);
 
 			ctx.title = 'Amazon: ' +
