@@ -28,6 +28,18 @@ module.exports = function (grunt) {
         jshintrc: '.jshintrc'
       }
     },
+    jscs: {
+      all: {
+        files: {
+          src: [
+            'Gruntfile.js'
+          ]
+        },
+        options: {
+          config: '.jscsrc'
+        }
+      }
+    },
     compress: {
       main: {
         options: {
@@ -45,7 +57,8 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-compress');
+  grunt.loadNpmTasks('grunt-jscs-checker');
 
-  grunt.registerTask('default', 'jshint');
+  grunt.registerTask('default', ['jshint', 'jscs']);
   grunt.registerTask('xpi', 'compress');
 };
