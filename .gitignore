@@ -1,8 +1,2 @@
-dest/
-build.properties
-resouces/
-xpi/chrome/content/work/
-*.bak
-*.orig
 node_modules/
 tombfix.xpi

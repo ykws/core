@@ -1,4 +1,4 @@
-/* jshint esnext:false, moz:false, node:true, globalstrict:true */
+/* jshint esnext: false, moz: false, node: true */
 'use strict';
 
 module.exports = function (grunt) {
@@ -43,13 +43,9 @@ module.exports = function (grunt) {
     }
   });
 
-  // load tasks
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-compress');
 
-  // alias
-  grunt.registerTask('lint', 'jshint');
-  grunt.registerTask('travis', 'jshint');
-  grunt.registerTask('default', 'lint');
+  grunt.registerTask('default', 'jshint');
   grunt.registerTask('xpi', 'compress');
 };

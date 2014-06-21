@@ -7,12 +7,12 @@
     "url": "https://github.com/tombfix/core.git"
   },
   "devDependencies": {
-    "grunt": "*",
-    "grunt-cli": "*",
-    "grunt-contrib-jshint": "*",
-    "grunt-contrib-compress": "*"
+    "grunt": "",
+    "grunt-cli": "",
+    "grunt-contrib-jshint": "",
+    "grunt-contrib-compress": ""
   },
   "scripts": {
-    "test": "node_modules/.bin/grunt travis"
+    "test": "grunt"
   }
 }
