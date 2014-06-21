@@ -27,14 +27,29 @@ module.exports = function (grunt) {
       options: {
         jshintrc: '.jshintrc'
       }
+    },
+    compress: {
+      main: {
+        options: {
+          archive: 'tombfix.xpi',
+          mode: 'zip',
+          // approximately equal to the level of Windows 7's menu zip archiver?
+          level: 6
+        },
+        expand: true,
+        cwd: 'xpi/',
+        src: '**/*'
+      }
     }
   });
 
   // load tasks
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
   // alias
   grunt.registerTask('lint', 'jshint');
   grunt.registerTask('travis', 'jshint');
   grunt.registerTask('default', 'lint');
+  grunt.registerTask('xpi', 'compress');
 };

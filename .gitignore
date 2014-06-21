@@ -5,3 +5,4 @@ xpi/chrome/content/work/
 *.bak
 *.orig
 node_modules/
+tombfix.xpi
