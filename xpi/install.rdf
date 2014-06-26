@@ -19,6 +19,7 @@
     <em:name>Tombfix</em:name>
     <em:description>Tombfix is Fork of Tombloo. The main purpose is the maintenance of Tombloo.</em:description>
     <em:creator>syoichi</em:creator>
+    <em:contributor>iyoupapa</em:contributor>
     <em:homepageURL>https://github.com/tombfix/core</em:homepageURL>
     <em:iconURL>chrome://tombfix/skin/tombloo_32.png</em:iconURL>
     <em:optionsURL>chrome://tombfix/content/prefs.xul</em:optionsURL>
