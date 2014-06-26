@@ -1055,7 +1055,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		extract : function (ctx) {
 			var that = this, retry = true;
 
-			return this.getMediumPage(ctx).addCallback(function getImage(info){
+			return this.getMediumPage(ctx).addCallback(function getImage(info) {
 				var {imageURL, pageTitle, illustID} = info;
 
 				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
