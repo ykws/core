@@ -1130,7 +1130,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		},
 		fixImageExtensionFromAPI : function (info) {
 			return this.requestAPI(info.illustID).addCallback(res => {
-				var extension = res.responseText.trim().split(',')[2].replace(/"/g, '');
+				var extension = res.responseText.trim().split(',')[2].replace(/^"|"$/g, '');
 
 				info.imageURL = info.imageURL.replace(
 					/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
