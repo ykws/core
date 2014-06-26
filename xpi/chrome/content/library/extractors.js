@@ -577,67 +577,69 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Photo - Flickr',
-		ICON : Models.Flickr.ICON,
-		
-		RE : new RegExp('^https?://(?:.+?.)?static.?flickr.com/\\d+?(?:/\\d+?)?/(\\d+?)_.*'),
-		getImageId : function(ctx){
-			// 他サイトに貼られているFlickrにも対応する
-			if(/flickr\.com/.test(ctx.host)){
-				// ログインしているとphoto-drag-proxyが前面に表示される
-				// アノテーション上の場合はphoto_notesの孫要素となる
-				if ($x('./ancestor-or-self::div[contains(concat(" ",normalize-space(@class)," "), " photo-well-view ")]', ctx.target)) {
-					ctx.target = $x('//div[@id="content"]//div[contains(concat(" ",normalize-space(@class)," "), " photo-well-media-view ")]/img') || ctx.target;
-				} else if (
-					(ctx.target.src && ctx.target.src.match('spaceball.gif')) || 
-					ctx.target.id == 'photo-container' || 
-					$x('./ancestor-or-self::div[@id="photo-drag-proxy"]', ctx.target)
-				){
-					ctx.target = $x('//div[@class="photo-div"]/img') || ctx.target;
-				} else if ($x('./ancestor-or-self::a[@data-track]', ctx.target)) {
-					ctx.target = $x('./ancestor-or-self::a[@data-track]/img', ctx.target);
-				}
-			}
-			
-			if(!ctx.target || !ctx.target.src || !ctx.target.src.match(this.RE))
-				return;
-			
-			return RegExp.$1;
+		name          : 'Photo - Flickr',
+		ICON          : Models.Flickr.ICON,
+		ID_RE         : new RegExp(
+			'^https?://(?:(?:www\\.)?flickr\\.com/photos/.+?|' +
+				'(?:.+?\\.)?static\\.?flickr\\.com/\\d+(?:/\\d+)?)/(\\d+)'
+		),
+		IMAGE_PAGE_RE : /^(https?:\/\/(?:www\.)?flickr\.com\/photos\/.+?\/)\d+/,
+		check : function (ctx) {
+			return !ctx.selection && this.getImageID(ctx);
 		},
-		check : function(ctx){
-			return this.getImageId(ctx);
-		},
-		extract : function(ctx){
-			var id = this.getImageId(ctx);
+		extract : function (ctx) {
+			var id = this.getImageID(ctx);
+
 			return new DeferredHash({
-				'info'  : Flickr.getInfo(id),
-				'sizes' : Flickr.getSizes(id),
-			}).addCallback(function(r){
-				if(!r.info[0])
-					throw new Error(r.info[1].message);
-				
-				var info = r.info[1];
-				var sizes = r.sizes[1];
-				
-				var title = info.title._content;
-				ctx.title = title + ' on Flickr'
+				info  : Flickr.getInfo(id),
+				sizes : Flickr.getSizes(id)
+			}).addCallback(ress => {
+				var [success, info] = ress.info,
+					sizes, title;
+
+				if (!success) {
+					throw new Error(info.message);
+				}
+
+				sizes = ress.sizes[1];
+				title = info.title._content;
+
+				ctx.title = title + ' on Flickr';
 				ctx.href  = info.urls.url[0]._content;
-				
+
 				return {
 					type      : 'photo',
 					item      : title,
 					itemUrl   : sizes.pop().source,
 					author    : info.owner.username,
-					authorUrl : ctx.href.extract('^(https?://.*?flickr.com/photos/.+?/)'),
+					authorUrl : ctx.href.extract(this.IMAGE_PAGE_RE),
 					favorite  : {
 						name : 'Flickr',
-						id   : id,
-					},
-				}
-			}).addErrback(function(err){
-				return Extractors.Photo.extract(ctx);
-			});
+						id   : id
+					}
+				};
+			}).addErrback(() => Extractors.Photo.extract(ctx));
 		},
+		getImageID : function (ctx) {
+			var url = ctx.onImage ? ctx.target.src : (
+				ctx.onLink ? ctx.link.href : ctx.href
+			);
+
+			if (this.ID_RE.test(url)) {
+				if (this.IMAGE_PAGE_RE.test(ctx.href)) {
+					if ($x(
+						'./ancestor::*[contains(concat(" ", (@class), " "), " photo-well-scrappy-view ")]',
+						ctx.target
+					)) {
+						url = ctx.href;
+					}
+				}
+
+				return (
+					this.ID_RE.test(ctx.bgImageURL) ? ctx.bgImageURL : url
+				).extract(this.ID_RE);
+			}
+		}
 	},
 	
 	{
