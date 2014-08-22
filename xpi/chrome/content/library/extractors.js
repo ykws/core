@@ -114,25 +114,53 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Quote - Twitter',
 		ICON : Models.Twitter.ICON,
-		check : function(ctx){
-			return ctx.href.match('//twitter.com/.*?/(status|statuses)/\\d+');
+		TWEET_URL_RE: /^https:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
+		check : function (ctx) {
+			return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
 		},
-		extract : function(ctx){
+		extract : function (ctx) {
+			var url = ctx.href;
+
 			return {
 				type     : 'quote',
-				item     : ctx.title.substring(0, ctx.title.indexOf(': ')),
-				itemUrl  : ctx.href,
-				body     : createFlavoredString(ctx.selection? 
-					ctx.window.getSelection() : 
-					ctx.document.querySelector('.js-tweet-text') || 
-					ctx.document.querySelector('.tweet-text-large') || 
-					ctx.document.querySelector('.entry-content')),
+				item     : 'Twitter / ' + url.extract(this.TWEET_URL_RE),
+				itemUrl  : url,
+				body     : this.getCustomFlavoredString(
+					ctx.selection ?
+						ctx.window.getSelection() :
+						this.removeTcoEllipsis(this.getTweet(ctx))
+				),
 				favorite : {
 					name : 'Twitter',
-					id   : ctx.href.match(/(status|statuses)\/(\d+)/)[2],
-				},
-			}
+					id   : url.extract(this.TWEET_URL_RE, 2)
+				}
+			};
 		},
+		getTweet: function (ctx) {
+			return ctx.document.querySelector('.permalink-tweet .tweet-text');
+		},
+		getCustomFlavoredString: function (src) {
+			var customStr = new String(
+				src instanceof Element ?
+					src.textContent :
+					convertToPlainText(src)
+			);
+
+			customStr.flavors = {
+				html : convertToHTMLString(src, true)
+			};
+
+			return customStr;
+		},
+		removeTcoEllipsis: function (elm) {
+			var cloneElm = elm.cloneNode(true);
+
+			for (let target of [...cloneElm.getElementsByClassName('tco-ellipsis')]) {
+				target.parentNode.removeChild(target);
+			}
+
+			return cloneElm;
+		}
 	},
 	
 	{
