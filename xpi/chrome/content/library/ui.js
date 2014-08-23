@@ -296,7 +296,7 @@ connect(grobal, 'browser-load', function(e){
 			} else {
 				// リンク上とそれ以外で表示されるメニューが異なる
 				// 常に上から2ブロック目あたりに表示する
-				['context-sep-open', 'context-sep-copyimage', 'context-sep-stop', 'context-sep-selectall'].some(function(id){
+				['context-sep-navigation', 'context-sep-open', 'context-sep-copyimage', 'context-sep-stop', 'context-sep-selectall'].some(function(id){
 					insertPoint = cwin.document.getElementById(id);
 					return insertPoint && !insertPoint.hidden;
 				});
