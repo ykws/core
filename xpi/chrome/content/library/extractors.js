@@ -1083,7 +1083,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		extract : function (ctx) {
 			var that = this, retry = true;
 
-			return this.getMediumPage(ctx).addCallback(function getImage(info) {
+			return this.getMediumPage(ctx).addCallback(function getImage(info){
 				var {imageURL, pageTitle, illustID} = info;
 
 				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
@@ -1111,7 +1111,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			var illustID = this.getIllustID(ctx);
 
 			if (!ctx.onImage && !ctx.onLink && this.isImagePage(ctx, 'medium')) {
-				return this.getInfo(ctx, illustID);
+				return succeed(this.getInfo(ctx, illustID));
 			}
 
 			return request(this.PAGE_URL + illustID, {
@@ -1119,11 +1119,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}).addCallback(res => this.getInfo(ctx, illustID, res.response));
 		},
 		getInfo : function (ctx, illustID, doc) {
-			var title, img, url, info;
-
-			doc = doc || ctx.document;
-			title = doc.title;
-			img = this.getImageElement({document : doc}, illustID);
+			var {title} = doc || ctx.document,
+				img = this.getImageElement(doc ? {document : doc} : ctx, illustID),
+				url;
 
 			// for limited access about mypixiv
 			if (!img) {
@@ -1139,42 +1137,21 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				);
 			}
 
-			info = {
+			return {
 				imageURL  : url,
 				pageTitle : title,
 				illustID  : illustID
 			};
-
-			if (doc.querySelector('._ugoku-illust-player-container')) {
-				return this.fixImageURLforUgoiraFromAPI(info);
-			}
-
-			return succeed(info);
-		},
-		requestAPI : function (illustID) {
-			return request(
-				this.API_URL + illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
-			);
 		},
 		fixImageExtensionFromAPI : function (info) {
-			return this.requestAPI(info.illustID).addCallback(res => {
-				var extension = res.responseText.trim().split(',')[2].replace(/^"|"$/g, '');
+			return request(
+				this.API_URL + info.illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
+			).addCallback(res => {
+				var extension = res.responseText.trim().split(',')[2].replace(/"/g, '');
 
 				info.imageURL = info.imageURL.replace(
 					/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
 				);
-
-				return info;
-			});
-		},
-		fixImageURLforUgoiraFromAPI : function (info) {
-			return this.requestAPI(info.illustID).addCallback(res => {
-				var bigImageURL = getCSVList(res.responseText.trim())[9].replace(/^"|"$/g, ''),
-					urlObj = new URL(bigImageURL);
-
-				urlObj.pathname = urlObj.pathname.replace(/^\/c\/\d+x\d+/, '');
-
-				info.imageURL = urlObj.toString();
 
 				return info;
 			});
