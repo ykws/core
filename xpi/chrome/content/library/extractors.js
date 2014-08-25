@@ -244,61 +244,102 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		name : 'Photo - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function (ctx) {
-			return Extractors.Amazon.preCheck(ctx) &&
-				($x('./ancestor::*[@id="prodImageCell" or @id="prodImageOuter" or @id="image-block-widget"]', ctx.target) || ctx.target.id == 'magnifierLens');
+			if (Extractors.Amazon.preCheck(ctx)) {
+				let src = $x([
+					'self::img[@id="imgBlkFront" or @id="imgBlkBack" or @id="igImage" or @id="prodImage" or @id="main-image" or @class="fullScreen"]/@src',
+					'./ancestor::td[@id="prodImageCell"]//img/@src',
+					'./ancestor::div[@class="imgTagWrapper"]/img/@src',
+					'./ancestor::div[@class="pageImage"]/div/img/@src'
+				].join('|'), ctx.target);
+
+				return src && !src.contains('/comingsoon_');
+			}
 		},
 		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
 
-			var d = new Deferred();
+			return this.getImageURL(ctx).addCallback(url => ({
+				type    : 'photo',
+				item    : ctx.title,
+				itemUrl : url
+			}));
+		},
+		getImageURL : function (ctx) {
+			var targetURL = this.getTargetURL(ctx),
+				mainThumb = this.getMainImageThumbnail(ctx),
+				deferred, img;
 
-			// 拡大レンズなど画像以外の要素か?
-			if (!ctx.target.src) {
-				ctx.target = $x('id("prodImageCell")/img | id("main-image") | id("original-main-image") | id("landingImage")');
+			if ((new URL(targetURL)).hostname.endsWith('.cloudfront.net')) {
+				return succeed(targetURL);
 			}
+			if (mainThumb && this.getImageID(targetURL) !== this.getImageID(mainThumb.src)) {
+				return succeed(this.getLargeImageURL(ctx));
+			}
+
+			deferred = new Deferred();
+			img = ctx.document.createElement('img');
+
+			img.addEventListener('load', () => {
+				// 画像が存在しない場合1ピクセル四方の画像が返される
+				deferred.callback(
+					img.width < 50 && img.height < 50 ?
+						this.getLargeImageURL(ctx) :
+						img.src
+				);
+			});
+			// 画像が存在していてもエラーになることがある
+			img.addEventListener('error', () => {
+				deferred.callback(this.getLargeImageURL(ctx));
+			});
 
 			// tools4hack
 			// http://tools4hack.santalab.me/new-ipad-get-largeartwork-amazon-img.html
-			var elmImage = IMG({
-				src : 'http://z-ecx.images-amazon.com/images/P/' +
-					Extractors.Amazon.getAsin(ctx) +
-					'.09.MAIN._FMpng_SCRMZZZZZZ_.png'
-			});
-			elmImage.onload = () => {
-				// 画像が存在しない場合1ピクセル四方の画像が返される
-				if (elmImage.width < 50 && elmImage.height < 50) {
-					return elmImage.onerror();
+			img.src = 'http://z-ecx.images-amazon.com/images/P/' +
+				Extractors.Amazon.getAsin(ctx) +
+				'.09.MAIN._FMpng_SCRMZZZZZZ_.png';
+
+			return deferred;
+		},
+		getTargetURL : function (ctx) {
+			var target = ctx.target,
+				url = target.src;
+
+			// 拡大レンズなど画像以外の要素か?
+			if (!url) {
+				url = $x('../img/@src', target);
+			}
+
+			if (url.startsWith('data:image/')) {
+				let mainImage = this.getMainImageThumbnail(ctx);
+
+				if (mainImage) {
+					url = mainImage.src;
 				}
+			}
 
-				d.callback(elmImage.src);
-			};
-			// 画像が存在していてもエラーになることがある
-			elmImage.onerror = () => {
-				var url = ctx.target.src.split('.');
+			return url;
+		},
+		getMainImageThumbnail : function (ctx) {
+			return ctx.document.querySelector(
+				'#imgThumbs img, #thumb_strip img, #altImages img'
+			);
+		},
+		getImageID : function (url) {
+			return (new URL(url)).pathname.extract(/^\/images\/[A-Z]\/(.+?)\./);
+		},
+		getLargeImageURL : function (ctx) {
+			var urlObj = new URL(this.getTargetURL(ctx)),
+				pathnameFragment = urlObj.pathname.split('.');
 
-				url.splice(-2, 1, 'LZZZZZZZ');
-				url = url.join('.').replace('.L.LZZZZZZZ.', '.L.'); // カスタマーイメージ用
+			if (pathnameFragment.length > 2) {
+				pathnameFragment.splice(-2, 1, 'LZZZZZZZ');
+			} else {
+				pathnameFragment.splice(1, 0, 'LZZZZZZZ');
+			}
 
-				d.callback(url);
-			};
+			urlObj.pathname = pathnameFragment.join('.').replace('.L.LZZZZZZZ.', '.L.'); // カスタマーイメージ用
 
-			d.addCallback(url => {
-				var {target} = ctx;
-
-				target.src = url;
-				target.height = '';
-				target.width = '';
-				target.style.height = 'auto';
-				target.style.width = 'auto';
-
-				return {
-					type    : 'photo',
-					item    : ctx.title,
-					itemUrl : url
-				};
-			});
-
-			return d;
+			return urlObj.toString();
 		}
 	},
 
