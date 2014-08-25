@@ -197,10 +197,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return /amazon\./.test(ctx.host) && this.getAsin(ctx);
 		},
 		extract : function (ctx) {
-			// 日本に特化(comの取得方法不明)
-			var date = new Date(ctx.document.body.innerHTML.extract(
-				'発売日：.*?</b>.*?([\\d/]+)'
-			));
+			var {document: doc} = ctx,
+				// 日本に特化(comの取得方法不明)
+				date = new Date(doc.body.innerHTML.extract(
+					'発売日：.*?</b>.*?([\\d/]+)'
+				)),
+				productTitle;
 
 			if (!Number.isNaN(date)) {
 				ctx.date = date;
@@ -208,22 +210,33 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			ctx.href = this.normalizeUrl(ctx.host, this.getAsin());
 
-			var productTitle = $x('id("prodImage")/@alt | //span[@id="btAsinTitle" or @id="productTitle"]/text()');
+			productTitle = $x('//span[@id="productTitle" or @id="btAsinTitle"]/text()');
 
-			if (!productTitle) {
-				return;
+			if (productTitle) {
+				let authors = Array.prototype.slice.call(doc.querySelectorAll([
+					'a.contributorNameID',
+					'.author > a',
+					'.buying > .parseasinTitle + a',
+					'.buying .contributorNameTrigger > a',
+					'#brand'
+				].join(', ')));
+
+				ctx.title = 'Amazon: ' + productTitle.trim();
+
+				if (authors.length) {
+					let authorNames = authors.reduce((arr, author) => {
+						author = author.textContent.trim();
+
+						if (author) {
+							arr.push(author);
+						}
+
+						return arr;
+					}, []);
+
+					ctx.title += ': ' + authorNames.join(', ');
+				}
 			}
-
-			var authors = $x([
-				'id("handleBuy")/div[@class="buying"]/span//a/text()',
-				'id("handleBuy")/div[@class="buying"]/a/text()',
-				'//div[@class="buying"]/span[@class="contributorNameTrigger"]/a/text()',
-				'//div[@class="buying"]/h1[@class="parseasinTitle"]/following-sibling::a/text()',
-				'//div[@data-feature-name="brandByline"]//a[@id="brand"]/text()'
-			].join('|'), currentDocument(), true);
-
-			ctx.title = 'Amazon: ' +
-				productTitle + (authors.length ? ': ' + authors.join(', ') : '');
 		}
 	},
 
