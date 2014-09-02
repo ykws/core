@@ -183,7 +183,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Amazon',
 		getAsin : function () {
-			return $x('//input[@name="ASIN" or @name="ASIN.0"]/@value');
+			return $x('//input[@name="ASIN" or @name="ASIN.0" or @name="idx.asin"]/@value');
 		},
 		normalizeUrl : function (host, asin) {
 			return  'http://' + host + '/dp/' + asin +
@@ -217,8 +217,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					'a.contributorNameID',
 					'.author > a',
 					'.buying > .parseasinTitle + a',
+					'.buying > .parseasinTitle + span > a',
 					'.buying .contributorNameTrigger > a',
-					'#brand'
+					'#brand',
+					'.brandLink > a'
 				].join(', ')));
 
 				ctx.title = 'Amazon: ' + productTitle.trim();
@@ -244,15 +246,23 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		name : 'Photo - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function (ctx) {
-			if (Extractors.Amazon.preCheck(ctx)) {
+			if (!ctx.selection && Extractors.Amazon.preCheck(ctx)) {
 				let src = $x([
-					'self::img[@id="imgBlkFront" or @id="imgBlkBack" or @id="igImage" or @id="prodImage" or @id="main-image" or @class="fullScreen"]/@src',
-					'./ancestor::td[@id="prodImageCell"]//img/@src',
-					'./ancestor::div[@class="imgTagWrapper"]/img/@src',
-					'./ancestor::div[@class="pageImage"]/div/img/@src'
+					'self::img[' + [
+						'@id="imgBlkFront"', '@id="imgBlkBack"', '@id="igImage"',
+						'@id="prodImage"', '@id="main-image"',
+						'contains(concat(" ", (@class), " "), " fullScreen ")',
+						'@name="coverimage"'
+					].join(' or ') + ']/@src',
+					'./ancestor::*[' + [
+						'@id="prodImageCell"',
+						'contains(concat(" ", (@class), " "), " imgTagWrapper ")',
+						'contains(concat(" ", (@class), " "), " pageImage ")',
+						'@id="main-image-wrapper"'
+					].join(' or ') + ']//img/@src'
 				].join('|'), ctx.target);
 
-				return src && !src.contains('/comingsoon_');
+				return src && !/\/comingsoon_|\/no-img-/.test(src);
 			}
 		},
 		extract : function (ctx) {
@@ -320,9 +330,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return url;
 		},
 		getMainImageThumbnail : function (ctx) {
-			return ctx.document.querySelector(
-				'#imgThumbs img, #thumb_strip img, #altImages img'
-			);
+			return ctx.document.querySelector([
+				'#imgThumbs img', '#thumb_strip img', '#altImages img',
+				'#thumbs-image > img'
+			].join(', '));
 		},
 		getImageID : function (url) {
 			return (new URL(url)).pathname.extract(/^\/images\/[A-Z]\/(.+?)\./);
@@ -347,7 +358,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		name : 'Quote - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function (ctx) {
-			return Extractors.Amazon.preCheck(ctx) && ctx.selection;
+			if (ctx.selection && !ctx.onImage) {
+				return Extractors.Amazon.preCheck(ctx);
+			}
 		},
 		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
@@ -360,7 +373,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		name : 'Link - Amazon',
 		ICON : 'http://www.amazon.com/favicon.ico',
 		check : function (ctx) {
-			return Extractors.Amazon.preCheck(ctx);
+			if (!(ctx.selection || ctx.onImage || ctx.onLink)) {
+				return Extractors.Amazon.preCheck(ctx);
+			}
 		},
 		extract : function (ctx) {
 			Extractors.Amazon.extract(ctx);
