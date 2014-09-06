@@ -116,7 +116,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		ICON : Models.Twitter.ICON,
 		TWEET_URL_RE : /^https:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
 		check : function (ctx) {
-			return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
+			if (!(ctx.onImage || ctx.onVideo) && !(ctx.onLink && !ctx.selection)) {
+				return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
+			}
 		},
 		extract : function (ctx) {
 			var url = ctx.href;
