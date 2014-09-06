@@ -114,7 +114,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Quote - Twitter',
 		ICON : Models.Twitter.ICON,
-		TWEET_URL_RE : /^https:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
+		TWEET_URL_RE : /^https?:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
 		check : function (ctx) {
 			if (!(ctx.onImage || ctx.onVideo) && !(ctx.onLink && !ctx.selection)) {
 				return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
@@ -130,7 +130,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				body     : this.getCustomFlavoredString(
 					ctx.selection ?
 						ctx.window.getSelection() :
-						this.removeTcoEllipsis(this.getTweet(ctx))
+						this.modifyTweet(this.getTweet(ctx), ctx)
 				),
 				favorite : {
 					name : 'Twitter',
@@ -154,11 +154,30 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return customStr;
 		},
-		removeTcoEllipsis : function (elm) {
-			var cloneElm = elm.cloneNode(true);
+		modifyTweet : function (elm, ctx) {
+			var doc = ctx.document,
+				cloneElm = elm.cloneNode(true);
 
-			for (let target of [...cloneElm.getElementsByClassName('tco-ellipsis')]) {
-				target.parentNode.removeChild(target);
+			for (let tcoEllipsis of cloneElm.querySelectorAll('.tco-ellipsis')) {
+				tcoEllipsis.remove();
+			}
+
+			for (let link of cloneElm.querySelectorAll('a.twitter-timeline-link')) {
+				let firstInvisible = link.querySelector('.invisible'),
+					jsDisplayURL = link.querySelector('.js-display-url');
+
+				if (this.TWEET_URL_RE.test(getTextContent(firstInvisible)) && jsDisplayURL) {
+					firstInvisible.remove();
+				}
+			}
+
+			for (let emoji of cloneElm.querySelectorAll('img.twitter-emoji[alt]')) {
+				let {alt} = emoji;
+
+				if (alt) {
+					emoji.parentNode.insertBefore(doc.createTextNode(alt), emoji);
+					emoji.remove();
+				}
 			}
 
 			return cloneElm;
