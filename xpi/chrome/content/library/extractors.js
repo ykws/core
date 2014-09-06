@@ -114,7 +114,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Quote - Twitter',
 		ICON : Models.Twitter.ICON,
-		TWEET_URL_RE: /^https:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
+		TWEET_URL_RE : /^https:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
 		check : function (ctx) {
 			return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
 		},
@@ -136,10 +136,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				}
 			};
 		},
-		getTweet: function (ctx) {
+		getTweet : function (ctx) {
 			return ctx.document.querySelector('.permalink-tweet .tweet-text');
 		},
-		getCustomFlavoredString: function (src) {
+		getCustomFlavoredString : function (src) {
 			var customStr = new String(
 				src instanceof Element ?
 					src.textContent :
@@ -152,7 +152,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return customStr;
 		},
-		removeTcoEllipsis: function (elm) {
+		removeTcoEllipsis : function (elm) {
 			var cloneElm = elm.cloneNode(true);
 
 			for (let target of [...cloneElm.getElementsByClassName('tco-ellipsis')]) {
