@@ -1777,7 +1777,7 @@ Models.register({
 
 Models.register({
 	name : 'Dropmark',
-	ICON : 'http://dropmark.com/favicon.ico',
+	ICON : 'chrome://tombfix/skin/favicon/dropmark.ico',
 	URL  : 'http://dropmark.com/',
 	
 	check : function(ps){
