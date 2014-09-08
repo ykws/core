@@ -618,7 +618,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 						id   : id
 					}
 				};
-			}).addErrback(() => Extractors.Photo.extract(ctx));
+			});
 		},
 		getImageID : function (ctx) {
 			var url = ctx.onImage ? ctx.target.src : (
