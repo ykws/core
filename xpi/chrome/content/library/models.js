@@ -1840,7 +1840,7 @@ Models.register({
 	},
 	
 	getLastViewedPage : function(){
-		return getFinalUrl('http://app.dropmark.com/');
+		return getFinalUrl('https://app.dropmark.com/?view=bookmarklet');
 	},
 	
 	getLastViewedId : function(){
