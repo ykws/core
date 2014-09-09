@@ -1776,76 +1776,78 @@ Models.register({
 
 
 Models.register({
-	name : 'Dropmark',
-	ICON : 'chrome://tombfix/skin/favicon/dropmark.ico',
-	URL  : 'http://dropmark.com/',
-	
-	check : function(ps){
-		return (/(regular|photo|quote|link)/).test(ps.type) && !ps.file;
+	name       : 'Dropmark',
+	ICON       : 'chrome://tombfix/skin/favicon/dropmark.ico',
+	CONVERTERS : {
+		regular      : ps => ({
+			content_type : 'text',
+			name         : ps.item,
+			content_text : ps.description
+		}),
+		photo        : ps => ps.file ? {
+			content_type      : 'file',
+			name              : ps.item + (ps.itemUrl || ps.pageUrl).wrap(' (', ')'),
+			'content_files[]' : ps.file
+		} : {
+			content_type : 'link',
+			name         : ps.item + ps.pageUrl.wrap(' (', ')'),
+			content_link : ps.itemUrl
+		},
+		quote        : ps => ({
+			content_type : 'text',
+			name         : ps.item + ps.itemUrl.wrap(' (', ')'),
+			content_text : joinText([ps.body.wrap('"'), ps.description], '\n', true)
+		}),
+		link         : ps => ({
+			content_type : 'link',
+			name         : ps.item,
+			content_link : ps.itemUrl
+		}),
+		video        : ps => ({
+			content_type : 'link',
+			name         : ps.item,
+			content_link : ps.itemUrl
+		}),
+		conversation : ps => ({
+			content_type : 'text',
+			name         : ps.item + ps.itemUrl.wrap(' (', ')'),
+			content_text : joinText([ps.body, ps.description], '\n', true)
+		})
 	},
-	
-	converters: {
-		regular : function(ps){
-			return {
-				content_type : 'text',
-				name         : ps.item,
-				content_text : ps.description,
-			}
-		},
-		
-		quote : function(ps){
-			return {
-				content_type : 'text', 
-				name         : ps.item + ps.pageUrl.wrap(' (', ')'),
-				content_text : joinText([ps.body.wrap('"'), ps.description], '\n', true),
-			}
-		},
-		
-		photo : function(ps){
-			return {
-				type    : 'image', 
-				name    : ps.item + ps.pageUrl.wrap(' (', ')'),
-				content : ps.itemUrl,
-			}
-		},
-		
-		link : function(ps){
-			return {
-				type    : 'link', 
-				name    : ps.page,
-				content : ps.pageUrl,
-			}
-		},
+
+	check : function (ps) {
+		return /^(?:regular|photo|quote|link|video|conversation)$/.test(ps.type);
 	},
-	
-	post : function(ps){
-		return Dropmark.getPostPage().addCallback(function(url){
+
+	post : function (ps) {
+		this.checkLogin();
+
+		return this.getLastViewedPageURL().addCallback(url => {
 			return request(url + '/items', {
-				redirectionLimit : 0,
-				sendContent      : update(Dropmark.converters[ps.type](ps), {
-					csrf_token : Dropmark.getToken(createURI(url).host),
-					ajax       : true,
-				}),
+				sendContent : update({
+					csrf_token : this.getToken((new URL(url)).hostname)
+				}, this.CONVERTERS[ps.type](ps))
+			}).addErrback(err => {
+				throw new Error(err.message.responseText);
 			});
 		});
 	},
-	
-	getToken : function(host){
-		// ホストによりトークンが異なる
-		return getCookieValue(host, 'csrf_token');
-	},
-	
-	getPostPage : function(){
-		return Dropmark.getLastViewedPage();
-	},
-	
-	getLastViewedPage : function(){
+
+	getLastViewedPageURL : function () {
+		// via http://dropmark.com/support/getting-started/browser-extensions-bookmarklets/
 		return getFinalUrl('https://app.dropmark.com/?view=bookmarklet');
 	},
-	
-	getLastViewedId : function(){
-		return getCookieValue('dropmark.com', 'last_viewed');
+
+	getToken : function (hostname) {
+		// ホストによりトークンが異なる
+		return getCookieValue(hostname, 'csrf_token');
 	},
+
+	checkLogin : function () {
+		if (!getCookieString('.dropmark.com', 'user_id')) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+	}
 });
 
 
