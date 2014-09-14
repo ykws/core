@@ -2619,27 +2619,27 @@ Models.register({
 	},
 
 	post : function (ps) {
-		return this.queue(ps.itemUrl).addCallback(res => {
-			if (res.channel.URI.spec === this.QUEUE_URL) {
+		return this.queue(ps.itemUrl).addErrback(err => {
+			throw new Error(err.message.response.body.textContent);
+		}).addCallback(({response : doc}) => {
+			if (doc.URL === this.QUEUE_URL) {
 				throw new Error(getMessage('error.notLoggedin'));
+			}
+			if ((new URL(doc.URL)).pathname === '/articles/fail') {
+				throw new Error(doc.querySelector('.fail-desc > h1').textContent);
 			}
 		});
 	},
 
 	queue : function (url, read) {
-		var token;
+		var token = this.getToken();
 
-		if (read) {
-			token = '';
-		} else {
-			token = this.getToken();
-
-			if (!token) {
-				throw new Error(getMessage('error.notLoggedin'));
-			}
+		if (!(token || read)) {
+			throw new Error(getMessage('error.notLoggedin'));
 		}
 
 		return request(this.QUEUE_URL, {
+			responseType : 'document',
 			sendContent : {
 				token : token,
 				url   : url,
