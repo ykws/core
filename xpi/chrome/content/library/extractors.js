@@ -579,11 +579,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name          : 'Photo - Flickr',
 		ICON          : Models.Flickr.ICON,
-		ID_RE         : new RegExp(
-			'^https?://(?:(?:www\\.)?flickr\\.com/photos/.+?|' +
-				'(?:.+?\\.)?static\\.?flickr\\.com/\\d+(?:/\\d+)?)/(\\d+)'
-		),
-		IMAGE_PAGE_RE : /^(https?:\/\/(?:www\.)?flickr\.com\/photos\/.+?\/)\d+/,
+		PHOTO_PAGE_RE : /^(https?:\/\/(?:www\.)?flickr\.com\/photos\/[^\/]+\/)(\d+)/,
+		IMAGE_RE      : /^https?:\/\/(?:[^\/.]+\.)?static\.?flickr\.com\/\d+(?:\/\d+)?\/(\d+)_/,
 		check : function (ctx) {
 			return !ctx.selection && this.getImageID(ctx);
 		},
@@ -602,7 +599,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				}
 
 				sizes = ress.sizes[1];
-				title = info.title._content;
+				title = info.title._content || 'Untitled';
 
 				ctx.title = title + ' on Flickr';
 				ctx.href  = info.urls.url[0]._content;
@@ -610,9 +607,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				return {
 					type      : 'photo',
 					item      : title,
-					itemUrl   : sizes.pop().source,
+					itemUrl   : this.getImageURL(sizes),
 					author    : info.owner.username,
-					authorUrl : ctx.href.extract(this.IMAGE_PAGE_RE),
+					authorUrl : ctx.href.extract(this.PHOTO_PAGE_RE),
 					favorite  : {
 						name : 'Flickr',
 						id   : id
@@ -621,23 +618,36 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			});
 		},
 		getImageID : function (ctx) {
-			var url = ctx.onImage ? ctx.target.src : (
-				ctx.onLink ? ctx.link.href : ctx.href
-			);
+			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
+				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
 
-			if (this.ID_RE.test(url)) {
-				if (this.IMAGE_PAGE_RE.test(ctx.href)) {
-					if ($x(
-						'./ancestor::*[contains(concat(" ", (@class), " "), " photo-well-scrappy-view ")]',
-						ctx.target
-					)) {
-						url = ctx.href;
+			if (this.PHOTO_PAGE_RE.test(ctx.href)) {
+				if ($x(
+					'./ancestor::*[' + [
+						'contains(concat(" ", (@class), " "), " photo-well-scrappy-view ")',
+						'contains(concat(" ", (@class), " "), " photo-well-view ")'
+					].join(' or ') + ']',
+					ctx.target
+				)) {
+					targetURL = ctx.href;
+				}
+			}
+
+			for (let url of [imageURL, targetURL]) {
+				if (url) {
+					let id = url.extract(this.PHOTO_PAGE_RE, 2) || url.extract(this.IMAGE_RE);
+
+					if (id) {
+						return id;
 					}
 				}
-
-				return (
-					this.ID_RE.test(ctx.bgImageURL) ? ctx.bgImageURL : url
-				).extract(this.ID_RE);
+			}
+		},
+		getImageURL : function (sizes) {
+			for (let size of sizes.slice().reverse()) {
+				if (size.media === 'photo') {
+					return size.source;
+				}
 			}
 		}
 	},
