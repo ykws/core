@@ -1232,7 +1232,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			url = this.getFullSizeImageURL(img.src);
 
-			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title)) {
+			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.IMG_RE.test(url)) {
 				url = url.replace(
 					/img\/[^\/]+\/\d+/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
