@@ -1157,12 +1157,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Photo - pixiv',
-		ICON : 'http://www.pixiv.net/favicon.ico',
-		REFERRER : 'http://www.pixiv.net/',
-		PAGE_URL : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
-		API_URL : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
-		IMG_RE : new RegExp(
+		name         : 'Photo - pixiv',
+		ICON         : 'http://www.pixiv.net/favicon.ico',
+		REFERRER     : 'http://www.pixiv.net/',
+		PAGE_URL     : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
+		API_URL      : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
+		IMG_RE       : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
 				'(?:mobile/)?\\d+(?:_[^.]+)?\\.'
@@ -1171,8 +1171,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img-inf/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
 		),
-		IMG_PAGE_RE : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
-
+		IMG_PAGE_RE  : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		check : function (ctx) {
 			if (!ctx.selection) {
 				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
@@ -1185,7 +1184,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		extract : function (ctx) {
 			var that = this, retry = true;
 
-			return this.getMediumPage(ctx).addCallback(function getImage(info){
+			return this.getMediumPage(ctx).addCallback(function getImage(info) {
 				var {imageURL, pageTitle, illustID} = info;
 
 				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
@@ -1202,6 +1201,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					// when image extension is wrong
 					if (retry) {
 						retry = false;
+
 						return that.fixImageExtensionFromAPI(info).addCallback(getImage);
 					}
 
@@ -1318,11 +1318,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 					if (this.IMG_RE.test(url)) {
 						url = this.getFullSizeImageURL(url);
+
 						return url.extract(/img\/[^\/]+\/(\d+)/);
-					} else if (this.IMG_THUMB_RE.test(url)) {
+					}
+					if (this.IMG_THUMB_RE.test(url)) {
 						return url.extract(/\/(\d+)(?:_[^.]+)?\./);
 					}
-
 					if (this.isImagePage(link)) {
 						return queryHash(link.search).illust_id;
 					}
@@ -1348,8 +1349,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 					if (this.IMG_RE.test(url)) {
 						url = this.getFullSizeImageURL(url);
+
 						return url.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
-					} else if (this.isImagePage(link, 'manga_big')) {
+					}
+					if (this.isImagePage(link, 'manga_big')) {
 						return queryHash(link.search).page;
 					}
 				} else if (this.isImagePage(ctx, 'manga_big')) {
