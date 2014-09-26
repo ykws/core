@@ -1157,21 +1157,29 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name         : 'Photo - pixiv',
-		ICON         : 'http://www.pixiv.net/favicon.ico',
-		REFERRER     : 'http://www.pixiv.net/',
-		PAGE_URL     : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
-		API_URL      : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
-		IMG_RE       : new RegExp(
+		name           : 'Photo - pixiv',
+		ICON           : 'http://www.pixiv.net/favicon.ico',
+		REFERRER       : 'http://www.pixiv.net/',
+		PAGE_URL       : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
+		API_URL        : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
+		API_DATA_NAMES : [
+			'id', 'user_id', 'extension', 'title', 'img_dir', 'nickname',
+			'thumbnail_url', 'unknown01', 'unknown02', 'medium_url',
+			'unknown03', 'unknown04', 'date', 'tags', 'tools', 'rate', 'score',
+			'view', 'description', 'page_number', 'unknown05', 'unknown06',
+			'bookmark_number', 'comment_number', 'username', 'unknown07', 'r18',
+			'unknown08', 'unknown09', 'profile_icon_url'
+		],
+		IMG_RE         : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
 				'(?:mobile/)?\\d+(?:_[^.]+)?\\.'
 		),
-		IMG_THUMB_RE : new RegExp(
+		IMG_THUMB_RE   : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img-inf/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
 		),
-		IMG_PAGE_RE  : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
+		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		check : function (ctx) {
 			if (!ctx.selection) {
 				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
@@ -1245,11 +1253,28 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				illustID  : illustID
 			};
 		},
-		fixImageExtensionFromAPI : function (info) {
+		getImageData : function (illustID) {
 			return request(
-				this.API_URL + info.illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
+				this.API_URL + illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
 			).addCallback(res => {
-				var extension = res.responseText.trim().split(',')[2].replace(/"/g, '');
+				var text = res.responseText.trim();
+
+				if (!text) {
+					throw new Error(getMessage('error.contentsNotFound'));
+				}
+
+				return getCSVList(text).reduce((data, str, idx) => {
+					var item = str.replace(/^"|"$/g, '');
+
+					data[this.API_DATA_NAMES[idx]] = item;
+
+					return data;
+				}, {});
+			});
+		},
+		fixImageExtensionFromAPI : function (info) {
+			return this.getImageData(info.illustID).addCallback(data => {
+				var {extension} = data;
 
 				info.imageURL = info.imageURL.replace(
 					/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
