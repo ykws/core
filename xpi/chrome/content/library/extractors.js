@@ -1248,6 +1248,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					/img\/[^\/]+\/\d+/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
 				);
+			} else if (this.DATE_IMG_RE.test(url) && /\/img-inf\//.test(url)) {
+				url = this.getLargeThumbnailURL(url);
 			}
 
 			return {
@@ -1373,6 +1375,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}
 
 			return url;
+		},
+		getLargeThumbnailURL : function (url) {
+			return url.replace(/(\/\d+_)(?:[^_.]+)\./, '$1s.');
 		},
 		getIllustID : function (ctx, noCheckCtx) {
 			return (() => {
