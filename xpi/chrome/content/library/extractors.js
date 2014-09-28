@@ -1188,7 +1188,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
 					return this.getIllustID(ctx, true);
 				} else {
-					return this.isImagePage(ctx) && this.getImageElement(ctx);
+					return this.isImagePage(ctx) && (this.getImageElement(ctx) || this.isUgoiraPage(ctx));
 				}
 			}
 		},
@@ -1224,39 +1224,47 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			var illustID = this.getIllustID(ctx);
 
 			if (!ctx.onImage && !ctx.onLink && this.isImagePage(ctx, 'medium')) {
-				return succeed(this.getInfo(ctx, illustID));
+				return this.getInfo(ctx, illustID);
 			}
 
 			return request(this.PAGE_URL + illustID, {
 				responseType : 'document'
 			}).addCallback(res => this.getInfo(ctx, illustID, res.response));
 		},
-		getInfo : function (ctx, illustID, doc) {
-			var {title} = doc || ctx.document,
-				img = this.getImageElement(doc ? {document : doc} : ctx, illustID),
-				url;
+		getInfo : function (ctx, illustID, doc = ctx.document) {
+			var {title} = doc,
+				isUgoira = this.isUgoiraPage({document : doc}),
+				img = this.getImageElement({document : doc}, illustID),
+				url = img ? img.src : '',
+				info =  {
+					imageURL  : url,
+					pageTitle : title,
+					illustID  : illustID
+				};
 
-			// for limited access about mypixiv
-			if (!img) {
+			if (!img || (!this.DIR_IMG_RE.test(url) && !this.DATE_IMG_RE.test(url))) {
+				if (isUgoira) {
+					return this.fixImageURLforUgoiraFromAPI(info);
+				}
+
+				// for limited access about mypixiv
 				throw new Error(getMessage('error.contentsNotFound'));
 			}
 
-			url = this.getFullSizeImageURL(img.src);
+			url = this.getFullSizeImageURL(url);
 
 			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.DIR_IMG_RE.test(url)) {
 				url = url.replace(
 					/img\/[^\/]+\/\d+/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
 				);
-			} else if (this.DATE_IMG_RE.test(url) && /\/img-inf\//.test(url)) {
+			} else if (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) {
 				url = this.getLargeThumbnailURL(url);
 			}
 
-			return {
-				imageURL  : url,
-				pageTitle : title,
-				illustID  : illustID
-			};
+			info.imageURL = url;
+
+			return succeed(info);
 		},
 		getImageData : function (illustID) {
 			return request(
@@ -1323,6 +1331,13 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				});
 			}());
 		},
+		fixImageURLforUgoiraFromAPI : function (info) {
+			return this.getImageData(info.illustID).addCallback(({medium_url}) => {
+				info.imageURL = this.getLargeThumbnailURL(medium_url);
+
+				return info;
+			});
+		},
 		isImagePage : function (target, mode) {
 			if (target && this.IMG_PAGE_RE.test(target.href)) {
 				let queries = queryHash(target.search);
@@ -1333,6 +1348,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}
 
 			return false;
+		},
+		isUgoiraPage : function (ctx) {
+			return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
 		},
 		getImageElement : function (ctx, illustID) {
 			return ctx.document.querySelector([
@@ -1377,7 +1395,29 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return url;
 		},
 		getLargeThumbnailURL : function (url) {
-			return url.replace(/(\/\d+_)(?:[^_.]+)\./, '$1s.');
+			var urlObj = new URL(url),
+				{pathname} = urlObj;
+
+			if (/^\/img-inf\//.test(pathname)) {
+				urlObj.pathname = pathname.replace(/(\/\d+_)[^_.]+\./, '$1s.');
+
+				return urlObj.toString();
+			}
+			if (
+				/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
+					/\/\d+_(?:master|square)\d+\./.test(pathname)
+			) {
+				let maxQuality = pathname.extract(/\/\d+_(?:master|square)(\d+)\./);
+
+				urlObj.pathname = pathname.replace(
+					/^\/c\/\d+x\d+\/img-master\//,
+					'/c/' + maxQuality + 'x' + maxQuality + '/img-master/'
+				).replace(/(\/\d+_)square(\d+\.)/, '$1master$2');
+
+				return urlObj.toString();
+			}
+
+			return url;
 		},
 		getIllustID : function (ctx, noCheckCtx) {
 			return (() => {
