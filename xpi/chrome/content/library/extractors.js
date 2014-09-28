@@ -1276,19 +1276,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			});
 		},
 		fixImageExtensionFromAPI : function (info) {
-			return this.getImageData(info.illustID).addCallback(data => {
-				var {extension} = data,
-					url = info.imageURL;
+			return this.getImageData(info.illustID).addCallback(({extension}) => {
+				var uriObj = createURI(info.imageURL);
 
-				if (this.DIR_IMG_RE.test(url)) {
-					info.imageURL = url.replace(
-						/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
-					);
-				} else if (this.DATE_IMG_RE.test(url)) {
-					info.imageURL = url.replace(
-						/(\/\d+_p0\.).+$/, '$1' + extension
-					);
-				}
+				uriObj.fileExtension = extension;
+				info.imageURL = uriObj.spec;
 
 				return info;
 			}).addErrback(err => {
