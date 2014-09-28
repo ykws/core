@@ -489,7 +489,11 @@ FormPanel.prototype = {
 						
 					case 'photo':
 						var src = ps.itemUrl || (createURI(ps.file).spec + '?' + Date.now());
-						
+
+						if (/^http:\/\/i\d+\.pixiv\.net\/c\//.test(src) && ps.file) {
+							src = (createURI(ps.file).spec + '?' + Date.now());
+						}
+
 						// flexを大きくし詳細ボックスとバランスを取る
 						elm = elmForm.appendChild(BOX(attrs, {flex : 10}));
 						field = new FlexImage(elm, src, self.dialogPanel);
