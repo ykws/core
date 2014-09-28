@@ -1170,14 +1170,15 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			'bookmark_number', 'comment_number', 'username', 'unknown07', 'r18',
 			'unknown08', 'unknown09', 'profile_icon_url'
 		],
-		IMG_RE         : new RegExp(
+		DIR_IMG_RE     : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
 				'(?:mobile/)?\\d+(?:_[^.]+)?\\.'
 		),
-		IMG_THUMB_RE   : new RegExp(
+		DATE_IMG_RE    : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
-				'img-inf/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
+				'(?:c/\\d+x\\d+/img-master|img-inf|img-original)' +
+				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
 		),
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		check : function (ctx) {
@@ -1240,7 +1241,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			url = this.getFullSizeImageURL(img.src);
 
-			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.IMG_RE.test(url)) {
+			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.DIR_IMG_RE.test(url)) {
 				url = url.replace(
 					/img\/[^\/]+\/\d+/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
@@ -1274,11 +1275,18 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		},
 		fixImageExtensionFromAPI : function (info) {
 			return this.getImageData(info.illustID).addCallback(data => {
-				var {extension} = data;
+				var {extension} = data,
+					url = info.imageURL;
 
-				info.imageURL = info.imageURL.replace(
-					/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
-				);
+				if (this.DIR_IMG_RE.test(url)) {
+					info.imageURL = url.replace(
+						/(img\/[^\/]+\/\d+(?:_big_p\d+)?\.).+$/, '$1' + extension
+					);
+				} else if (this.DATE_IMG_RE.test(url)) {
+					info.imageURL = url.replace(
+						/(\/\d+_p0\.).+$/, '$1' + extension
+					);
+				}
 
 				return info;
 			});
@@ -1312,6 +1320,16 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		getFullSizeImageURL : function (url) {
 			var pageNum;
 
+			if (
+				this.DATE_IMG_RE.test(url) &&
+					/\/c\/\d+x\d+\/img-master\//.test(url) &&
+					/\/\d+_p0_(?:master|square)\d+\./.test(url)
+			) {
+				return url
+					.replace(/\/c\/\d+x\d+\/img-master\//, '/img-original/')
+					.replace(/(\/\d+_p0)_(?:master|square)\d+\./, '$1.');
+			}
+
 			url = url
 				.replace(/works\/\d+x\d+/, 'img')
 				.replace(/(img\/[^\/]+\/)mobile\/(\d+)/, '$1$2');
@@ -1341,12 +1359,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 						url = link.href;
 					}
 
-					if (this.IMG_RE.test(url)) {
+					if (this.DIR_IMG_RE.test(url)) {
 						url = this.getFullSizeImageURL(url);
 
 						return url.extract(/img\/[^\/]+\/(\d+)/);
 					}
-					if (this.IMG_THUMB_RE.test(url)) {
+					if (this.DATE_IMG_RE.test(url)) {
 						return url.extract(/\/(\d+)(?:_[^.]+)?\./);
 					}
 					if (this.isImagePage(link)) {
@@ -1372,7 +1390,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 						url = link.href;
 					}
 
-					if (this.IMG_RE.test(url)) {
+					if (this.DIR_IMG_RE.test(url)) {
 						url = this.getFullSizeImageURL(url);
 
 						return url.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
