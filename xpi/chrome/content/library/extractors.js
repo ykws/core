@@ -1181,6 +1181,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
 		),
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
+		// via http://www.pixiv.net/content_upload.php
+		IMG_EXTENSIONS : ['jpg', 'png', 'gif', 'jpeg'],
 		check : function (ctx) {
 			if (!ctx.selection) {
 				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
@@ -1289,7 +1291,43 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				}
 
 				return info;
+			}).addErrback(err => {
+				if (
+					err.message === getMessage('error.contentsNotFound') &&
+						this.DATE_IMG_RE.test(info.imageURL)
+				) {
+					return this.fixImageExtensionFromList(info);
+				}
+
+				throw new Error(err.message);
 			});
+		},
+		fixImageExtensionFromList : function (info) {
+			var that = this,
+				uriObj = createURI(info.imageURL),
+				extensions = this.IMG_EXTENSIONS.filter(function removeCurrent(candidate) {
+					return String(this) !== candidate;
+				}, uriObj.fileExtension);
+
+			return (function recursive() {
+				var imageURL;
+
+				uriObj.fileExtension = extensions.shift();
+
+				imageURL = uriObj.spec;
+
+				return downloadWithReferrer(imageURL, that.REFERRER).addCallback(() => {
+					info.imageURL = imageURL;
+
+					return info;
+				}).addErrback(() => {
+					if (extensions.length) {
+						return recursive();
+					}
+
+					throw new Error(getMessage('error.contentsNotFound'));
+				});
+			}());
 		},
 		isImagePage : function (target, mode) {
 			if (target && this.IMG_PAGE_RE.test(target.href)) {
