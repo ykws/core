@@ -1362,31 +1362,35 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			].join(', '));
 		},
 		getFullSizeImageURL : function (url) {
-			var pageNum;
+			var urlObj = new URL(url),
+				{pathname} = urlObj,
+				pageNum;
 
 			if (
 				this.DATE_IMG_RE.test(url) &&
-					/\/c\/\d+x\d+\/img-master\//.test(url) &&
-					/\/\d+_p0_(?:master|square)\d+\./.test(url)
+					/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
+					/\/\d+_p0_(?:master|square)\d+\./.test(pathname)
 			) {
-				return url
-					.replace(/\/c\/\d+x\d+\/img-master\//, '/img-original/')
+				urlObj.pathname = pathname
+					.replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
 					.replace(/(\/\d+_p0)_(?:master|square)\d+\./, '$1.');
+
+				return urlObj.toString();
 			}
 
-			url = url
+			pathname = pathname
 				.replace(/works\/\d+x\d+/, 'img')
 				.replace(/(img\/[^\/]+\/)mobile\/(\d+)/, '$1$2');
-
-			pageNum = url.extract(/img\/[^\/]+\/\d+(?:_[^_]+)?_p(\d+)/);
-
-			url = url.replace(/(img\/[^\/]+\/\d+)(?:_[^.]+)?/, '$1');
+			pageNum = pathname.extract(/img\/[^\/]+\/\d+(?:_[^_]+)?_p(\d+)/);
+			pathname = pathname.replace(/(img\/[^\/]+\/\d+)(?:_[^.]+)?/, '$1');
 
 			if (pageNum) {
-				url = url.replace(/img\/[^\/]+\/\d+/, '$&_big_p' + pageNum);
+				pathname = pathname.replace(/img\/[^\/]+\/\d+/, '$&_big_p' + pageNum);
 			}
 
-			return url;
+			urlObj.pathname = pathname;
+
+			return urlObj.toString();
 		},
 		getLargeThumbnailURL : function (url) {
 			var urlObj = new URL(url),
