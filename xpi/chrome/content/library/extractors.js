@@ -1184,13 +1184,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		// via http://www.pixiv.net/content_upload.php
 		IMG_EXTENSIONS : ['jpg', 'png', 'gif', 'jpeg'],
 		check : function (ctx) {
-			if (!ctx.selection) {
-				if (ctx.onImage || /^image/.test(ctx.document.contentType) || ctx.onLink) {
-					return this.getIllustID(ctx, true);
-				} else {
-					return this.isImagePage(ctx) && (this.getImageElement(ctx) || this.isUgoiraPage(ctx));
-				}
-			}
+			return !ctx.selection && this.getIllustID(ctx);
 		},
 		extract : function (ctx) {
 			var that = this, retry = true;
@@ -1419,62 +1413,50 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return url;
 		},
-		getIllustID : function (ctx, noCheckCtx) {
-			return (() => {
-				var isImageOnly = /^image/.test(ctx.document.contentType);
+		getIllustID : function (ctx) {
+			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
+				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
 
-				if (ctx.onImage || isImageOnly || ctx.onLink) {
-					let {target, link} = ctx, url;
-
-					if (ctx.onImage && target) {
-						url = target.src;
-					} else if (isImageOnly) {
-						url = ctx.href;
-					} else {
-						url = link.href;
-					}
+			for (let url of [imageURL, targetURL]) {
+				if (url) {
+					let urlObj = new URL(url);
 
 					if (this.DIR_IMG_RE.test(url)) {
-						url = this.getFullSizeImageURL(url);
+						let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
 
-						return url.extract(/img\/[^\/]+\/(\d+)/);
+						return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/(\d+)/);
 					}
 					if (this.DATE_IMG_RE.test(url)) {
-						return url.extract(/\/(\d+)(?:_[^.]+)?\./);
+						return urlObj.pathname.extract(/\/(\d+)(?:_[^.]+)?\./);
 					}
-					if (this.isImagePage(link)) {
-						return queryHash(link.search).illust_id;
+					if (
+						this.isImagePage(urlObj) && !(
+							targetURL === ctx.href && !(this.getImageElement(ctx) || this.isUgoiraPage(ctx))
+						)
+					) {
+						return urlObj.searchParams.get('illust_id');
 					}
-				} else if (!noCheckCtx && this.isImagePage(ctx)) {
-					return queryHash(ctx.search).illust_id;
 				}
-			})() || '';
+			}
 		},
 		getMangaPageNumber : function (ctx) {
 			return (() => {
-				var isImageOnly = /^image/.test(ctx.document.contentType);
+				var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
+					targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
 
-				if (ctx.onImage || isImageOnly || ctx.onLink) {
-					let {target, link} = ctx, url;
+				for (let url of [imageURL, targetURL]) {
+					if (url) {
+						let urlObj = new URL(url);
 
-					if (ctx.onImage && target) {
-						url = target.src;
-					} else if (isImageOnly) {
-						url = ctx.href;
-					} else {
-						url = link.href;
+						if (this.DIR_IMG_RE.test(url)) {
+							let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
+
+							return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
+						}
+						if (this.isImagePage(urlObj, 'manga_big')) {
+							return urlObj.searchParams.get('page');
+						}
 					}
-
-					if (this.DIR_IMG_RE.test(url)) {
-						url = this.getFullSizeImageURL(url);
-
-						return url.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
-					}
-					if (this.isImagePage(link, 'manga_big')) {
-						return queryHash(link.search).page;
-					}
-				} else if (this.isImagePage(ctx, 'manga_big')) {
-					return queryHash(ctx.search).page;
 				}
 			})() || '0';
 		}
