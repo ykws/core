@@ -1418,29 +1418,31 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return url;
 		},
 		getIllustID : function (ctx) {
-			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
+			var imageURL = ctx.onImage ? ctx.target.src : '',
+				backgroundImageURL = ctx.hasBGImage ? ctx.bgImageURL : '',
 				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
 
-			for (let url of [imageURL, targetURL]) {
+			for (let url of [imageURL, backgroundImageURL, targetURL]) {
 				if (url) {
-					let urlObj = new URL(url);
-
 					if (this.DIR_IMG_RE.test(url)) {
 						let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
 
 						return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/(\d+)/);
 					}
 					if (this.DATE_IMG_RE.test(url)) {
-						return urlObj.pathname.extract(/\/(\d+)(?:-[\da-f]{32})?(?:_[^.]+)?\./);
-					}
-					if (
-						this.isImagePage(urlObj) && !(
-							targetURL === ctx.href && !(this.getImageElement(ctx) || this.isUgoiraPage(ctx))
-						)
-					) {
-						return urlObj.searchParams.get('illust_id');
+						return (new URL(url)).pathname.extract(/\/(\d+)(?:-[\da-f]{32})?(?:_[^.]+)?\./);
 					}
 				}
+			}
+
+			if (
+				this.isImagePage(ctx.link) || (
+					!imageURL && targetURL === ctx.href &&
+					this.isImagePage(ctx) &&
+					(this.getImageElement(ctx) || this.isUgoiraPage(ctx))
+				)
+			) {
+				return (new URL(targetURL)).searchParams.get('illust_id');
 			}
 		},
 		getMangaPageNumber : function (ctx) {
