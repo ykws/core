@@ -1178,7 +1178,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		DATE_IMG_RE    : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'(?:c/\\d+x\\d+/img-master|img-inf|img-original)' +
-				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:_[^.]+)?\\.'
+				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:-[\\da-f]{32})?(?:_[^.]+)?\\.'
 		),
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		// via http://www.pixiv.net/content_upload.php
@@ -1249,7 +1249,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.DIR_IMG_RE.test(url)) {
 				url = url.replace(
-					/img\/[^\/]+\/\d+/,
+					/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
 				);
 			} else if (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) {
@@ -1369,11 +1369,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			if (
 				this.DATE_IMG_RE.test(url) &&
 					/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-					/\/\d+_p0_(?:master|square)\d+\./.test(pathname)
+					/\/\d+(?:-[\da-f]{32})?_p0_(?:master|square)\d+\./.test(pathname)
 			) {
 				urlObj.pathname = pathname
 					.replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
-					.replace(/(\/\d+_p0)_(?:master|square)\d+\./, '$1.');
+					.replace(/(\/\d+(?:-[\da-f]{32})?_p0)_(?:master|square)\d+\./, '$1.');
 
 				return urlObj.toString();
 			}
@@ -1382,10 +1382,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				.replace(/works\/\d+x\d+/, 'img')
 				.replace(/(img\/[^\/]+\/)mobile\/(\d+)/, '$1$2');
 			pageNum = pathname.extract(/img\/[^\/]+\/\d+(?:_[^_]+)?_p(\d+)/);
-			pathname = pathname.replace(/(img\/[^\/]+\/\d+)(?:_[^.]+)?/, '$1');
+			pathname = pathname.replace(/(img\/[^\/]+\/\d+(?:_[\da-f]{10})?)(?:_[^.]+)?/, '$1');
 
 			if (pageNum) {
-				pathname = pathname.replace(/img\/[^\/]+\/\d+/, '$&_big_p' + pageNum);
+				pathname = pathname.replace(/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/, '$&_big_p' + pageNum);
 			}
 
 			urlObj.pathname = pathname;
@@ -1397,20 +1397,20 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				{pathname} = urlObj;
 
 			if (/^\/img-inf\//.test(pathname)) {
-				urlObj.pathname = pathname.replace(/(\/\d+_)[^_.]+\./, '$1s.');
+				urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
 
 				return urlObj.toString();
 			}
 			if (
 				/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-					/\/\d+_(?:master|square)\d+\./.test(pathname)
+					/\/\d+(?:-[\da-f]{32})?_(?:master|square)\d+\./.test(pathname)
 			) {
-				let maxQuality = pathname.extract(/\/\d+_(?:master|square)(\d+)\./);
+				let maxQuality = pathname.extract(/\/\d+(?:-[\da-f]{32})?_(?:master|square)(\d+)\./);
 
 				urlObj.pathname = pathname.replace(
 					/^\/c\/\d+x\d+\/img-master\//,
 					'/c/' + maxQuality + 'x' + maxQuality + '/img-master/'
-				).replace(/(\/\d+_)square(\d+\.)/, '$1master$2');
+				).replace(/(\/\d+(?:-[\da-f]{32})?_)square(\d+\.)/, '$1master$2');
 
 				return urlObj.toString();
 			}
@@ -1431,7 +1431,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 						return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/(\d+)/);
 					}
 					if (this.DATE_IMG_RE.test(url)) {
-						return urlObj.pathname.extract(/\/(\d+)(?:_[^.]+)?\./);
+						return urlObj.pathname.extract(/\/(\d+)(?:-[\da-f]{32})?(?:_[^.]+)?\./);
 					}
 					if (
 						this.isImagePage(urlObj) && !(
@@ -1455,7 +1455,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 						if (this.DIR_IMG_RE.test(url)) {
 							let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
 
-							return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/\d+_big_p(\d+)/);
+							return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/\d+(?:_[\da-f]{10})?_big_p(\d+)/);
 						}
 						if (this.isImagePage(urlObj, 'manga_big')) {
 							return urlObj.searchParams.get('page');
