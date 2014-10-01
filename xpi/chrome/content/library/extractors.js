@@ -1173,12 +1173,13 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		DIR_IMG_RE     : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
-				'(?:mobile/)?\\d+(?:_[^.]+)?\\.'
+				'(?:mobile/)?(\\d+)(?:_p(\\d+)|_[^_]+)*\\.'
 		),
 		DATE_IMG_RE    : new RegExp(
 			'^https?://(?:[^.]+\\.)?pixiv\\.net/' +
 				'(?:c/\\d+x\\d+/img-master|img-inf|img-original)' +
-				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+(?:-[\\da-f]{32})?(?:_[^.]+)?\\.'
+				'/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+' +
+				'/(\\d+)(?:-[\\da-f]{32})?(?:_p(\\d+))?'
 		),
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		// via http://www.pixiv.net/content_upload.php
@@ -1214,6 +1215,29 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				});
 			});
 		},
+		getIllustID : function (ctx) {
+			var imageURL = (ctx.onImage && ctx.target.src) || '',
+				backgroundImageURL = (ctx.hasBGImage && ctx.bgImageURL) || '',
+				targetURL = (ctx.onLink && ctx.linkURL) || ctx.href || '';
+
+			for (let url of [imageURL, backgroundImageURL, targetURL]) {
+				if (this.DIR_IMG_RE.test(url) || this.DATE_IMG_RE.test(url)) {
+					return url.extract(
+						this.DIR_IMG_RE.test(url) ? this.DIR_IMG_RE : this.DATE_IMG_RE
+					);
+				}
+			}
+
+			if (
+				this.isImagePage(ctx.link) || (
+					!imageURL && targetURL === ctx.href &&
+					this.isImagePage(ctx) &&
+					(this.getImageElement(ctx) || this.isUgoiraPage(ctx))
+				)
+			) {
+				return (new URL(targetURL)).searchParams.get('illust_id');
+			}
+		},
 		getMediumPage : function (ctx) {
 			var illustID = this.getIllustID(ctx);
 
@@ -1226,13 +1250,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}).addCallback(res => this.getInfo(ctx, illustID, res.response));
 		},
 		getInfo : function (ctx, illustID, doc = ctx.document) {
-			var {title} = doc,
-				isUgoira = this.isUgoiraPage({document : doc}),
+			var isUgoira = this.isUgoiraPage({document : doc}),
 				img = this.getImageElement({document : doc}, illustID),
 				url = img ? img.src : '',
 				info =  {
 					imageURL  : url,
-					pageTitle : title,
+					pageTitle : doc.title,
 					illustID  : illustID
 				};
 
@@ -1241,33 +1264,142 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					return this.fixImageURLforUgoiraFromAPI(info);
 				}
 
-				// for limited access about mypixiv
+				// for limited access about mypixiv & private & age limit
 				throw new Error(getMessage('error.contentsNotFound'));
 			}
 
-			url = this.getFullSizeImageURL(url);
+			return succeed(update(info, {
+				imageURL : (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) ?
+					this.getLargeThumbnailURL(url) :
+					(this.getFullSizeImageURL(ctx, url, doc) || url)
+			}));
+		},
+		isImagePage : function (target, mode) {
+			if (target && this.IMG_PAGE_RE.test(target.href)) {
+				let queries = queryHash(target.search);
 
-			if (/の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) && this.DIR_IMG_RE.test(url)) {
-				url = url.replace(
-					/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
-					'$&_big_p' + this.getMangaPageNumber(ctx)
-				);
-			} else if (
-				/のイラスト \[pixiv\](?: - [^ ]+)?$/.test(title) &&
-					doc.querySelector('a[href*="mode=manga"] img') &&
-					this.DATE_IMG_RE.test(url)
-			) {
-				url = url.replace(
-					/(\/\d+(?:-[\da-f]{32})?_p)\d+/,
-					'$1' + this.getMangaPageNumber(ctx)
-				);
-			} else if (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) {
-				url = this.getLargeThumbnailURL(url);
+				if (queries.illust_id && (mode ? queries.mode === mode : queries.mode)) {
+					return true;
+				}
 			}
 
-			info.imageURL = url;
+			return false;
+		},
+		isUgoiraPage : function (ctx) {
+			return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
+		},
+		getImageElement : function (ctx, illustID) {
+			var anchor = 'a[href*="illust_id=' + (illustID || queryHash(ctx.search).illust_id) + '"]';
 
-			return succeed(info);
+			return ctx.document.querySelector([
+				// mode=medium on login
+				anchor + ' > div > img',
+				// mode=big and mode=manga_big on login
+				'body > img:only-child',
+				// mode=manga
+				'.image',
+				// non-r18 illust on logout
+				'.cool-work-main > .img-container > a.medium-image > img',
+				// r18 on logout
+				'.cool-work-main > .sensored > img',
+				// ugoira on logout
+				anchor + ' > img'
+			].join(', '));
+		},
+		getFullSizeImageURL : function (ctx, url, doc) {
+			var cleanedURL = this.getCleanedURL(url);
+
+			if (this.hasPageNumber(doc)) {
+				let pageNum = this.getPageNumber(ctx);
+
+				if (this.DIR_IMG_RE.test(cleanedURL)) {
+					return cleanedURL.replace(
+						/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
+						'$&_big_p' + pageNum
+					);
+				}
+				if (this.DATE_IMG_RE.test(cleanedURL)) {
+					return cleanedURL.replace(
+						/(\/\d+(?:-[\da-f]{32})?_p)\d+/,
+						'$1' + pageNum
+					);
+				}
+			}
+
+			return cleanedURL;
+		},
+		getCleanedURL : function (url) {
+			var urlObj = new URL(url),
+				{pathname} = urlObj;
+
+			if (this.DIR_IMG_RE.test(url)) {
+				pathname = pathname
+					.replace(/works\/\d+x\d+/, 'img')
+					.replace(/(img\/[^\/]+\/)(?:mobile\/)?(\d+(?:_[\da-f]{10})?)(?:_[^.]+)?/, '$1$2');
+			} else if (
+				this.DATE_IMG_RE.test(url) &&
+					/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
+					/\/\d+(?:-[\da-f]{32})?_p\d+_(?:master|square)\d+\./.test(pathname)
+			) {
+				pathname = pathname
+					.replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
+					.replace(/(\/\d+(?:-[\da-f]{32})?_p\d+)_(?:master|square)\d+\./, '$1.');
+			}
+
+			urlObj.pathname = pathname;
+
+			return urlObj.toString();
+		},
+		hasPageNumber : function (doc) {
+			var {title} = doc;
+
+			return /の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) || (
+				/のイラスト \[pixiv\](?: - [^ ]+)?$/.test(title) &&
+					// r18 book doesn't have "mode=manga".
+					doc.querySelector('a[href*="mode=manga"] img')
+			);
+		},
+		getPageNumber : function (ctx) {
+			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
+				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
+
+			return (() => {
+				for (let url of [imageURL, targetURL]) {
+					if (url) {
+						let urlObj = new URL(url);
+
+						if (this.DIR_IMG_RE.test(url)) {
+							return url.extract(this.DIR_IMG_RE, 2);
+						}
+						if (this.DATE_IMG_RE.test(url)) {
+							return url.extract(this.DATE_IMG_RE, 2);
+						}
+						if (this.isImagePage(urlObj, 'manga_big')) {
+							return urlObj.searchParams.get('page');
+						}
+					}
+				}
+			})() || '0';
+		},
+		getLargeThumbnailURL : function (url) {
+			var urlObj = new URL(url),
+				{pathname} = urlObj;
+
+			if (/^\/img-inf\//.test(pathname)) {
+				urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
+			} else if (
+				/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
+					/\/\d+(?:-[\da-f]{32})?_(?:master|square)\d+\./.test(pathname)
+			) {
+				let maxQuality = pathname.extract(/\/\d+(?:-[\da-f]{32})?_(?:master|square)(\d+)\./);
+
+				urlObj.pathname = pathname.replace(
+					/^\/c\/\d+x\d+\/img-master\//,
+					'/c/' + maxQuality + 'x' + maxQuality + '/img-master/'
+				).replace(/(\/\d+(?:-[\da-f]{32})?_)square(\d+\.)/, '$1master$2');
+			}
+
+			return urlObj.toString();
 		},
 		getImageData : function (illustID) {
 			return request(
@@ -1311,6 +1443,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			var that = this,
 				uriObj = createURI(info.imageURL),
 				extensions = this.IMG_EXTENSIONS.filter(function removeCurrent(candidate) {
+					// `this` type is "object", not "string".
 					return String(this) !== candidate;
 				}, uriObj.fileExtension);
 
@@ -1340,146 +1473,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 				return info;
 			});
-		},
-		isImagePage : function (target, mode) {
-			if (target && this.IMG_PAGE_RE.test(target.href)) {
-				let queries = queryHash(target.search);
-
-				if (queries.illust_id && (mode ? queries.mode === mode : queries.mode)) {
-					return true;
-				}
-			}
-
-			return false;
-		},
-		isUgoiraPage : function (ctx) {
-			return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
-		},
-		getImageElement : function (ctx, illustID) {
-			var anchor = 'a[href*="illust_id=' + (illustID || queryHash(ctx.search).illust_id) + '"]';
-
-			return ctx.document.querySelector([
-				// mode=medium on login
-				anchor + ' > div > img',
-				// mode=big and mode=manga_big on login
-				'body > img:only-child',
-				// mode=manga
-				'.image',
-				// non-r18 illust on logout
-				'.cool-work-main > .img-container > a.medium-image > img',
-				// r18 on logout
-				'.cool-work-main > .sensored > img',
-				// ugoira on logout
-				anchor + ' > img'
-			].join(', '));
-		},
-		getFullSizeImageURL : function (url) {
-			var urlObj = new URL(url),
-				{pathname} = urlObj,
-				pageNum;
-
-			if (
-				this.DATE_IMG_RE.test(url) &&
-					/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-					/\/\d+(?:-[\da-f]{32})?_p\d+_(?:master|square)\d+\./.test(pathname)
-			) {
-				urlObj.pathname = pathname
-					.replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
-					.replace(/(\/\d+(?:-[\da-f]{32})?_p\d+)_(?:master|square)\d+\./, '$1.');
-
-				return urlObj.toString();
-			}
-
-			pathname = pathname
-				.replace(/works\/\d+x\d+/, 'img')
-				.replace(/(img\/[^\/]+\/)mobile\/(\d+)/, '$1$2');
-			pageNum = pathname.extract(/img\/[^\/]+\/\d+(?:_[^_]+)?_p(\d+)/);
-			pathname = pathname.replace(/(img\/[^\/]+\/\d+(?:_[\da-f]{10})?)(?:_[^.]+)?/, '$1');
-
-			if (pageNum) {
-				pathname = pathname.replace(/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/, '$&_big_p' + pageNum);
-			}
-
-			urlObj.pathname = pathname;
-
-			return urlObj.toString();
-		},
-		getLargeThumbnailURL : function (url) {
-			var urlObj = new URL(url),
-				{pathname} = urlObj;
-
-			if (/^\/img-inf\//.test(pathname)) {
-				urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
-
-				return urlObj.toString();
-			}
-			if (
-				/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-					/\/\d+(?:-[\da-f]{32})?_(?:master|square)\d+\./.test(pathname)
-			) {
-				let maxQuality = pathname.extract(/\/\d+(?:-[\da-f]{32})?_(?:master|square)(\d+)\./);
-
-				urlObj.pathname = pathname.replace(
-					/^\/c\/\d+x\d+\/img-master\//,
-					'/c/' + maxQuality + 'x' + maxQuality + '/img-master/'
-				).replace(/(\/\d+(?:-[\da-f]{32})?_)square(\d+\.)/, '$1master$2');
-
-				return urlObj.toString();
-			}
-
-			return url;
-		},
-		getIllustID : function (ctx) {
-			var imageURL = ctx.onImage ? ctx.target.src : '',
-				backgroundImageURL = ctx.hasBGImage ? ctx.bgImageURL : '',
-				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
-
-			for (let url of [imageURL, backgroundImageURL, targetURL]) {
-				if (url) {
-					if (this.DIR_IMG_RE.test(url)) {
-						let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
-
-						return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/(\d+)/);
-					}
-					if (this.DATE_IMG_RE.test(url)) {
-						return (new URL(url)).pathname.extract(/\/(\d+)(?:-[\da-f]{32})?(?:_[^.]+)?\./);
-					}
-				}
-			}
-
-			if (
-				this.isImagePage(ctx.link) || (
-					!imageURL && targetURL === ctx.href &&
-					this.isImagePage(ctx) &&
-					(this.getImageElement(ctx) || this.isUgoiraPage(ctx))
-				)
-			) {
-				return (new URL(targetURL)).searchParams.get('illust_id');
-			}
-		},
-		getMangaPageNumber : function (ctx) {
-			return (() => {
-				var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
-					targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
-
-				for (let url of [imageURL, targetURL]) {
-					if (url) {
-						let urlObj = new URL(url);
-
-						if (this.DIR_IMG_RE.test(url)) {
-							let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
-
-							return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/\d+(?:_[\da-f]{10})?_big_p(\d+)/);
-						}
-						if (this.DATE_IMG_RE.test(url)) {
-							return urlObj.pathname.extract(/\/\d+(?:-[\da-f]{32})?_p(\d+)/);
-						}
-						if (this.isImagePage(urlObj, 'manga_big')) {
-							return urlObj.searchParams.get('page');
-						}
-					}
-				}
-			})() || '0';
 		}
 	},
 	
