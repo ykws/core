@@ -1252,6 +1252,15 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
 					'$&_big_p' + this.getMangaPageNumber(ctx)
 				);
+			} else if (
+				/のイラスト \[pixiv\](?: - [^ ]+)?$/.test(title) &&
+					doc.querySelector('a[href*="mode=manga"] img') &&
+					this.DATE_IMG_RE.test(url)
+			) {
+				url = url.replace(
+					/(\/\d+(?:-[\da-f]{32})?_p)\d+/,
+					'$1' + this.getMangaPageNumber(ctx)
+				);
 			} else if (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) {
 				url = this.getLargeThumbnailURL(url);
 			}
@@ -1372,11 +1381,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			if (
 				this.DATE_IMG_RE.test(url) &&
 					/^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-					/\/\d+(?:-[\da-f]{32})?_p0_(?:master|square)\d+\./.test(pathname)
+					/\/\d+(?:-[\da-f]{32})?_p\d+_(?:master|square)\d+\./.test(pathname)
 			) {
 				urlObj.pathname = pathname
 					.replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
-					.replace(/(\/\d+(?:-[\da-f]{32})?_p0)_(?:master|square)\d+\./, '$1.');
+					.replace(/(\/\d+(?:-[\da-f]{32})?_p\d+)_(?:master|square)\d+\./, '$1.');
 
 				return urlObj.toString();
 			}
@@ -1461,6 +1470,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 							let fullSizeImageURLObj = new URL(this.getFullSizeImageURL(url));
 
 							return fullSizeImageURLObj.pathname.extract(/img\/[^\/]+\/\d+(?:_[\da-f]{10})?_big_p(\d+)/);
+						}
+						if (this.DATE_IMG_RE.test(url)) {
+							return urlObj.pathname.extract(/\/\d+(?:-[\da-f]{32})?_p(\d+)/);
 						}
 						if (this.isImagePage(urlObj, 'manga_big')) {
 							return urlObj.searchParams.get('page');
