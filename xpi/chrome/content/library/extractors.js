@@ -1347,10 +1347,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
 		},
 		getImageElement : function (ctx, illustID) {
+			var anchor = 'a[href*="illust_id=' + (illustID || queryHash(ctx.search).illust_id) + '"]';
+
 			return ctx.document.querySelector([
 				// mode=medium on login
-				'a[href*="illust_id=' +
-					(illustID || queryHash(ctx.search).illust_id) + '"] > img',
+				anchor + ' > div > img',
 				// mode=big and mode=manga_big on login
 				'body > img:only-child',
 				// mode=manga
@@ -1358,7 +1359,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				// non-r18 illust on logout
 				'.cool-work-main > .img-container > a.medium-image > img',
 				// r18 on logout
-				'.cool-work-main > .sensored > img'
+				'.cool-work-main > .sensored > img',
+				// ugoira on logout
+				anchor + ' > img'
 			].join(', '));
 		},
 		getFullSizeImageURL : function (url) {
