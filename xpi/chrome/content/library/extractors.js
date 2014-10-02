@@ -1271,7 +1271,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return succeed(update(info, {
 				imageURL : (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) ?
 					this.getLargeThumbnailURL(url) :
-					(this.getFullSizeImageURL(ctx, url, doc) || url)
+					(this.getFullSizeImageURL(ctx, info) || url)
 			}));
 		},
 		isImagePage : function (target, mode) {
@@ -1306,10 +1306,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				anchor + ' > img'
 			].join(', '));
 		},
-		getFullSizeImageURL : function (ctx, url, doc) {
-			var cleanedURL = this.getCleanedURL(url);
+		getFullSizeImageURL : function (ctx, info) {
+			var cleanedURL = this.getCleanedURL(info.imageURL);
 
-			if (this.hasPageNumber(doc)) {
+			// for manga, illust book
+			if (!(
+				this.DIR_IMG_RE.test(cleanedURL) &&
+					/のイラスト \[pixiv\](?: - [^ ]+)?$/.test(info.pageTitle)
+			)) {
 				let pageNum = this.getPageNumber(ctx);
 
 				if (this.DIR_IMG_RE.test(cleanedURL)) {
@@ -1349,15 +1353,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			urlObj.pathname = pathname;
 
 			return urlObj.toString();
-		},
-		hasPageNumber : function (doc) {
-			var {title} = doc;
-
-			return /の漫画 \[pixiv\](?: - [^ ]+)?$/.test(title) || (
-				/のイラスト \[pixiv\](?: - [^ ]+)?$/.test(title) &&
-					// r18 book doesn't have "mode=manga".
-					doc.querySelector('a[href*="mode=manga"] img')
-			);
 		},
 		getPageNumber : function (ctx) {
 			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
