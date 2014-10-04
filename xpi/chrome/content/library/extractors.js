@@ -1184,6 +1184,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
 		// via http://www.pixiv.net/content_upload.php
 		IMG_EXTENSIONS : ['jpg', 'png', 'gif', 'jpeg'],
+		FIRST_BIG_P_ID : 11320785,
 		check : function (ctx) {
 			return !ctx.selection && this.getIllustID(ctx);
 		},
@@ -1319,7 +1320,9 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				if (this.DIR_IMG_RE.test(cleanedURL)) {
 					return cleanedURL.replace(
 						/img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
-						'$&_big_p' + pageNum
+						'$&_' + (
+							this.FIRST_BIG_P_ID > info.illustID ? '' : 'big_'
+						) + 'p' + pageNum
 					);
 				}
 				if (this.DATE_IMG_RE.test(cleanedURL)) {
