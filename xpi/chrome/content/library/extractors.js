@@ -1182,7 +1182,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				'/(\\d+)(?:-[\\da-f]{32})?(?:_p(\\d+))?'
 		),
 		IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
-		// via http://www.pixiv.net/content_upload.php
+		// via http://help.pixiv.net/171/
 		IMG_EXTENSIONS : ['jpg', 'png', 'gif', 'jpeg'],
 		FIRST_BIG_P_ID : 11320785,
 		check : function (ctx) {
@@ -1265,7 +1265,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 					return this.fixImageURLforUgoiraFromAPI(info);
 				}
 
-				// for limited access about mypixiv & private & age limit
+				// for limited access about mypixiv & age limit on login, and delete
 				throw new Error(getMessage('error.contentsNotFound'));
 			}
 
