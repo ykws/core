@@ -1853,7 +1853,7 @@ Models.register({
 
 Models.register({
 	name     : 'Evernote',
-	ICON     : 'http://www.evernote.com/favicon.ico',
+	ICON     : 'chrome://tombfix/skin/favicon/evernote.ico',
 	POST_URL : 'https://www.evernote.com/clip.action',
 	 
 	check : function(ps){
