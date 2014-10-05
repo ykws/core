@@ -2763,36 +2763,53 @@ Models.register({
 });
 
 
-Models.register({
-	name     : 'YahooBookmarks',
-	ICON     : 'http://i.yimg.jp/images/sicons/ybm16.gif',
-	POST_URL : 'http://bookmarks.yahoo.co.jp/action/post',
+Models.register(update({
+	name   : 'YahooBookmarks',
+	ICON   : 'http://i.yimg.jp/images/sicons/ybm16.gif',
+	ORIGIN : 'http://bookmarks.yahoo.co.jp',
 
 	check : function (ps) {
-		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) && !ps.file;
+		if (/^(?:photo|quote|link|video|conversation)$/.test(ps.type)) {
+			if (ps.file) {
+				return ps.itemUrl;
+			}
+
+			return true;
+		}
 	},
 
 	post : function (ps) {
-		return request(this.POST_URL, {
-			responseType : 'document'
-		}).addCallback(({response : doc}) => {
-			var crumbs = doc.querySelector('[name="crumbs"]');
+		return this.getSessionValue('token', () => {
+			return request(this.ORIGIN + '/bookmarklet', {
+				responseType : 'document'
+			}).addCallback(({response : doc}) => {
+				var script = doc.querySelector('script:not([src])');
 
-			if (!crumbs && doc.getElementById('login_form')) {
-				throw new Error(getMessage('error.notLoggedin'));
-			}
+				if (!script || doc.getElementById('login_form')) {
+					throw new Error(getMessage('error.notLoggedin'));
+				}
 
-			return request(this.POST_URL + '/done', {
+				return script.textContent.trim().extract(/^cic = "([^"]+)"$/);
+			});
+		}).addCallback(token => {
+			return request(this.ORIGIN + '/create/post', {
 				sendContent : {
-					title  : ps.item,
-					url    : ps.itemUrl,
-					desc   : joinText([ps.body, ps.description], ' ', true),
-					crumbs : crumbs.value
+					crumb : token,
+					title : ps.item,
+					url   : ps.itemUrl,
+					memo  : joinText([
+						Twitter.createQuote(ps.body || ''),
+						ps.description
+					], '\n\n', true)
 				}
 			});
 		});
+	},
+
+	getAuthCookie : function () {
+		return getCookieString('.yahoo.co.jp', 'T');
 	}
-});
+}, AbstractSessionService));
 
 
 Models.register({
