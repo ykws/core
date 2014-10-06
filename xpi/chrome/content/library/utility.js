@@ -2909,3 +2909,19 @@ function getCSVList(csv) {
 
 	return results;
 }
+
+function getDOMWindowUtils() {
+	return getMostRecentWindow().content
+		.QueryInterface(Ci.nsIInterfaceRequestor)
+		.getInterface(Ci.nsIDOMWindowUtils);
+}
+
+function getNodesFromPosition(screenX, screenY) {
+	var win = getMostRecentWindow().content,
+		domWindowUtils = getDOMWindowUtils(),
+		zoom = domWindowUtils.screenPixelsPerCSSPixel,
+		xPos = (screenX / zoom) - win.mozInnerScreenX,
+		yPos = (screenY / zoom) - win.mozInnerScreenY;
+
+	return domWindowUtils.nodesFromRect(xPos, yPos, 0, 0, 0, 0, false, false);
+}

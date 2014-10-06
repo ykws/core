@@ -1504,27 +1504,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Photo - covered',
-		ICON : 'chrome://tombfix/skin/photo.png',
-		check : function(ctx){
-			if(!currentDocument().elementFromPoint || !ctx.onImage)
-				return;
-			
-			// 1px四方の画像の上でクリックされたか?
-			// FIXME: naturalHeight利用
-			var img = IMG({src : ctx.target.src});
-			return (img.width==1 && img.height==1);
-		},
-		extract : function(ctx){
-			removeElement(ctx.target);
-			
-			return Extractors[ctx.bgImageURL?
-				'Photo - background image' :
-				'Photo - area element'].extract(ctx);
-		},
-	},
-	
-	{
 		name : 'Photo - area element',
 		ICON : 'chrome://tombfix/skin/photo.png',
 		check : function(ctx){
@@ -1927,6 +1906,52 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				type    : 'photo',
 				item    : ctx.title,
 				itemUrl : ctx.bgImageURL,
+			}
+		}
+	},
+	
+	{
+		name : 'Photo - covered',
+		ICON : 'chrome://tombfix/skin/photo.png',
+		check : function (ctx) {
+			if (!ctx.selection && ctx.mouse) {
+				return this.getCoveredImageInfo(ctx);
+			}
+		},
+		extract : function (ctx) {
+			var info = this.getCoveredImageInfo(ctx);
+
+			return Extractors[
+				info.target ? 'Photo' : 'Photo - background image'
+			].extract(update(ctx, info));
+		},
+		getCoveredImageInfo : function (ctx) {
+			var {screen} = ctx.mouse,
+				nodes = getNodesFromPosition(screen.x, screen.y);
+
+			if (!nodes) {
+				return;
+			}
+
+			// For check()'s performance, `limit` must be small.
+			for (let idx = 1, len = nodes.length, limit = 3; idx < len && idx <= limit; idx += 1) {
+				let coveredNode = nodes[idx];
+
+				if (coveredNode instanceof window.HTMLImageElement && coveredNode.src) {
+					return {
+						target : coveredNode
+					};
+				}
+				if (coveredNode instanceof Element) {
+					let bgImageURL = ctx.window.getComputedStyle(coveredNode)
+						.backgroundImage.extract(/^url\((["']?)(.+)\1\)$/, 2);
+
+					if (bgImageURL && bgImageURL !== ctx.bgImageURL) {
+						return {
+							bgImageURL : bgImageURL
+						};
+					}
+				}
 			}
 		}
 	},
