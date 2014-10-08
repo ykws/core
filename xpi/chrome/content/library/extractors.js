@@ -445,6 +445,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				return tumblr_controls.src;
 			}
 
+			// for XML page
+			if (!doc.body) {
+				return '';
+			}
+
 			var src = doc.body.textContent.extract(/(?:<|\\x3c)iframe\b[\s\S]*?src\s*=\s*(["']|\\x22)(http:\/\/(?:www|assets)\.tumblr\.com\/.*?iframe.*?pid=.*?)\1/i, 2);
 			return (src || '').replace(/\\x22/g, '"').replace(/\\x26/g, '&');
 		},
