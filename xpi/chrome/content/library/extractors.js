@@ -1075,23 +1075,51 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Photo - MediaWiki Thumbnail',
 		ICON : 'http://www.mediawiki.org/favicon.ico',
-		check : function(ctx){
-			return ctx.onLink && 
-				hasElementClass(ctx.document.body, 'mediawiki') && 
-				/wiki\/.+:/.test(ctx.link.href) && 
-				(/\.(svg|png|gif|jpe?g)$/i).test(ctx.link.href);
+		check : function (ctx) {
+			if (ctx.onLink) {
+				let {body} = ctx.document;
+
+				// for XML page
+				if (body && body.classList.contains('mediawiki')) {
+					let uri = createURI(ctx.link.href);
+
+					return /wiki\/.+:/.test(uri.path) &&
+						/^(?:svg|png|gif|jpe?g)$/i.test(uri.fileExtension);
+				}
+			}
 		},
-		extract : function(ctx){
-			return request(ctx.link.href).addCallback(function(res){
+		extract : function (ctx) {
+			var uri = createURI(ctx.link.href);
+
+			return request(uri.spec, {
+				responseType : 'document'
+			}).addCallback(({response : doc}) => {
+				var anchor, url;
+
 				// SVGの場合サムネイルを取得する
-				var xpath = (/\.svg$/i).test(ctx.link.href)?
-					'id("file")/a/img/@src':
-					'id("file")/a/@href';
-				
+				if (/^svg$/i.test(uri.fileExtension)) {
+					anchor = doc.querySelector(
+						'#file .mw-filepage-other-resolutions > .mw-thumbnail-link:last-child'
+					);
+
+					if (!anchor) {
+						let img = doc.querySelector('#file > a > img');
+
+						if (img) {
+							url = img.src;
+						}
+					}
+				} else {
+					anchor = doc.querySelector('#file > a');
+				}
+				if (anchor) {
+					url = anchor.href;
+				}
+
 				return {
-					type	  : 'photo',
-					item	  : ctx.title,
-					itemUrl : $x(xpath, convertToHTMLDocument(res.responseText))
+					type	: 'photo',
+					item	: ctx.title,
+					itemUrl : url ? uri.resolve(url) : ctx.target.src
 				};
 			});
 		}
