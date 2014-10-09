@@ -1321,7 +1321,7 @@ PostersPanel.prototype = {
 		// cancelをするとactive擬似クラスが有効にならずリアクションがなくなる
 		
 		// ダイレクト単独ポスト
-		if(e.altKey){
+		if(e.altKey || e.button === 1){
 			this.allOff();
 			this.toggle(e.target);
 			
