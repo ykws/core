@@ -1335,7 +1335,7 @@ registerIteratorFactory(
 registerIteratorFactory(
 	'XPathResult',
 	function(it){
-		return it instanceof Ci.nsIDOMXPathResult;
+		return it instanceof XPathResult;
 	},
 	function(it){
 		var i = 0;
