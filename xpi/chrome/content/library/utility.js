@@ -1144,7 +1144,10 @@ function simpleRequest(url, opt) {
 				}
 			}
 			if (!error) {
-				if (req.status >= 200 && req.status < 300) {
+				if (
+					(req.status >= 200 && req.status < 300) ||
+						(req.status === 0 && url.startsWith('data:'))
+				) {
 					ret.callback(req);
 				} else {
 					req.message = getMessage('error.http.' + req.status);

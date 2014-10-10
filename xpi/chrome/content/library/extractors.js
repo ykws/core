@@ -1602,6 +1602,93 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
+		name   : 'Photo - SVG to PNG',
+		ICON   : 'chrome://tombfix/skin/photo.png',
+		WIDTH  : '300px',
+		HEIGHT : '300px',
+		check : function (ctx) {
+			return !ctx.selection && this.getSVGURL(ctx);
+		},
+		extract : function (ctx) {
+			return request(this.getSVGURL(ctx), {
+				responseType : 'document'
+			}).addCallback(({response: doc}) => {
+				if (doc.contentType !== 'image/svg+xml') {
+					throw new Error(getMessage('error.contentsNotFound'));
+				}
+
+				return convertToDataURL(
+					this.getFixedSVGDataURL(doc.querySelector('svg'))
+				);
+			}).addCallback(dataURL => {
+				ctx.target = {
+					src : dataURL
+				};
+
+				return Extractors['Photo - Data URI'].extract(ctx);
+			});
+		},
+		getSVGURL : function (ctx) {
+			var svg = $x('./ancestor-or-self::*[local-name() = "svg"]', ctx.target),
+				imageURL, targetURL;
+
+			if (svg) {
+				return this.getFixedSVGDataURL(svg, ctx);
+			}
+
+			imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : '');
+			targetURL = ctx.onLink ? ctx.link.href : (!ctx.onImage && ctx.href);
+
+			for (let url of [imageURL, targetURL]) {
+				if (url) {
+					let uri = createURI(url);
+
+					if (
+						uri.fileExtension === 'svg' ||
+							url.startsWith('data:image/svg+xml')
+					) {
+						return url;
+					}
+				}
+			}
+		},
+		getFixedSVGDataURL : function (rawSVG, ctx) {
+			var svg = rawSVG.cloneNode(true);
+
+			if (!svg.getAttribute('xmlns')) {
+				svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+			}
+			if (!svg.getAttribute('xmlns:xlink')) {
+				svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+			}
+			if (!svg.getAttribute('width') || !svg.getAttribute('height')) {
+				let width, height;
+
+				if (ctx) {
+					let computedStyle = ctx.window.getComputedStyle(rawSVG);
+
+					width = computedStyle.width;
+					height = computedStyle.height;
+				} else {
+					width = this.WIDTH;
+					height = this.HEIGHT;
+				}
+
+				if (!svg.getAttribute('width')) {
+					svg.setAttribute('width', width);
+				}
+				if (!svg.getAttribute('height')) {
+					svg.setAttribute('height', height);
+				}
+			}
+
+			return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+				svg.outerHTML
+			);
+		}
+	},
+	
+	{
 		name : 'Photo',
 		ICON : 'chrome://tombfix/skin/photo.png',
 		PROTECTED_SITES : [
