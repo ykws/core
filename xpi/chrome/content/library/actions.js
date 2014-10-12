@@ -85,6 +85,12 @@
 
     {
       type : 'menu,context',
+      name : getMessage('label.action.reloadTombfix'),
+      execute : () => reload()
+    },
+
+    {
+      type : 'menu,context',
       name : '----'
     },
 
