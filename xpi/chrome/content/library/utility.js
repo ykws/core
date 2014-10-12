@@ -1338,7 +1338,7 @@ registerIteratorFactory(
 registerIteratorFactory(
 	'XPathResult',
 	function(it){
-		return it instanceof XPathResult;
+		return Object.prototype.toString.call(it).slice(8, -1) === 'XPathResult';
 	},
 	function(it){
 		var i = 0;
