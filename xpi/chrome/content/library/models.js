@@ -950,54 +950,6 @@ Models.register({
 
 
 Models.register({
-	name     : 'Twitpic',
-	ICON     : 'http://twitpic.com/images/favicon.ico',
-	POST_URL : 'http://twitpic.com/upload',
-	
-	check : function(ps){
-		return ps.type=='photo';
-	},
-	
-	post : function(ps){
-		var self = this;
-		return ((ps.file)? 
-			succeed(ps.file) : 
-			download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))
-		).addCallback(function(file){
-			return self.upload({
-				media      : file,
-				message    : ps.description,
-				post_photo : 1, // Twitterへクロスポスト
-			});
-		});
-	},
-	
-	upload : function(ps){
-		var self = this;
-		return this.getToken().addCallback(function(token){
-			return request(self.POST_URL + '/process', {
-				sendContent : update(token, ps),
-			});
-		});
-	},
-	
-	getToken : function(){
-		var self = this;
-		return request(self.POST_URL).addCallback(function(res){
-			// 未ログインの場合トップにリダイレクトされる(クッキー判別より安全と判断)
-			if(res.channel.URI.asciiSpec != self.POST_URL)
-				throw new Error(getMessage('error.notLoggedin'));
-			
-			var doc = convertToHTMLDocument(res.responseText);
-			return {
-				form_auth : $x('//input[@name="form_auth"]/@value', doc)
-			};
-		});
-	},
-});
-
-
-Models.register({
 	name      : 'WeHeartIt',
 	ICON      : 'https://weheartit.com/favicon.ico',
 	ORIGIN    : 'https://weheartit.com',
