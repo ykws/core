@@ -1783,11 +1783,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Video - YouTube',
 		ICON : 'https://www.youtube.com/favicon.ico',
-
 		check : function (ctx) {
 			if (
 				!ctx.selection && !ctx.onImage && !ctx.onLink &&
-				/^https?:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
+				/^https:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
 			) {
 				let doc = ctx.document;
 
@@ -1803,14 +1802,16 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 
 			return {
 				type      : 'video',
-				item      : name ? name.content : doc.title.replace(/^▶ | - YouTube$/g, ''),
+				item      : name ?
+					name.content :
+					doc.title.replace(/^▶ | - YouTube$/g, ''),
 				itemUrl   : (url || ctx).href,
 				author    : author.textContent.trim(),
-				authorUrl : author.href.split('?')[0]
+				authorUrl : author.origin + author.pathname
 			};
 		},
 		getAuthor : function (doc) {
-			return doc.querySelector('#watch7-user-header .yt-user-name');
+			return doc.querySelector('#watch7-user-header > .yt-user-info > a');
 		}
 	},
 	
