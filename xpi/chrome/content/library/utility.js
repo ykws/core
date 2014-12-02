@@ -2822,7 +2822,7 @@ function getTextContent(node) {
 
 function getLocalStorage(origin) {
 	return DOMStorageManager.createStorage(
-		ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
+		null, ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
 	);
 }
 

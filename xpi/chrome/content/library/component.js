@@ -27,6 +27,7 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       strings               : StringBundleService,
       obs                   : ObserverService,
       tm                    : ThreadManager,
+      // http://mxr.mozilla.org/mozilla-central/source/dom/interfaces/storage/nsIDOMStorageManager.idl
       domStorageManager     : DOMStorageManager,
       scriptSecurityManager : ScriptSecurityManager,
       cache                 : CacheService
