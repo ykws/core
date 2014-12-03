@@ -2524,9 +2524,9 @@ Models.register({
 
 
 Models.register(update({
-	name     : 'Instapaper',
-	ICON     : 'chrome://tombfix/skin/favicon/instapaper.png',
-	POST_URL : 'https://www.instapaper.com/edit',
+	name   : 'Instapaper',
+	ICON   : 'chrome://tombfix/skin/favicon/instapaper.png',
+	ORIGIN : 'https://www.instapaper.com',
 
 	check : function (ps) {
 		return /^(?:quote|link)$/.test(ps.type);
@@ -2534,13 +2534,13 @@ Models.register(update({
 
 	post : function (ps) {
 		return this.getSessionValue('token', () => {
-			return request(this.POST_URL, {
+			return request(this.ORIGIN + '/u', {
 				responseType : 'document'
 			}).addCallback(({response : doc}) => {
 				return $x('//input[@id="form_key"]/@value', doc);
 			});
 		}).addCallback(token => {
-			return request(this.POST_URL, {
+			return request(this.ORIGIN + '/edit', {
 				sendContent : {
 					'form_key'            : token,
 					'bookmark[url]'       : ps.itemUrl,
