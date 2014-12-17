@@ -117,10 +117,7 @@ function notify(title, msg, icon){
 		icon, title, msg,
 		false, '', null);
 }
-notify.ICON_DOWNLOAD = 'chrome://mozapps/skin/downloads/downloadIcon.png';
-notify.ICON_INFO     = 'chrome://global/skin/console/bullet-question.png';
-notify.ICON_ERROR    = 'chrome://global/skin/console/bullet-error.png';
-notify.ICON_WORN     = 'chrome://global/skin/console/bullet-warning.png';
+notify.ICON_INFO = 'chrome://global/skin/console/bullet-question.png';
 
 /**
  * URIを生成する。
