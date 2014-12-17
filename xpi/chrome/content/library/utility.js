@@ -569,10 +569,13 @@ function createDir(dir, basePath){
 	return dir;
 }
 
-function uriToFileName(uri){
-	uri = createURI(uri);
-	uri = (uri.host+uri.filePath).replace(/\/$/, '');
-	return validateFileName(uri);
+function uriToFileName(uri) {
+	var uriObj = createURI(uri),
+		fileName = uriObj.scheme === 'data' ?
+			uri.slice(0, 100) :
+			(uriObj.host + uriObj.filePath).replace(/\/$/, '');
+
+	return validateFileName(fileName);
 }
 
 function clearCollision(file){

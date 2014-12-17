@@ -2173,7 +2173,7 @@ update(Extractors, {
 		if(!title)
 			title = createURI(doc.location.href).fileBaseName;
 		
-		ctx.title = title.trim();
+		ctx.title = title == null ? ctx.href : title.trim();
 		
 		// canonicalが設定されていれば使う
 		var canonical = $x('//link[@rel="canonical"]/@href', doc);
