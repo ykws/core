@@ -346,17 +346,17 @@
         let gmService = Cc['@greasemonkey.mozdev.org/greasemonkey-service;1'];
 
         if (gmService) {
-          let gm = gmService.getService().wrappedJSObject;
+          let gmGlobal = Cu.getGlobalForObject(
+            gmService.getService().wrappedJSObject
+          );
 
-          env.addBefore(gm, 'evalInSandbox', function createGMAPI(...args) {
-            for (let arg of args) {
-              if (typeof arg === 'object') {
-                arg.GM_Tombloo = GM_Tombloo;
-                arg.GM_Tombfix = GM_Tombfix;
+          env.addAround(gmGlobal, 'createSandbox', (proceed, args) => {
+            var sandbox = proceed(args);
 
-                return;
-              }
-            }
+            sandbox.GM_Tombloo = GM_Tombloo;
+            sandbox.GM_Tombfix = GM_Tombfix;
+
+            return sandbox;
           });
         }
       }
