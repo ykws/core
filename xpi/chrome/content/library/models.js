@@ -118,27 +118,6 @@ var Tumblr = update({}, AbstractSessionService, {
 	},
 	
 	/**
-	 * ポストを削除する。
-	 *
-	 * @param {Number || String} id ポストID。
-	 * @return {Deferred}
-	 */
-	remove : function(id){
-		var self = this;
-		return this.getToken().addCallback(function(token){
-			return request(Tumblr.TUMBLR_URL+'delete', {
-				redirectionLimit : 0,
-				referrer    : Tumblr.TUMBLR_URL,
-				sendContent : {
-					id          : id,
-					form_key    : token,
-					redirect_to : 'dashboard',
-				},
-			});
-		});
-	},
-	
-	/**
 	 * reblog情報を取り除く。
 	 *
 	 * @param {Array} form reblogフォーム。
@@ -338,36 +317,6 @@ var Tumblr = update({}, AbstractSessionService, {
 		return d;
 	},
 	
-	openTab : function(ps){
-		if(ps.type == 'reblog')
-			return addTab(Tumblr.TUMBLR_URL + 'reblog/' + ps.token.id + '/' + ps.token.token +'?redirect_to='+encodeURIComponent(ps.pageUrl));
-		
-		var form = Tumblr[ps.type.capitalize()].convertToForm(ps);
-		return addTab(Tumblr.TUMBLR_URL+'new/' + ps.type).addCallback(function(win){
-			withDocument(win.document, function(){
-				populateForm(currentDocument().getElementById('edit_post'), form);
-				
-				var setDisplay = function(id, style){
-					currentDocument().getElementById(id).style.display = style;
-				}
-				switch(ps.type){
-				case 'photo':
-					setDisplay('photo_upload', 'none');
-					setDisplay('photo_url', 'block');
-					
-					setDisplay('add_photo_link', 'none');
-					setDisplay('photo_link', 'block');
-					
-					break;
-				case 'link':
-					setDisplay('add_link_description', 'none');
-					setDisplay('link_description', 'block');
-					break;
-				}
-			});
-		});
-	},
-	
 	getPasswords : function(){
 		return getPasswords('https://www.tumblr.com');
 	},
@@ -424,29 +373,6 @@ var Tumblr = update({}, AbstractSessionService, {
 			return request(Tumblr.TUMBLR_URL+'preferences').addCallback(function(res){
 				var doc = convertToHTMLDocument(res.responseText);
 				return self.user = $x('id("user_email")/@value', doc);
-			});
-		}
-	},
-	
-	/**
-	 * ログイン中のユーザーIDを取得する。
-	 *
-	 * @return {Deferred} ユーザーIDが返される。
-	 */
-	getCurrentId : function(){
-		switch (this.updateSession()){
-		case 'none':
-			return succeed('');
-			
-		case 'same':
-			if(this.id)
-				return succeed(this.id);
-			
-		case 'changed':
-			var self = this;
-			return request(Tumblr.TUMBLR_URL+'customize').addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
-				return self.id = $x('id("edit_tumblelog_name")/@value', doc);
 			});
 		}
 	},

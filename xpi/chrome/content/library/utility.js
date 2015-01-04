@@ -338,8 +338,6 @@ function reload(){
 	// これを避けるためリロードを遅延させる
 	// (設定画面を閉じる際にFirefox 4以降がクラッシュするようになったのを避ける)
 	setTimeout(function(){
-		signal(grobal, 'context-reload');
-		
 		loadAllSubScripts();
 		getWindows().forEach(connectToBrowser);
 	}, 0);
@@ -584,13 +582,6 @@ function clearCollision(file){
 		file.leafName = name.replace(/(.*)\./, '$1('+count+').');
 }
 
-function getContentDir(){
-	var contentDir = getExtensionDir(EXTENSION_ID);
-	contentDir.setRelativeDescriptor(contentDir, 'chrome/content');
-	
-	return contentDir;
-}
-
 function getPatchDir(){
 	var dir = getDataDir();
 	dir.append('script');
@@ -629,45 +620,6 @@ function getChromeManifestFile(){
 	return manifest;
 }
 
-function addChromeManifest(line){
-	var manifest = getChromeManifestFile();
-	var re = new RegExp('^' + line + '\n?', 'm');
-	var contents = getContents(manifest);
-	if(re.test(contents))
-		return;
-	
-	putContents(manifest, contents + line + '\n');
-	ChromeRegistry.checkForNewChrome();
-}
-
-function removeChromeManifest(line){
-	var manifest = getChromeManifestFile();
-	var re = new RegExp('^' + line + '\n?', 'm');
-	var contents = getContents(manifest);
-	if(!re.test(contents))
-		return;
-	
-	putContents(manifest, contents.replace(re, ''));
-	ChromeRegistry.checkForNewChrome();
-}
-
-/**
- * ダイアログを開く。
- * Progressオブジェクト、または、個別の値を渡す。
- *
- * @param {Progress || String} progress Progressオブジェクト。新しく生成する場合は名前。
- * @param {Number} max 最大値。
- * @param {Number} value 現在値。
- */
-function openProgressDialog(progress, max, value){
-	if(!(progress instanceof Progress))
-		progress = new Progress(progress, max, value);
-	
-	openDialog('chrome://tombfix/content/library/progressDialog.xul', 'dialog,centerscreen', progress);
-	
-	return progress;
-}
-
 /**
  * ダイアログを開く。
  *
@@ -680,13 +632,6 @@ function openDialog(url, features, value){
 	var args = Array.slice(arguments);
 	args.splice(1, 0, '_blank')
 	return win.openDialog.apply(win, args);
-}
-
-function openParamString(obj){
-	var params=[];
-	for(var p in obj)
-		params.push(p+(obj[p]!=null? '='+obj[p] : ''));
-	return params.join(',');
 }
 
 /**
@@ -1194,39 +1139,6 @@ function maybeDeferred(d) {
 			d;
 }
 
-MochiKit.Base.update(MochiKit.Signal.Event.prototype, {
-	// [FIXME] mouse.wheel.yを利用
-	wheelDelta : function(){
-		return 	this.event().detail;
-	},
-	isStopped : function(){
-		var evt = this.event();
-		
-		return evt.getPreventDefault ?
-			evt.getPreventDefault() :
-			evt.cancelBubble;
-	},
-	
-	// FIXME: 統合、現在Stroboで利用
-	keyString : function(){
-		var keys = [];
-		
-		var mod = this.modifier();
-		mod.ctrl && keys.push('CTRL');
-		mod.shift && keys.push('SHIFT');
-		mod.alt && keys.push('ALT');
-		
-		var key = this.key();
-		if(key){
-			key = key.string.replace(/^KEY_/, '');
-			if(!keys.some(function(i){return i==key}))
-				keys.push(key);
-		}
-		
-		return keys.join('+');
-	},
-})
-
 MochiKit.Base.update(MochiKit.Signal._specialKeys, {
 	61  : 'KEY_SEMICOLON',
 	226 : 'KEY_HORIZONTAL_BAR'
@@ -1587,31 +1499,10 @@ function getAllPropertyNames(obj, ancestor){
 	return Object.keys(props);
 }
 
-function clearObject(obj){
-	for(var p in obj)
-		delete obj[p];
-	return obj;
-}
-
 function isEmpty(obj){
 	for(var i in obj)
 		return false;
 	return true;
-}
-
-function populateForm(form, values){
-	for(var name in values){
-		var control = $x('//*[@name="' + name + '"]', form);
-		if(!control || !values[name])
-			continue;
-		
-		if(control.type == 'checkbox'){
-			if(control.value == values[name])
-				control.checked = true;
-		} else {
-			control.value = values[name];
-		}
-	}
 }
 
 function pickUp(a, pop){
@@ -1621,12 +1512,6 @@ function pickUp(a, pop){
 
 function random(max){
 	return Math.floor(Math.random() * max);
-}
-
-function absolutePath(path){
-  var e = currentDocument().createElement('span');
-  e.innerHTML = '<a href="' + path + '" />';
-  return e.firstChild.href;
 }
 
 /**
@@ -1799,26 +1684,6 @@ function validateFileName(fileName){
 	}
 	
 	return fileName.replace(/[\/]+/g, "_");
-}
-
-/**
- * Windows上でWSHを実行する。
- * 将来Deferredを用いるrunWSHに移行される。
- *
- * @param {Function} func WSHスクリプト。
- * @param {Array} args WSHスクリプトの引数。
- * @param {Boolean} async 非同期で実行するか。
- * @return {String} WSHスクリプトの実行結果。
- */
-function executeWSH(func, args, async){
-	error('deprecated: executeWSH');
-	
-	var res;
-	runWSH(func, args, !async).addCallback(function(r){
-		res = r;
-	});
-	
-	return res;
 }
 
 /**
@@ -2237,20 +2102,6 @@ function makeOpaqueFlash(doc){
 	});
 }
 
-function addStyle(css, doc) {
-	doc = doc || currentDocument() || document;
-	
-	var head = doc.getElementsByTagName('head')[0];
-	if (!head)
-		return;
-	
-	var style = doc.createElement('style');
-	style.type = 'text/css';
-	style.innerHTML = css;
-	
-	head.appendChild(style);
-}
-
 function appendMenuItem(menu, label, image, hasChildren){
 	var doc = menu.ownerDocument;
 	if((/^----/).test(label))
@@ -2292,38 +2143,6 @@ function keyString(e){
 function cancel(e){
 	e.preventDefault();
 	e.stopPropagation();
-}
-
-function showNotification(fragments, animation){
-	var browser = getMostRecentWindow().getBrowser();
-	var doc = browser.ownerDocument;
-	var box = browser.getNotificationBox(browser.selectedBrowser);
-	
-	var slideSteps = box.slideSteps;
-	if(!animation)
-		box.slideSteps = 1;
-	
-	var notification = this.notification = box.appendNotification('', '', null,	box.PRIORITY_INFO_HIGH, null);
-	box.slideSteps = slideSteps;
-	
-	var outset = doc.getAnonymousNodes(notification)[0];
-	outset.setAttribute('align', 'start');
-	
-	var details = doc.getAnonymousElementByAttribute(notification, 'anonid', 'details');
-	clearChildren(details);
-	
-	notification.appendChild(fragments);
-	
-	if(!animation){
-		notification.__close = notification.close;
-		notification.close = function(){
-			box.slideSteps = 1;
-			notification.__close();
-			box.slideSteps = slideSteps;
-		}
-	}
-	
-	return notification;
 }
 
 function capture(src, pos, dim, scale){
@@ -2824,39 +2643,6 @@ function getLocalStorage(origin) {
 	return DOMStorageManager.createStorage(
 		null, ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
 	);
-}
-
-function getLocalStorageValueBySQL(hostname, key) {
-	var info;
-	return succeed().addCallback(function(){
-		var file, storage, stmt, value;
-		// localStorage参照
-		file = getProfileDir();
-		file.append('webappsstore.sqlite');
-		storage = StorageService.openDatabase(file);
-		stmt = storage.createStatement([
-			"SELECT key, value FROM webappsstore2 WHERE key = '" + key + "' AND scope LIKE '",
-			hostname.split('').reverse().join(''),
-			"%'"
-		].join(''));
-		try {
-			while (stmt.executeStep()) {
-				value = stmt.getString(1);
-			}
-			info = (value && JSON.parse(value));
-		} finally {
-			stmt.reset();
-			stmt.finalize();
-		}
-	}).addBoth(function(res){
-		if (info) {
-			return info;
-		}
-		if (res && res instanceof Error) {
-			debug(res);
-			throw res;
-		}
-	});
 }
 
 function downloadWithReferrer(url, referrer) {

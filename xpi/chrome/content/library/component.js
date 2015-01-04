@@ -4,7 +4,7 @@
 /* exported DirectoryService, IOService, WindowMediator, PromptService */
 /* exported CookieManager, LoginManager, StringBundleService, ObserverService */
 /* exported ThreadManager, DOMStorageManager, ScriptSecurityManager */
-/* exported CategoryManager, CacheService */
+/* exported CategoryManager */
 
 var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
@@ -29,8 +29,7 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       tm                    : ThreadManager,
       // http://mxr.mozilla.org/mozilla-central/source/dom/interfaces/storage/nsIDOMStorageManager.idl
       domStorageManager     : DOMStorageManager,
-      scriptSecurityManager : ScriptSecurityManager,
-      cache                 : CacheService
+      scriptSecurityManager : ScriptSecurityManager
     } = Services,
     {categoryManager: CategoryManager} = XPCOMUtils;
 
@@ -38,9 +37,8 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
   'use strict';
 
   [
-    'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IURL', 'IFileURL',
-    'IInputStream', 'ISelectionListener', 'IContentPolicy', 'IHttpChannel',
-    'ICache'
+    'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IInputStream',
+    'IContentPolicy', 'IHttpChannel'
   ].forEach(name => {
     global[name] = Ci['ns' + name];
   });
