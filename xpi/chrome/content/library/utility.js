@@ -233,13 +233,6 @@ function getProfileDir(){
 }
 
 /**
- * テンポラリディレクトリを取得する。
- */
-function getTempDir(){
-	return DirectoryService.get('TmpD', IFile);
-}
-
-/**
  * 直近にアクティブだったブラウザウィンドウを取得する。
  */
 function getMostRecentWindow(){
@@ -599,6 +592,9 @@ function getDataDir(name){
 	return dir;
 }
 
+/**
+ * テンポラリディレクトリを取得する。
+ */
 function getTempDir(name){
 	var dir = DirectoryService.get('TmpD', IFile);
 	name && dir.append(name);
