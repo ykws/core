@@ -298,7 +298,7 @@ State.make(DialogPanel, {
 		},
 		
 		onMouseOut : function(e){
-			if(e.relatedTarget.tagName=='window')
+			if(e.relatedTarget && e.relatedTarget.tagName=='window')
 				this.changeState('normal');
 		},
 		
