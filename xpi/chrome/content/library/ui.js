@@ -159,7 +159,7 @@ connect(grobal, 'browser-load', function(e){
 
 	// Menu Editor拡張によって個別メニューのイベントを取得できなくなる現象を回避
 	menuContext.addEventListener('popupshowing', function(e){
-		if(e.eventPhase != Event.AT_TARGET || (context && context.target == cwin.gContextMenu.target))
+		if(e.eventPhase != Event.AT_TARGET || (context && context.target == cwin.gContextMenu.target) || !cwin.gContextMenu.target)
 			return;
 		
 		var doc = cwin.gContextMenu.target.ownerDocument;
