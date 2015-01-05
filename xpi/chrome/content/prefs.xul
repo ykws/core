@@ -99,6 +99,7 @@
 			<tabs>
 				<tab label="&label.postConfig;"/>
 				<tab label="&label.post;"/>
+				<tab label="&label.services;"/>
 				<tab label="&label.entry;"/>
 			</tabs>
 			<tabpanels flex="1">
@@ -183,6 +184,55 @@
 					</grid>
 				</tabpanel>
 				<tabpanel>
+					<tabbox flex="1">
+						<tabs>
+							<tab label="Tumblr"/>
+							<tab label="Twitter"/>
+						</tabs>
+						<tabpanels flex="1">
+							<tabpanel>
+								<grid flex="1">
+									<columns>
+										<column pack="end" align="end" orient="horizontal"/>
+										<column flex="1"/>
+									</columns>
+									<rows>
+										<checkbox label="&label.model.tumblr.queue;" preference="model.tumblr.queue" />
+										<checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
+										<checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
+									</rows>
+								</grid>
+							</tabpanel>
+							<tabpanel>
+								<grid flex="1">
+									<columns>
+										<column pack="end" align="end" orient="horizontal"/>
+										<column flex="1"/>
+									</columns>
+									<rows>
+										<checkbox label="&label.model.twitter.showTweetLength;" preference="model.twitter.showTweetLength" />
+										<checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
+										<vbox>
+											<label value="&label.model.twitter.template.prefix;"/>
+											<hbox>
+												<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
+											</hbox>
+											<spacer />
+											<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
+										</vbox>
+										<vbox>
+											<label value="&label.model.twitter.template;"/>
+											<textbox preference="model.twitter.template" maxlength="140" />
+											<spacer />
+											<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
+										</vbox>
+									</rows>
+								</grid>
+							</tabpanel>
+						</tabpanels>
+					</tabbox>
+				</tabpanel>
+				<tabpanel>
 					<grid flex="1">
 						<columns>
 							<column pack="end" align="end" orient="horizontal"/>
@@ -201,31 +251,6 @@
 								<spacer />
 								<textbox readonly="true" value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;" />
 							</vbox>
-							<groupbox>
-								<caption label="Tumblr"/>
-								<checkbox label="&label.model.tumblr.queue;" preference="model.tumblr.queue" />
-								<checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
-								<checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
-							</groupbox>
-							<groupbox>
-								<caption label="Twitter"/>
-								<checkbox label="&label.model.twitter.showTweetLength;" preference="model.twitter.showTweetLength" />
-								<checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
-								<vbox>
-									<label value="&label.model.twitter.template.prefix;"/>
-									<hbox>
-										<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
-									</hbox>
-									<spacer />
-									<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
-								</vbox>
-								<vbox>
-									<label value="&label.model.twitter.template;"/>
-									<textbox preference="model.twitter.template" maxlength="140" />
-									<spacer />
-									<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
-								</vbox>
-							</groupbox>
 							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
 							<vbox>
 								<checkbox label="&label.disableAllScripts;" preference="disableAllScripts" />
