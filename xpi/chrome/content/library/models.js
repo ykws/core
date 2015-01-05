@@ -3163,7 +3163,7 @@ Models.register({
 			var doc = convertToHTMLDocument(res.responseText);
 			var url = $x('id("reg")/@action', doc);
 			if(!url)
-				throw new Error(getMessage('error.alreadyExsits'));
+				throw new Error(getMessage('error.alreadyExists'));
 			
 			return request(url, {
 				redirectionLimit : 0,
