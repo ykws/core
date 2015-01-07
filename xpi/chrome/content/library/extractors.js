@@ -758,32 +758,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}
 		}
 	},
-
-	{
-		name : 'Photo - Snipshot',
-		ICON : Models.Snipshot.ICON,
-		check : function(ctx){
-			return ctx.href.match('http://services.snipshot.com/edit/');
-		},
-		extract : function(ctx){
-			var id = ctx.window.m ? ctx.window.m.id : ctx.window.snipshot.FILE;
-			var info = ctx.window.SnipshotImport;
-			
-			if(info){
-				ctx.href  = info.url;
-				ctx.title = info.title;
-			} else {
-				ctx.href  = '';
-				ctx.title = '';
-			}
-			
-			return {
-				type    : 'photo',
-				item    : ctx.title,
-				itemUrl : 'http://services.snipshot.com/save/'+id+'/snipshot_'+id+'.jpg',
-			}
-		},
-	},
 	
 	{
 		name : 'Photo - Fishki.Net',
