@@ -542,17 +542,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'ReBlog - Mosaic',
-		ICON : 'chrome://tombfix/skin/reblog.ico',
-		check : function(ctx){
-			return ctx.href.match(/mosaic.html/i) && ctx.target.photo;
-		},
-		extract : function(ctx){
-			return Extractors.ReBlog.extractByLink(ctx, ctx.target.photo.url);
-		},
-	},
-	
-	{
 		name : 'ReBlog - Tumblr link',
 		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
