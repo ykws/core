@@ -1760,28 +1760,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Video - MySpaceTV',
-		ICON : 'https://x.myspacecdn.com/new/common/images/favicons/favicon.ico',
-		check : function(ctx){
-			return ctx.host.match(/vids\.myspace\.com/) && this.getTag();
-		},
-		extract : function(ctx){
-			var tag = this.getTag();
-			ctx.href = tag.extract(/href="(.+?)"/);
-			
-			return {
-				type    : 'video',
-				item    : tag.extract(/<a.+?>(.+?)<\/a>/),
-				itemUrl : ctx.href,
-				body    : tag.extract(/(<object.+object>)/),
-			};
-		},
-		getTag : function(){
-			return $x('id("tv_embedcode_embed_text")/@value');
-		},
-	},
-	
-	{
 		name : 'Video - Dailymotion',
 		ICON : 'http://www.dailymotion.com/favicon.ico',
 		check : function(ctx){
