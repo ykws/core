@@ -1775,22 +1775,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Video - Google Video',
-		ICON : Models.Google.ICON,
-		check : function(ctx){
-			return ctx.host.match('video.google.com');
-		},
-		extract : function(ctx){
-			return {
-				type    : 'video',
-				item    : ctx.title,
-				itemUrl : ctx.href,
-				body    : $x('id("embed-video")/textarea/text()'),
-			}
-		},
-	},
-	
-	{
 		name : 'Video - MySpaceTV',
 		ICON : 'https://x.myspacecdn.com/new/common/images/favicons/favicon.ico',
 		check : function(ctx){
