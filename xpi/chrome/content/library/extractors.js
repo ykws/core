@@ -527,21 +527,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name: 'ReBlog - Tumblr Dashboard for iPhone',
-		ICON: 'chrome://tombfix/skin/reblog.ico',
-		check: function(ctx){
-			return (/(tumblr\.com)\/iphone/).test(ctx.href) && this.getLink(ctx);
-		},
-		extract : function(ctx){
-			return Extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
-		},
-		getLink : function(ctx){
-			var link = $x('./ancestor-or-self::li[starts-with(normalize-space(@id), "post")]//a[contains(concat(" ",normalize-space(@class)," ")," permalink ")]', ctx.target);
-			return link && link.href;
-		}
-	},
-	
-	{
 		name : 'ReBlog - Tumblr link',
 		ICON : 'chrome://tombfix/skin/reblog.ico',
 		check : function(ctx){
