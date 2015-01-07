@@ -842,21 +842,6 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	},
 	
 	{
-		name : 'Photo - BRIGIT',
-		ICON : 'chrome://tombfix/skin/photo.png',
-		check : function(ctx){
-			return ctx.host == 'brigit.jp' && $x('ancestor::div[@id="photo_1"]', ctx.target);
-		},
-		extract : function(ctx){
-			return {
-				type    : 'photo',
-				item    : ctx.title,
-				itemUrl : $x('preceding-sibling::img', ctx.target).src,
-			}
-		},
-	},
-	
-	{
 		name : 'Photo - Google',
 		ICON : Models.Google.ICON,
 		check : function(ctx){
