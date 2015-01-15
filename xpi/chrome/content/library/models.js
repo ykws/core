@@ -3056,50 +3056,60 @@ Models.register( {
 });
 
 
-Models.register({
-	name : 'HatenaStar',
-	ICON : 'http://s.hatena.ne.jp/favicon.ico',
-	
-	getToken : function(){
-		return request('http://s.hatena.ne.jp/entries.json').addCallback(function(res){
-			if(!res.responseText.match(/"rks":"(.*?)"/))
-				throw new Error(getMessage('error.notLoggedin'));
-			return RegExp.$1;
-		})
+Models.register(Object.assign({
+	name   : 'HatenaStar',
+	ICON   : 'https://s.hatena.ne.jp/favicon.ico',
+	ORIGIN : 'https://s.hatena.ne.jp',
+
+	check(ps) {
+		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
+			if (ps.file) {
+				return ps.itemUrl;
+			}
+
+			return true;
+		}
 	},
-	
-	check : function(ps){
-		return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
-	},
-	
-	post : function(ps){
-		return HatenaStar.getToken().addCallback(function(token){
-			return request('http://s.hatena.ne.jp/star.add.json', {
-				redirectionLimit : 0,
-				queryString : {
-					rks      : token,
-					title    : ps.item,
-					quote    : joinText([ps.body, ps.description], ' ', true),
-					location : ps.pageUrl,
-					uri      : ps.itemUrl,
-				},
-			});
-		});
-	},
-	
-	remove : function(ps){
-		return HatenaStar.getToken().addCallback(function(token){
-			return request('http://s.hatena.ne.jp/star.delete.json', {
-				redirectionLimit : 0,
-				queryString : {
+
+	post(ps) {
+		return HatenaStar.getToken().addCallback(token => {
+			return request(this.ORIGIN + '/star.add.json', {
+				responseType : 'json',
+				queryString  : {
 					rks   : token,
 					uri   : ps.itemUrl,
-					quote : joinText([ps.body, ps.description], ' ', true),
-				},
+					quote : joinText([ps.body, ps.description], ' ', true)
+				}
 			});
+		}).addCallback(({response : json}) => {
+			let {errors} = json;
+
+			if (errors) {
+				throw new Error(joinText(errors, '\n', true));
+			}
 		});
 	},
-});
+
+	getToken() {
+		return this.getSessionValue('token', () => {
+			return request(this.ORIGIN + '/entries.json', {
+				responseType : 'json'
+			});
+		}).addCallback(({response : json}) => {
+			let {rks} = json;
+
+			if (!rks) {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+
+			return rks;
+		});
+	},
+
+	getAuthCookie() {
+		return Hatena.getAuthCookie();
+	}
+}, AbstractSessionService));
 
 
 Models.register({
