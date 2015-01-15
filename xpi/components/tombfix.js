@@ -49,10 +49,8 @@
     'ui.js'
   ];
 
-  try {
-    // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
-    Cu.importGlobalProperties(['File']);
-  } catch (err) {}
+  // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
+  Cu.importGlobalProperties(['File']);
 
   var getContentDir, Module, ModuleImpl;
 

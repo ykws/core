@@ -1004,7 +1004,7 @@ function simpleRequest(url, opt) {
 				file = sendContent[key] = File(file);
 			}
 
-			if (file instanceof window.File) {
+			if (file instanceof File) {
 				multipart = true;
 				break;
 			}
@@ -1085,10 +1085,7 @@ function simpleRequest(url, opt) {
 				}
 			}
 			if (!error) {
-				if (
-					(req.status >= 200 && req.status < 300) ||
-						(req.status === 0 && url.startsWith('data:'))
-				) {
+				if (req.status >= 200 && req.status < 300) {
 					ret.callback(req);
 				} else {
 					req.message = getMessage('error.http.' + req.status);
