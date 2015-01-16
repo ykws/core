@@ -1,6 +1,6 @@
 .models > radio,
 .users > listitem,
-.login {
+.login:not([disabled]) {
   cursor: pointer;
 }
 

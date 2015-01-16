@@ -31,7 +31,8 @@
     return;
   }
 
-  let elmUsers = doc.querySelector('.users');
+  let elmUsers = doc.querySelector('.users'),
+      elmLogin = doc.querySelector('.login');
 
   elmModels.addEventListener('select', () => {
     // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める
@@ -41,7 +42,7 @@
 
     let model = Models[elmModels.value];
 
-    elmUsers.refreshing = true;
+    elmLogin.disabled = elmUsers.refreshing = true;
 
     model.getCurrentUser().addBoth(result => {
       let currentUser = typeof result === 'string' ? result : '';
@@ -65,6 +66,14 @@
 
       elmUsers.refreshing = false;
     });
+  });
+
+  elmUsers.addEventListener('select', () => {
+    let item = elmUsers.selectedItem;
+
+    if (item) {
+      elmLogin.disabled = item.disabled;
+    }
   });
 
   win.addEventListener('load', () => {

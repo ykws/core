@@ -11,6 +11,7 @@
       <listbox class="users" flex="1"></listbox>
       <button class="login"
         dlgtype="accept"
+        disabled="true"
         label="Login"
         image="chrome://tombfix/skin/accept.png"/>
     </vbox>
