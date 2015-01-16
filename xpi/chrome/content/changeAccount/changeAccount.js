@@ -21,6 +21,13 @@
   }
 
   if (!elmModels.childElementCount) {
+    win.addEventListener('load', () => {
+      // load時は、まだダイアログが表示されていない
+      setTimeout(() => {
+        win.alert(env.getMessage('message.changeAccount.infoNotFound'));
+      }, 0);
+    });
+
     return;
   }
 
