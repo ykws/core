@@ -1,16 +1,22 @@
-button, radio, listitem {
+.models > radio,
+.users > listitem,
+.login {
   cursor: pointer;
 }
-#models + vbox {
+
+.right-box {
   margin-left: 0.7em;
 }
-.button-icon{
-  margin-right: 0.5em;
-}
-listitem {
+
+.users > listitem {
   padding: 0.5em 0.2em;
 }
-button[label="Login"] {
+
+.login {
   margin-top: 0.7em;
   padding: 0.5em 0;
+}
+
+.button-icon {
+  margin-right: 0.5em;
 }

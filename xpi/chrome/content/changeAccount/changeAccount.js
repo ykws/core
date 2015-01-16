@@ -1,7 +1,7 @@
 var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 
-var elmModels = document.getElementById('models');
-var elmUsers = document.getElementById('users');
+var elmModels = document.querySelector('.models');
+var elmUsers = document.querySelector('.users');
 
 elmModels.addEventListener('select', function(e){
   // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める

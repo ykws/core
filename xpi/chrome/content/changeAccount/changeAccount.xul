@@ -2,14 +2,17 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="changeAccount.css" type="text/css"?>
 <!DOCTYPE dialog SYSTEM "chrome://tombfix/locale/tombfix.dtd">
-<dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&label.action.changeAccount;">
+<dialog xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  buttons="accept"
+  title="&label.action.changeAccount;">
   <hbox flex="1">
-    <radiogroup id="models">
-    </radiogroup>
-    <vbox flex="1">
-      <listbox id="users" flex="1">
-      </listbox>
-      <button dlgtype="accept" image="chrome://tombfix/skin/accept.png" label="Login"/>
+    <radiogroup class="models"></radiogroup>
+    <vbox class="right-box" flex="1">
+      <listbox class="users" flex="1"></listbox>
+      <button class="login"
+        dlgtype="accept"
+        label="Login"
+        image="chrome://tombfix/skin/accept.png"/>
     </vbox>
   </hbox>
   <script src="changeAccount.js"></script>
