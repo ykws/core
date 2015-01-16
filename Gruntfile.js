@@ -17,11 +17,11 @@ module.exports = function (grunt) {
         // 'xpi/chrome/content/library/repository.js',
         // 'xpi/chrome/content/library/models.js',
         // 'xpi/chrome/content/library/Tombfix.Service.js',
-        'xpi/chrome/content/library/actions.js'
+        'xpi/chrome/content/library/actions.js',
         // 'xpi/chrome/content/library/extractors.js',
         // 'xpi/chrome/content/library/ui.js',
         // 'xpi/chrome/content/quickPostForm.js',
-        // 'xpi/chrome/content/changeAccount/changeAccount.js',
+        'xpi/chrome/content/changeAccount/changeAccount.js'
         // 'xpi/chrome/content/wsh.js',
         // 'xpi/defaults/preferences/prefs.js'
       ],

@@ -1,45 +1,66 @@
-var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
+/* global Components */
 
-var elmModels = document.querySelector('.models');
-var elmUsers = document.querySelector('.users');
+(function executeChangeAccount(win, doc) {
+  'use strict';
 
-elmModels.addEventListener('select', function(e){
-  // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める
-  if(elmUsers.refreshing)
-    return;
+  let env = Components.classes[
+        '@tombfix.github.io/tombfix-service;1'
+      ].getService().wrappedJSObject,
+      {Models} = env,
+      elmModels = doc.querySelector('.models');
 
-  var model = env.Models[elmModels.value];
-  elmUsers.refreshing = true;
-  (model.getCurrentUser? model.getCurrentUser() : succeed()).addCallback(function(user){
-    env.clearChildren(elmUsers);
+  for (let model of Models.values) {
+    if (
+      model.login && model.getCurrentUser &&
+        model.getPasswords && model.getPasswords().length
+    ) {
+      let {name} = model;
 
-    model.getPasswords().forEach(function(pw){
-      var item = elmUsers.appendItem(pw.user, pw.password);
-      item.setAttribute('class', 'listitem-iconic');
-      if(pw.user == user){
-        elmUsers.selectedItem = item;
-        item.setAttribute('image', 'chrome://tombfix/skin/tick.png');
-        item.disabled = true;
-      } else {
-        item.setAttribute('image', 'chrome://tombfix/skin/empty.png');
+      elmModels.appendItem(name, name).setAttribute('src', model.ICON);
+    }
+  }
+
+  let elmUsers = doc.querySelector('.users');
+
+  elmModels.addEventListener('select', () => {
+    // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める
+    if (elmUsers.refreshing) {
+      return;
+    }
+
+    let model = Models[elmModels.value];
+
+    elmUsers.refreshing = true;
+
+    model.getCurrentUser().addCallback(currentUser => {
+      env.clearChildren(elmUsers);
+
+      for (let {user, password} of model.getPasswords()) {
+        let item = elmUsers.appendItem(user, password);
+
+        item.classList.add('listitem-iconic');
+
+        if (currentUser === user) {
+          item.image = 'chrome://tombfix/skin/tick.png';
+          item.disabled = true;
+
+          elmUsers.selectedItem = item;
+        } else {
+          item.image = 'chrome://tombfix/skin/empty.png';
+        }
       }
+
+      elmUsers.refreshing = false;
     });
-    elmUsers.refreshing = false;
   });
-}, true);
 
-env.forEach(env.Models.values, function(m){
-  if(!m.login || !m.getPasswords || !m.getPasswords().length)
-    return;
+  win.addEventListener('load', () => {
+    elmModels.selectedIndex = 0;
+  });
 
-  elmModels.appendItem(m.name, m.name).setAttribute('src', m.ICON);
-});
+  win.addEventListener('dialogaccept', () => {
+    let item = elmUsers.selectedItem;
 
-window.addEventListener('load', function(){
-  elmModels.selectedIndex = 0;
-}, true);
-
-window.addEventListener('dialogaccept', function(){
-  var item = elmUsers.selectedItem;
-  env.Models[elmModels.value].login(item.label, item.value);
-}, true);
+    Models[elmModels.value].login(item.label, item.value);
+  });
+}(window, document));
