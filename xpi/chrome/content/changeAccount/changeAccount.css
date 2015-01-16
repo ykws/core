@@ -1,6 +1,3 @@
-window {
-  margin: 0.7em 0.5em;
-}
 button, radio, listitem {
   cursor: pointer;
 }
@@ -11,7 +8,6 @@ button, radio, listitem {
   margin-right: 0.5em;
 }
 listitem {
-  outline: none !important;
   padding: 0.5em 0.2em;
 }
 button[label="Login"] {
