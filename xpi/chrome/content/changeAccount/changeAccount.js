@@ -20,6 +20,10 @@
     }
   }
 
+  if (!elmModels.childElementCount) {
+    return;
+  }
+
   let elmUsers = doc.querySelector('.users');
 
   elmModels.addEventListener('select', () => {
