@@ -1,29 +1,15 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<?xml-stylesheet href="data:text/css,
-window {
-	margin : 0.7em 0.5em;
-}
-button, radio, listitem {
-	cursor : pointer;
-}
-.button-icon{
-	margin-right : 0.5em;
-}
-listitem {
-	outline: none !important;
-	padding: 0.5em 0.2em;
-}
-" type="text/css"?>
+<?xml-stylesheet href="changeAccount.css" type="text/css"?>
 <!DOCTYPE dialog SYSTEM "chrome://tombfix/locale/tombfix.dtd" >
 <dialog buttons="accept" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&label.action.changeAccount;">
 	<hbox flex="1">
 		<radiogroup id="models">
 		</radiogroup>
-		<vbox style="margin-left: 0.7em;" flex="1">
+		<vbox flex="1">
 			<listbox id="users" flex="1" >
 			</listbox>
-			<button dlgtype="accept" image="chrome://tombfix/skin/accept.png" label="Login" style="margin-top: 0.7em;padding: 0.5em 0;"/>
+			<button dlgtype="accept" image="chrome://tombfix/skin/accept.png" label="Login"/>
 		</vbox>
 	</hbox>
 	<script src="changeAccount.js"></script>

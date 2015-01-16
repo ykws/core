@@ -1,0 +1,20 @@
+window {
+	margin : 0.7em 0.5em;
+}
+button, radio, listitem {
+	cursor : pointer;
+}
+#models + vbox {
+	margin-left: 0.7em;
+}
+.button-icon{
+	margin-right : 0.5em;
+}
+listitem {
+	outline: none !important;
+	padding: 0.5em 0.2em;
+}
+button[label="Login"] {
+	margin-top: 0.7em;
+	padding: 0.5em 0;
+}
