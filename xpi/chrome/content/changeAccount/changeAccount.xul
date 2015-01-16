@@ -27,7 +27,7 @@ listitem {
 		</vbox>
 	</hbox>
 	<script><![CDATA[
-	// chrome://tombfix/content/library/login.xul
+	// chrome://tombfix/content/changeAccount/changeAccount.xul
 	var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 	
 	var elmModels = document.getElementById('models');

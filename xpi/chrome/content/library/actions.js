@@ -65,7 +65,7 @@
       name : getMessage('label.action.changeAccount'),
       execute : function execute() {
         openDialog(
-          'chrome://tombfix/content/library/login.xul',
+          'chrome://tombfix/content/changeAccount/changeAccount.xul',
           'resizable,centerscreen'
         );
       }
