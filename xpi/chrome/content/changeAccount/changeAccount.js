@@ -32,7 +32,9 @@
 
     elmUsers.refreshing = true;
 
-    model.getCurrentUser().addCallback(currentUser => {
+    model.getCurrentUser().addBoth(result => {
+      let currentUser = typeof result === 'string' ? result : '';
+
       env.clearChildren(elmUsers);
 
       for (let {user, password} of model.getPasswords()) {
@@ -40,7 +42,7 @@
 
         item.classList.add('listitem-iconic');
 
-        if (currentUser === user) {
+        if (currentUser && currentUser === user) {
           item.image = 'chrome://tombfix/skin/tick.png';
           item.disabled = true;
 
