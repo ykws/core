@@ -1,14 +1,14 @@
 window {
-  margin : 0.7em 0.5em;
+  margin: 0.7em 0.5em;
 }
 button, radio, listitem {
-  cursor : pointer;
+  cursor: pointer;
 }
 #models + vbox {
   margin-left: 0.7em;
 }
 .button-icon{
-  margin-right : 0.5em;
+  margin-right: 0.5em;
 }
 listitem {
   outline: none !important;

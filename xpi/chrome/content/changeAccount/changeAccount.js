@@ -7,12 +7,12 @@ elmModels.addEventListener('select', function(e){
   // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める
   if(elmUsers.refreshing)
     return;
-  
+
   var model = env.Models[elmModels.value];
   elmUsers.refreshing = true;
   (model.getCurrentUser? model.getCurrentUser() : succeed()).addCallback(function(user){
     env.clearChildren(elmUsers);
-    
+
     model.getPasswords().forEach(function(pw){
       var item = elmUsers.appendItem(pw.user, pw.password);
       item.setAttribute('class', 'listitem-iconic');
@@ -31,7 +31,7 @@ elmModels.addEventListener('select', function(e){
 env.forEach(env.Models.values, function(m){
   if(!m.login || !m.getPasswords || !m.getPasswords().length)
     return;
-  
+
   elmModels.appendItem(m.name, m.name).setAttribute('src', m.ICON);
 });
 
