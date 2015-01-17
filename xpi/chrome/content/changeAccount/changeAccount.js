@@ -35,16 +35,15 @@
       elmLogin = doc.querySelector('.login');
 
   elmModels.addEventListener('select', () => {
-    // ユーザー名の取得で非同期処理を挟むため、その間再描画を止める
-    if (elmUsers.refreshing) {
-      return;
-    }
+    elmLogin.disabled = true;
 
     let model = Models[elmModels.value];
 
-    elmLogin.disabled = elmUsers.refreshing = true;
-
     model.getCurrentUser().addBoth(result => {
+      if (model.name !== elmModels.value) {
+        return;
+      }
+
       let currentUser = typeof result === 'string' ? result : '';
 
       env.clearChildren(elmUsers);
@@ -63,8 +62,6 @@
           item.image = 'chrome://tombfix/skin/empty.png';
         }
       }
-
-      elmUsers.refreshing = false;
     });
   });
 
