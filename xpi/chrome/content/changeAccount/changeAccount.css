@@ -1,6 +1,6 @@
-.models > radio,
-.users > listitem,
-.login:not([disabled]) {
+.services > radio,
+.accounts > listitem,
+.login-button:not([disabled]) {
   cursor: pointer;
 }
 
@@ -8,15 +8,21 @@
   margin-left: 0.7em;
 }
 
-.users > listitem {
-  padding: 0.5em 0.2em;
+.accounts > listitem {
+  padding-top: 0.5em;
+  padding-right: 0.2em;
+  padding-bottom: 0.5em;
+  padding-left: 0.2em;
 }
 
-.login {
+.login-button {
   margin-top: 0.7em;
-  padding: 0.5em 0;
+  padding-top: 0.5em;
+  padding-right: 0;
+  padding-bottom: 0.5em;
+  padding-left: 0;
 }
 
-.button-icon {
+.login-button .button-icon {
   margin-right: 0.5em;
 }

@@ -7,20 +7,20 @@
         '@tombfix.github.io/tombfix-service;1'
       ].getService().wrappedJSObject,
       {Models} = env,
-      elmModels = doc.querySelector('.models');
+      services = doc.querySelector('.services');
 
   for (let model of Models.values) {
     if (
       model.login && model.getCurrentUser &&
         model.getPasswords && model.getPasswords().length
     ) {
-      let {name} = model;
+      let modelName = model.name;
 
-      elmModels.appendItem(name, name).setAttribute('src', model.ICON);
+      services.appendItem(modelName, modelName).setAttribute('src', model.ICON);
     }
   }
 
-  if (!elmModels.childElementCount) {
+  if (!services.childElementCount) {
     win.addEventListener('load', () => {
       // load時は、まだダイアログが表示されていない
       setTimeout(() => {
@@ -31,55 +31,55 @@
     return;
   }
 
-  let elmUsers = doc.querySelector('.users'),
-      elmLogin = doc.querySelector('.login');
+  let loginButton = doc.querySelector('.login-button'),
+      accounts = doc.querySelector('.accounts');
 
-  elmModels.addEventListener('select', () => {
-    elmLogin.disabled = true;
+  services.addEventListener('select', () => {
+    loginButton.disabled = true;
 
-    let model = Models[elmModels.value];
+    let model = Models[services.value];
 
     model.getCurrentUser().addBoth(result => {
-      if (model.name !== elmModels.value) {
+      if (model.name !== services.value) {
         return;
       }
 
+      env.clearChildren(accounts);
+
       let currentUser = typeof result === 'string' ? result : '';
 
-      env.clearChildren(elmUsers);
-
       for (let {user, password} of model.getPasswords()) {
-        let item = elmUsers.appendItem(user, password);
+        let account = accounts.appendItem(user, password);
 
-        item.classList.add('listitem-iconic');
+        account.classList.add('listitem-iconic');
 
         if (currentUser && currentUser === user) {
-          item.image = 'chrome://tombfix/skin/tick.png';
-          item.disabled = true;
+          account.image = 'chrome://tombfix/skin/tick.png';
+          account.disabled = true;
 
-          elmUsers.selectedItem = item;
+          accounts.selectedItem = account;
         } else {
-          item.image = 'chrome://tombfix/skin/empty.png';
+          account.image = 'chrome://tombfix/skin/empty.png';
         }
       }
     });
   });
 
-  elmUsers.addEventListener('select', () => {
-    let item = elmUsers.selectedItem;
+  accounts.addEventListener('select', () => {
+    let account = accounts.selectedItem;
 
-    if (item) {
-      elmLogin.disabled = item.disabled;
+    if (account) {
+      loginButton.disabled = account.disabled;
     }
   });
 
-  win.addEventListener('load', () => {
-    elmModels.selectedIndex = 0;
+  win.addEventListener('dialogaccept', () => {
+    let account = accounts.selectedItem;
+
+    Models[services.value].login(account.label, account.value);
   });
 
-  win.addEventListener('dialogaccept', () => {
-    let item = elmUsers.selectedItem;
-
-    Models[elmModels.value].login(item.label, item.value);
+  win.addEventListener('load', () => {
+    services.selectedIndex = 0;
   });
 }(window, document));
