@@ -3315,38 +3315,6 @@ Models.register(update({}, Models['bit.ly'], {
 }));
 
 
-Models.register({
-	name : 'Nicovideo',
-	URL  : 'http://www.nicovideo.jp',
-	ICON : 'http://www.nicovideo.jp/favicon.ico',
-	
-	getPageInfo : function(id){
-		return request(this.URL + '/watch/' + id, {
-			charset : 'UTF-8',
-		}).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			return {
-				title : doc.title.extract(/(.*)‐/),
-				lists : $x('id("des_2")//a[contains(@href, "/mylist/")]/@href', doc, true),
-				links : $x('id("des_2")//a[starts-with(@href, "http") and contains(@href, "/watch/")]/@href', doc, true),
-			}
-		});
-	},
-	
-	download : function(id, title){
-		var self = this;
-		return ((title)? succeed(title) : self.getPageInfo(id).addCallback(itemgetter('title'))).addCallback(function(title){
-			return request(self.URL + '/api/getflv?v='+id).addCallback(function(res){
-				var params = parseQueryString(res.responseText);
-				var file = getDownloadDir();
-				file.append(validateFileName(title + '.flv'));
-				return download(params.url, file, true);
-			});
-		});
-	},
-});
-
-
 // 全てのサービスをグローバルコンテキストに置く(後方互換)
 Models.copyTo(this);
 
