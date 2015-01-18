@@ -2658,52 +2658,6 @@ Models.register(update({
 }, AbstractSessionService));
 
 
-Models.register({
-	name : 'Faves',
-	ICON : 'chrome://tombfix/skin/favicon/faves.ico',
-	
-	/**
-	 * タグを取得する。
-	 *
-	 * @param {String} url 関連情報を取得する対象のページURL。
-	 * @return {Object}
-	 */
-	getSuggestions : function(url){
-		// 同期でエラーが起きないようにする
-		return succeed().addCallback(function(){
-			return request('https://secure.faves.com/v1/tags/get');
-		}).addCallback(function(res){
-			return {
-				duplicated : false,
-				tags : reduce(function(memo, tag){
-					memo.push({
-						name      : tag.getAttribute('tag'),
-						frequency : tag.getAttribute('count'),
-					});
-					return memo;
-				}, convertToDOM(res.responseText).querySelectorAll('tag'), []),
-			};
-		});
-	},
-	
-	check : function(ps){
-		return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
-	},
-	
-	post : function(ps){
-		return request('https://secure.faves.com/v1/posts/add', {
-			queryString : {
-				url         : ps.itemUrl,
-				description : ps.item,
-				shared      : ps.private? 'no' : '',  
-				tags        : joinText(ps.tags, ' '),
-				extended    : joinText([ps.body, ps.description], ' ', true),
-			},
-		});
-	},
-});
-
-
 Models.register(update({
 	name    : 'Hatena',
 	ICON    : 'https://www.hatena.ne.jp/favicon.ico',
