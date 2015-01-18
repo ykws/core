@@ -2577,28 +2577,6 @@ Models.register({
 });
 
 
-// http://www.kawa.net/works/ajax/romanize/japanese.html
-Models.register({
-	name : 'Kawa',
-	
-	getRomaReadings : function(text){
-		return request('http://www.kawa.net/works/ajax/romanize/romanize.cgi', {
-			queryString : {
-				// mecab-utf8
-				// japanese
-				// kana
-				mode : 'japanese',
-				q : text,
-			},
-		}).addCallback(function(res){
-			return map(function(s){
-				return s.getAttribute('title') || s.textContent;
-			}, convertToDOM(res.responseText).querySelectorAll('li > span'));
-		});
-	},
-});
-
-
 // http://developer.yahoo.co.jp/jlp/MAService/V1/parse.html
 Models.register({
 	name : 'Yahoo',
