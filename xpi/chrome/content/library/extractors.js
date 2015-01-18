@@ -1732,7 +1732,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	
 	{
 		name : 'Video - Nicovideo',
-		ICON : Models.Nicovideo.ICON,
+		ICON : 'http://www.nicovideo.jp/favicon.ico',
 
 		check : function (ctx) {
 			if (!ctx.selection && !ctx.onImage && !ctx.onLink) {
