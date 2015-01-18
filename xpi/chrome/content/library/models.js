@@ -3316,22 +3316,6 @@ Models.register(update({}, Models['bit.ly'], {
 
 
 Models.register({
-	name : 'Sharebee.com',
-	URL  : 'http://sharebee.com/',
-	
-	decrypt : function(url){
-		return request(url.startsWith(this.URL)? url : this.URL + url).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			return {
-				fileName : $x('//h2/span[@title]/@title', doc),
-				links    : $x('//table[@class="links"]//a/@href', doc, true),
-			}
-		});
-	},
-});
-
-
-Models.register({
 	name : 'Nicovideo',
 	URL  : 'http://www.nicovideo.jp',
 	ICON : 'http://www.nicovideo.jp/favicon.ico',
