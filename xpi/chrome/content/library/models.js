@@ -2069,52 +2069,6 @@ Models.register({
 });
 
 
-Models.register({
-	name : 'Digg',
-	ICON : 'chrome://tombfix/skin/favicon/digg.ico',
-	
-	check : function(ps){
-		return ps.type=='link';
-	},
-	
-	post : function(ps){
-		return Digg.dig(ps.item, ps.itemUrl);
-	},
-	
-	dig : function(title, url){
-		var url = 'http://digg.com/submit?' + queryString({
-			phase : 2,
-			url   : url,
-			title : title, 
-		});
-		
-		return request(url).addCallback(function(res){
-			if(res.channel.URI.asciiSpec.match('digg.com/register/'))
-				throw new Error(getMessage('error.notLoggedin'));
-			
-			var html = res.responseText;
-			var pagetype = html.extract(/var pagetype ?= ?"(.+?)";/);
-			
-			// 誰もdigしていなかったらフォームを開く(CAPTCHAがあるため)
-			// 一定時間後にページ遷移するためdescriptionを設定するのが難しい
-			if(pagetype=='other')
-				return addTab(url, true);
-			
-			var matches = (/javascript:dig\((.+?),(.+?),'(.+?)'\)/).exec(html);
-			return request('http://digg.com/diginfull', {
-				sendContent : {
-					id       : matches[2],
-					row      : matches[1],
-					digcheck : matches[3],
-					type     : 's',
-					loc      : pagetype,
-				},
-			});
-		});
-	},
-});
-
-
 Models.register(update({}, AbstractSessionService, {
 	name : 'StumbleUpon',
 	ICON : 'http://www.stumbleupon.com/favicon.ico',
