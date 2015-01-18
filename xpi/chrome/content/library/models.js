@@ -2704,31 +2704,6 @@ Models.register({
 });
 
 
-Models.register({
-	name : 'Snipshot',
-	ICON : 'chrome://tombfix/skin/favicon/snipshot.png',
-	
-	check : function(ps){
-		return ps.type=='photo';
-	},
-	
-	post : function(ps){
-		return request('http://services.snipshot.com/', {
-			sendContent : {
-				snipshot_input : ps.file || ps.itemUrl,
-			},
-		}).addCallback(function(res){
-			return addTab(res.channel.URI.asciiSpec);
-		}).addCallback(function(win){
-			win.SnipshotImport = {
-				title : ps.page,
-				url   : ps.pageUrl,
-			};
-		});
-	},
-});
-
-
 Models.register(update({
 	name    : 'Hatena',
 	ICON    : 'https://www.hatena.ne.jp/favicon.ico',
