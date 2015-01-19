@@ -2867,15 +2867,15 @@ Models.register(Object.assign({
 		return this.getSessionValue('token', () => {
 			return request(this.ORIGIN + '/entries.json', {
 				responseType : 'json'
+			}).addCallback(({response : json}) => {
+				let {rks} = json;
+
+				if (!rks) {
+					throw new Error(getMessage('error.notLoggedin'));
+				}
+
+				return rks;
 			});
-		}).addCallback(({response : json}) => {
-			let {rks} = json;
-
-			if (!rks) {
-				throw new Error(getMessage('error.notLoggedin'));
-			}
-
-			return rks;
 		});
 	},
 
