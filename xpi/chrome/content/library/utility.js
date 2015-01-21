@@ -1858,6 +1858,7 @@ function $x(exp, context, multi) {
 		case Node.ELEMENT_NODE:
 			return node;
 		case Node.ATTRIBUTE_NODE:
+			return node.value;
 		case Node.TEXT_NODE:
 			return node.textContent;
 		}
