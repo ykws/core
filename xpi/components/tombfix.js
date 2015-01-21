@@ -38,7 +38,6 @@
     'prototype.js',
     'utility.js',
     'database.js',
-    'progress.js',
     'tabWatcher.js',
     'Tombfix.js',
     'repository.js',

@@ -5,117 +5,7 @@ this.Models = this.models = Models = models = new Repository();
 var Tumblr = update({}, AbstractSessionService, {
 	name : 'Tumblr',
 	ICON : 'http://www.tumblr.com/images/favicon.gif',
-	MEDIA_URL : 'http://media.tumblr.com/',
 	TUMBLR_URL : 'http://www.tumblr.com/',
-	PAGE_LIMIT : 50,
-	
-	/**
-	 * 各Tumblrの基本情報(総件数/タイトル/タイムゾーン/名前)を取得する。
-	 *
-	 * @param {String} user ユーザー名。
-	 * @return {Object} ポスト共通情報。ポストID、タイプ、タグなどを含む。
-	 */
-	getInfo : function(user, type){
-		return request('http://'+user+'.tumblr.com/api/read', {
-			queryString : {
-				type  : type,
-				start : 0,
-				num   : 0,
-			}
-		}).addCallback(function(res){
-			var doc = convertToDOM(res.responseText);
-			var posts = doc.querySelector('posts');
-			var tumblelog = doc.querySelector('tumblelog');
-			return {
-				type     : posts ? posts.getAttribute('type') : '',
-				start    :  1 * posts ? posts.getAttribute('start') : '',
-				total    :  1 * posts ? posts.getAttribute('total') : '',
-				name     : tumblelog ? tumblelog.getAttribute('name') : '',
-				title    : tumblelog ? tumblelog.getAttribute('title') : '',
-				timezone : tumblelog ? tumblelog.getAttribute('timezone') : '',
-			};
-		});
-	},
-	
-	/**
-	 * Tumblr APIからポストデータを取得する。
-	 *
-	 * @param {String} user ユーザー名。
-	 * @param {optional String} type ポストタイプ。未指定の場合、全タイプとなる。
-	 * @param {String} count 先頭から何件を取得するか。
-	 * @param {Function} handler 
-	 *        各ページ個別処理関数。段階的に処理を行う場合に指定する。
-	 *        ページ内の全ポストが渡される。
-	 * @return {Deferred} 取得した全ポストが渡される。
-	 */
-	read : function(user, type, count, handler){
-		// FIXME: ストリームにする
-		var pages = Tumblr._splitRequests(count);
-		var result = [];
-		
-		var d = succeed();
-		d.addCallback(function(){
-			// 全ページを繰り返す
-			return deferredForEach(pages, function(page, pageNum){
-				// ページを取得する
-				return request('http://'+user+'.tumblr.com/api/read', {
-					queryString : {
-						type  : type,
-						start : page[0],
-						num   : page[1],
-					},
-				}).addCallback(function(res){
-					var doc = convertToDOM(res.responseText);
-					
-					// 全ポストを繰り返す
-					var posts = map(function(post){
-						var info = {
-							user : user,
-							id   : post.getAttribute('id'),
-							url  : post.getAttribute('url'),
-							date : post.getAttribute('date'),
-							type : post.getAttribute('type'),
-							tags : map(function(tag){return tag.textContent}, post.querySelectorAll('tag')),
-						};
-						
-						return Tumblr[info.type.capitalize()].convertToModel(post, info);
-					}, doc.querySelectorAll('posts > post'));
-					
-					result = result.concat(posts);
-					
-					return handler && handler(posts, (pageNum * Tumblr.PAGE_LIMIT));
-				}).addCallback(wait, 1); // ウェイト
-			});
-		});
-		d.addErrback(function(err){
-			if(err.message!=StopProcess)
-				throw err;
-		})
-		d.addCallback(function(){
-			return result;
-		});
-		
-		return d;
-	},
-	
-	/**
-	 * API読み込みページリストを作成する。
-	 * TumblrのAPIは120件データがあるとき、100件目から50件を読もうとすると、
-	 * 差し引かれ70件目から50件が返ってくる。
-	 *
-	 * @param {Number} count 読み込み件数。
-	 * @return {Array}
-	 */
-	_splitRequests : function(count){
-		var res = [];
-		var limit = Tumblr.PAGE_LIMIT;
-		for(var i=0,len=Math.ceil(count/limit) ; i<len ; i++){
-			res.push([i*limit, limit]);
-		}
-		count%limit && (res[res.length-1][1] = count%limit);
-		
-		return res;
-	},
 	
 	/**
 	 * reblog情報を取り除く。
@@ -377,30 +267,6 @@ var Tumblr = update({}, AbstractSessionService, {
 		}
 	},
 	
-	/**
-	 * ポストや削除に使われるトークン(form_key)を取得する。
-	 * 結果はキャッシュされ、再ログインまで再取得は行われない。
-	 *
-	 * @return {Deferred} トークン(form_key)が返される。
-	 */
-	getToken : function(){
-		switch (this.updateSession()){
-		case 'none':
-			throw new Error(getMessage('error.notLoggedin'));
-			
-		case 'same':
-			if(this.token)
-				return succeed(this.token);
-			
-		case 'changed':
-			var self = this;
-			return request(Tumblr.TUMBLR_URL+'new/text').addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
-				return self.token = $x('id("form_key")/@value', doc);
-			});
-		}
-	},
-	
 	getTumblelogs : function(){
 		return request(Tumblr.TUMBLR_URL+'new/text').addCallback(function(res){
 			var doc = convertToHTMLDocument(res.responseText);
@@ -416,13 +282,6 @@ var Tumblr = update({}, AbstractSessionService, {
 
 
 Tumblr.Regular = {
-	convertToModel : function(post, info){
-		return update(info, {
-			body  : getTextContent(post.querySelector('regular-body')),
-			title : getTextContent(post.querySelector('regular-title')),
-		});
-	},
-	
 	convertToForm : function(ps){
 		return {
 			'post[type]' : ps.type,
@@ -433,23 +292,6 @@ Tumblr.Regular = {
 }
 
 Tumblr.Photo = {
-	convertToModel : function(post, info){
-		var photoUrl500 = getTextContent(post.querySelector('photo-url[max-width="500"]'));
-		var image = Tombfix.Photo.getImageInfo(photoUrl500);
-		
-		return update(info, {
-			photoUrl500   : photoUrl500,
-			photoUrl400   : getTextContent(post.querySelector('photo-url[max-width="400"]')),
-			photoUrl250   : getTextContent(post.querySelector('photo-url[max-width="250"]')),
-			photoUrl100   : getTextContent(post.querySelector('photo-url[max-width="100"]')),
-			photoUrl75    : getTextContent(post.querySelector('photo-url[max-width="75"]')),
-			
-			body          : getTextContent(post.querySelector('photo-caption')),
-			imageId       : image.id,
-			extension     : image.extension,
-		});
-	},
-	
 	convertToForm : function(ps){
 		var form = {
 			'post[type]'  : ps.type,
@@ -464,27 +306,9 @@ Tumblr.Photo = {
 		
 		return form;
 	},
-	
-	/**
-	 * 画像をダウンロードする。
-	 *
-	 * @param {nsIFile} file 保存先のローカルファイル。このファイル名が取得先のURLにも使われる。
-	 * @return {Deferred}
-	 */
-	download : function(file){
-		return download(Tumblr.MEDIA_URL + file.leafName, file);
-	},
 }
 
 Tumblr.Video = {
-	convertToModel : function(post, info){
-		return update(info, {
-			body    : getTextContent(post.querySelector('video-caption')),
-			source  : getTextContent(post.querySelector('video-source')),
-			player  : getTextContent(post.querySelector('video-player')),
-		});
-	},
-	
 	convertToForm : function(ps){
 		return {
 			'post[type]' : ps.type,
@@ -497,14 +321,6 @@ Tumblr.Video = {
 }
 
 Tumblr.Link = {
-	convertToModel : function(post, info){
-		return update(info, {
-			title  : getTextContent(post.querySelector('link-text')),
-			source : getTextContent(post.querySelector('link-url')),
-			body   : getTextContent(post.querySelector('link-description')),
-		});
-	},
-	
 	convertToForm : function(ps){
 		var thumb = getPref('thumbnailTemplate').replace(RegExp('{url}', 'g'), ps.pageUrl);
 		return {
@@ -517,13 +333,6 @@ Tumblr.Link = {
 }
 
 Tumblr.Conversation = {
-	convertToModel : function(post, info){
-		return update(info, {
-			title : getTextContent(post.querySelector('conversation-title')),
-			body  : getTextContent(post.querySelector('conversation-text')),
-		});
-	},
-	
 	convertToForm : function(ps){
 		return {
 			'post[type]' : ps.type,
@@ -534,13 +343,6 @@ Tumblr.Conversation = {
 }
 
 Tumblr.Quote = {
-	convertToModel : function(post, info){
-		return update(info, {
-			body   : getTextContent(post.querySelector('quote-text')),
-			source : getTextContent(post.querySelector('quote-source')),
-		});
-	},
-	
 	convertToForm : function(ps){
 		return {
 			'post[type]' : ps.type,

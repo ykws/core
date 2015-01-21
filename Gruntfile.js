@@ -11,7 +11,6 @@ module.exports = function (grunt) {
         'xpi/chrome/content/library/prototype.js',
         // 'xpi/chrome/content/library/utility.js',
         // 'xpi/chrome/content/library/database.js',
-        // 'xpi/chrome/content/library/progress.js',
         // 'xpi/chrome/content/library/tabWatcher.js',
         // 'xpi/chrome/content/library/Tombfix.js',
         // 'xpi/chrome/content/library/repository.js',

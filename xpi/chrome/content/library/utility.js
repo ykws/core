@@ -254,29 +254,6 @@ function withStream(stream, func){
 	}
 }
 
-/**
- * HTML文字列からobject/script/body/styleなどの要素を取り除く。
- * また不完全なタグなどを整形し正しいHTMLへ変換する。
- *
- * @param {String} html HTML文字列。
- * @return {String} 整形されたHTML文字列。
- */
-function sanitizeHTML(html){
-	var doc = document.implementation.createDocument('', '', null);
-	var root = doc.appendChild(doc.createElement('root'));
-	
-	var fragment = UnescapeHTML.parseFragment(html, false, null, doc.documentElement);
-	doc.documentElement.appendChild(fragment);
-	
-	if(!root.childNodes.length)
-		return '';
-	return serializeToString(root).match(/^<root>(.*)<\/root>$/)[1];
-}
-
-function serializeToString(xml){
-	return (new XMLSerializer()).serializeToString(xml);
-}
-
 // ----[Application]-------------------------------------------------
 function getPref(pref) {
 	return getPrefValue('extensions.tombfix.' + pref);
@@ -1116,8 +1093,6 @@ function getMimeType(file){
 }
 
 // ----[MochiKit]-------------------------------------------------
-var StopProcess = {};
-
 function connected(src, sig){
 	return MochiKit.Signal._observers.some(function(o){
 		return o.source === src && o.signal === sig && o.connected;
@@ -1592,53 +1567,6 @@ function addAround(target, methodNames, advice){
 	});
 }
 
-function cache(fn, ms){
-	var executed;
-	var res;
-	
-	var deferred = false;
-	var waiting = false;
-	var pendings;
-	return function(){
-		// キャッシュが利用できるか?
-		var now = Date.now();
-		if(executed && (executed + ms) > now){
-			// Deferredの結果が未確定か?
-			if(waiting){
-				var d = new Deferred();
-				pendings.push(d);
-				
-				return d;
-			}
-			
-			return deferred? succeed(res) : res;
-		}
-		
-		executed = now;
-		res = fn.apply(null, arguments)
-		
-		if(res instanceof Deferred){
-			deferred = true;
-			waiting  = true;
-			pendings = [];
-
-			return res.addCallback(function(result){
-				res = result;
-				waiting = false;
-				
-				// 結果の確定待ちがあればそれらを先に呼び出す(順序が逆転する)
-				pendings.forEach(function(d){
-					d.callback(res);
-				});
-				
-				return res;
-			});
-		} else {
-			return res;
-		}
-	}
-}
-
 /**
  * 配列を結合し文字列を作成する。
  * 空要素は除外される。
@@ -2083,16 +2011,6 @@ function createFlavoredString(src){
 function getFlavor(src, name){
 	return (src==null || !src.flavors)? src :
 		src.flavors[name] || src;
-}
-
-function makeOpaqueFlash(doc){
-	doc = doc || currentDocument() || document;
-	
-	$x('//*[self::object or self::embed][contains(@type, "flash")][boolean(@wmode)=false or (@wmode!="opaque" and @wmode!="transparent")]', doc, true).forEach(function(flash){
-		flash.setAttribute('wmode', 'opaque');
-		flash = swapDOM(flash, flash.cloneNode(false));
-		flash.offsetWidth;
-	});
 }
 
 function appendMenuItem(menu, label, image, hasChildren){
