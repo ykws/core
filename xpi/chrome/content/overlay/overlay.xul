@@ -1,29 +1,29 @@
 <?xml version="1.0"?>
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <popup id="contentAreaContextMenu">
-    <menuitem 
-      position="1" 
+    <menuitem
+      position="1"
       class="menuitem-iconic"
-      label="Share" 
-      id="tombfix-menu-share" 
+      label="Share"
+      id="tombfix-menu-share"
       accesskey="J"/>
-    <menu 
-      position="2" 
+    <menu
+      position="2"
       class="menu-iconic"
       label="Share...">
       <menupopup id="tombfix-menu-select"/>
     </menu>
-    <menu 
-      position="3" 
+    <menu
+      position="3"
       class="menu-iconic"
       image="chrome://tombfix/skin/tombloo_16.png"
-      label="Tombfix" >
+      label="Tombfix">
       <menupopup id="tombfix-menu-action"/>
     </menu>
   </popup>
   <menupopup id="menu_ToolsPopup">
-    <menu 
-      label="Tombfix" 
+    <menu
+      label="Tombfix"
       class="menu-iconic"
       image="chrome://tombfix/skin/tombloo_16.png"
       insertbefore="sanitizeSeparator">
