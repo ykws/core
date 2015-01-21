@@ -6,7 +6,7 @@ content   tombloo  chrome/content/
 content   tombfix  chrome/content/
 skin      tombloo  classic  chrome/skin/
 skin      tombfix  classic  chrome/skin/
-overlay   chrome://browser/content/browser.xul  chrome://tombfix/content/browser.xul
+overlay   chrome://browser/content/browser.xul  chrome://tombfix/content/overlay/overlay.xul
 
 locale    tombfix  en-US  chrome/locale/en-US/
 locale    tombfix  ja-JP  chrome/locale/ja-JP/
