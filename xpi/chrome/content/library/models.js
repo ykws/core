@@ -2235,20 +2235,23 @@ Models.register({
 
 
 Models.register({
-	name : 'Remember The Milk',
-	ICON : 'http://www.rememberthemilk.com/favicon.ico',
-	POST_URL: 'http://www.rememberthemilk.com/services/ext/addtask.rtm',
-	
-	check : function(ps){
-		return (/(regular|link)/).test(ps.type) && !ps.file;
+	name     : 'Remember The Milk',
+	ICON     : 'https://www.rememberthemilk.com/favicon.ico',
+	// via https://www.rememberthemilk.com/help/?ctx=quickadd.firefox
+	POST_URL : 'https://www.rememberthemilk.com/services/ext/addtask.rtm',
+
+	check(ps) {
+		return /^(?:regular|link)$/.test(ps.type);
 	},
-	
-	post : function(ps){
+
+	post(ps) {
 		return this.addSimpleTask(
-			joinText([ps.item, ps.body, ps.description], ' ', true), 
-			ps.date, ps.tags);
+			joinText([ps.item, ps.body, ps.description], ' ', true),
+			ps.date,
+			ps.tags
+		);
 	},
-	
+
 	/**
 	 * 簡単なタスクを追加する。
 	 * ブックマークレットのフォーム相当の機能を持つ。
@@ -2259,31 +2262,42 @@ Models.register({
 	 * @param {String || Number} list 
 	 *        追加先のリスト。リスト名またはリストID。未指定の場合、デフォルトのリストとなる。
 	 */
-	addSimpleTask : function(task, due, tags, list){
-		var self = this;
-		return request(self.POST_URL).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			if(!doc.getElementById('miniform'))
+	addSimpleTask(task, due, tags, list) {
+		return request(this.POST_URL, {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			let selectList = doc.getElementById('l');
+
+			if (!selectList) {
 				throw new Error(getMessage('error.notLoggedin'));
-			
-			var form = formContents(doc);
-			if(list){
-				forEach($x('id("l")/option', doc, true), function(option){
-					if(option.textContent == list){
+			}
+
+			let form = formContents(doc.body);
+
+			if (list) {
+				for (let option of selectList.options) {
+					if (option.textContent === list) {
 						list = option.value;
-						throw StopIteration;
+
+						break;
 					}
-				})
+				}
+
 				form.l = list;
 			}
-			
-			return request(self.POST_URL, {
-				sendContent : update(form, {
-					't'  : task,
-					'tx' : joinText(tags, ','),
-					'd'  : (due || new Date()).toLocaleFormat('%Y-%m-%d'),
-				}),
+
+			return request(this.POST_URL, {
+				responseType : 'document',
+				sendContent  : Object.assign(form, {
+					t  : task,
+					d  : (due || new Date()).toString(),
+					tx : joinText(tags)
+				})
 			});
+		}).addCallback(({response : doc}) => {
+			if (doc.getElementById('miniform')) {
+				throw new Error(getMessage('error.postingContentsIncorrect'));
+			}
 		});
 	}
 });
