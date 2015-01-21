@@ -10,10 +10,6 @@
   ].createInstance().wrappedJSObject;
 
   win.addEventListener('load', evt => {
-    // Element Hiding Helper for Adblock Plusとの衝突を避ける
-    // (詳細不明/ロード時の処理を遅延し起動表示を高速化する)
-    setTimeout(() => {
-      env.signal(env, 'browser-load', evt);
-    }, 0);
+    env.signal(env, 'browser-load', evt);
   });
 }(window));
