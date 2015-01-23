@@ -930,7 +930,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Photo - Google Image Search',
 		ICON : Google.ICON,
-		check : function (ctx) {
+		check(ctx) {
 			if (
 				/^www\.google\.(?:co\.jp|com)$/.test(ctx.hostname) &&
 					ctx.pathname === '/search' &&
@@ -942,13 +942,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				return urls.imgurl && urls.imgrefurl;
 			}
 		},
-		extract : function (ctx) {
-			var urls = this.getURLs(ctx),
-				itemUrl = decodeURIComponent(decodeURIComponent(urls.imgurl));
+		extract(ctx) {
+			let {imgurl : itemUrl, imgrefurl} = this.getURLs(ctx);
 
-			ctx.href = decodeURIComponent(decodeURIComponent(urls.imgrefurl));
+			ctx.href = imgrefurl;
 
-			return request(ctx.href, {
+			return request(imgrefurl, {
 				responseType : 'document'
 			}).addCallback(({response : doc}) => {
 				ctx.title = doc.title || createURI(itemUrl).fileName;
@@ -960,12 +959,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				};
 			});
 		},
-		getURLs : function (ctx) {
-			var {imgurl, imgrefurl} = queryHash($x('parent::a/@href', ctx.target));
+		getURLs(ctx) {
+			let {imgurl, imgrefurl} = queryHash((new URL(
+				$x('parent::a/@href', ctx.target)
+			)).search);
 
 			return {
-				imgurl    : imgurl,
-				imgrefurl : imgrefurl
+				imgurl    : imgurl.unEscapeURI().unEscapeURI(),
+				imgrefurl : imgrefurl.unEscapeURI().unEscapeURI()
 			};
 		}
 	},

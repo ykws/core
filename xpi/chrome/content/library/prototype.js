@@ -1,4 +1,4 @@
-/* global UnicodeConverter, CryptoHash */
+/* global UnicodeConverter, CryptoHash, TextToSubURI */
 
 (function executePrototype() {
   'use strict';
@@ -326,6 +326,9 @@
     },
     convertFromUnicode : function convertFromUnicode(charset) {
       return new UnicodeConverter(charset).ConvertFromUnicode(this);
+    },
+    unEscapeURI : function unEscapeURI(charset = 'UTF-8') {
+      return TextToSubURI.unEscapeURIForUI(charset, this);
     },
     trimTag : function trimTag() {
       return this.replace(/<!--[\s\S]+?-->/gm, '').replace(/<[\s\S]+?>/gm, '');

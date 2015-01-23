@@ -53,6 +53,7 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     ['AnnotationService',   'browser/annotation-service'],
     ['ClipboardHelper',     'widget/clipboardhelper'],
     ['MIMEService',         'mime'],
+    ['TextToSubURI',        'intl/texttosuburi'],
     ['ChromeRegistry',      'chrome/chrome-registry', 'XULChromeRegistry']
   ].forEach(function defineInGlobal([name, cid, ifc]) {
     XPCOMUtils.defineLazyServiceGetter(
