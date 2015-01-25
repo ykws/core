@@ -14,7 +14,7 @@ pref('extensions.tombfix.model.tumblr.trimReblogInfo',    false);
 pref('extensions.tombfix.model.tumblr.appendContentSource', true);
 
 pref('extensions.tombfix.ignoreError',       '');
-pref('extensions.tombfix.ignoreCanonical',   '^https?://(?:twitter\\.com|www\\.youtube\\.com|weheartit\\.com)/');
+pref('extensions.tombfix.ignoreCanonical',   '^https?://(?:twitter\\.com|www\\.youtube\\.com|weheartit\\.com|vimeo\\.com)/');
 
 pref('extensions.tombfix.contextMenu.top',   false);
 pref('extensions.tombfix.contextMenu.disableMenuShare', false);

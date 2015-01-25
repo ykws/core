@@ -1655,12 +1655,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
 		name : 'Video - Vimeo',
 		ICON : 'https://vimeo.com/favicon.ico',
-		check : function (ctx) {
-			return ctx.hostname === 'vimeo.com' && /^\/\d+$/.test(ctx.pathname) &&
+		check(ctx) {
+			return !ctx.selection && !ctx.onLink && !ctx.onImage &&
+				ctx.hostname === 'vimeo.com' && /^\/\d+$/.test(ctx.pathname) &&
 				this.getAuthor(ctx.document);
 		},
-		extract : function (ctx) {
-			var author = this.getAuthor(ctx.document);
+		extract(ctx) {
+			let author = this.getAuthor(ctx.document);
+
 			return {
 				type      : 'video',
 				item      : ctx.title.replace(/ on Vimeo$/, ''),
@@ -1669,8 +1671,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				authorUrl : author.href
 			};
 		},
-		getAuthor : function (doc) {
-			return doc.querySelector('.byline > a');
+		getAuthor(doc) {
+			return doc.querySelector('.byline > a[rel="author"]');
 		}
 	},
 	
