@@ -1,6 +1,6 @@
 /* global Components, ConverterInputStream, StringInputStream, update */
 /* global createConstructor, FileOutputStream */
-/* exported Cr, Preferences, console, AppInfo, StorageService */
+/* exported Cr, Preferences, console, AppInfo */
 /* exported DirectoryService, IOService, WindowMediator, PromptService */
 /* exported CookieManager, LoginManager, StringBundleService, ObserverService */
 /* exported ThreadManager, DOMStorageManager, ScriptSecurityManager */
@@ -17,7 +17,6 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {}),
     {
       appinfo               : AppInfo,
-      storage               : StorageService,
       dirsvc                : DirectoryService,
       io                    : IOService,
       wm                    : WindowMediator,
@@ -123,9 +122,6 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     ['HTMLFormatConverter',     'widget/htmlformatconverter;1',    {
       ifc: 'FormatConverter'
     }],
-    ['ScriptError',             'scripterror;1',                   {
-      init: 'init'
-    }],
     ['Process',                 'process/util;1',                  {
       init: 'init'
     }],
@@ -151,9 +147,6 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     }],
     ['LocalFile',               'file/local;1',                    {
       init: 'initWithPath'
-    }],
-    ['StorageStatementWrapper', 'storage/statement-wrapper;1',     {
-      init: 'initialize'
     }],
     ['BinaryInputStream',       'binaryinputstream;1',             {
       init: 'setInputStream'

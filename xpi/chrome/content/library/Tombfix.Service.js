@@ -1,3 +1,5 @@
+var Tombfix, Tombloo = Tombfix = {};
+
 Tombfix.Service = {
 	/**
 	 * コンテキストからどのような情報が抽出できるのかチェックする。

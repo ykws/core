@@ -1413,16 +1413,6 @@ function error(err) {
 	return err;
 }
 
-function warn(msg) {
-	if (!firebug('warn', arguments)) {
-		console.log(
-			new ScriptError(msg, null, null, null, null, ScriptError.warningFlag, null)
-		);
-	}
-
-	return msg;
-}
-
 function firebug(method, args){
 	if(!getPref('useFirebug'))
 		return false;

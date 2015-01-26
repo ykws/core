@@ -2796,50 +2796,6 @@ Models.register({
 				'track_files[]' : file,
 			},
 		});
-	},
-	
-	getPlayToken : function(){
-		return getJSON(this.URL + '/sets/new.json').addCallback(function(res){
-			return res.play_token;
-		});
-	},
-	
-	getPlaylist : function(mixId){
-		var self = this;
-		var tracks = [];
-		var number = 0;
-		var d = new Deferred();
-		
-		self.getPlayToken().addCallback(function(token){
-			(function callee(){
-				var me = callee;
-				return getJSON(self.URL + '/sets/' + token + '/' + ((number==0)? 'play' : 'next')+ '.json', {
-					queryString : {
-						mix_id : mixId,
-					}
-				}).addCallback(function(res){
-					var track = res.set.track;
-					
-					// 最後のトラック以降にはトラック個別情報が含まれない
-					if(!track.url){
-						d.callback(tracks);
-						return;
-					}
-					
-					track.number = ++number;
-					tracks.push(track);
-					me();
-				}).addErrback(function(e){
-					error(e);
-					
-					// 異常なトラックをスキップする(破損したJSONが返る)
-					if(e.message.name == 'SyntaxError')
-						me();
-				});
-			})();
-		});
-		
-		return d;
 	}
 });
 
