@@ -1827,109 +1827,49 @@ Models.register({
 });
 
 
-Models.register(update({}, AbstractSessionService, {
-	name : 'StumbleUpon',
-	ICON : 'http://www.stumbleupon.com/favicon.ico',
-	
-	check : function(ps){
-		return ps.type=='link';
+Models.register({
+	name     : 'StumbleUpon',
+	ICON     : 'https://www.stumbleupon.com/favicon.ico?_nospa=true',
+	POST_URL : 'https://www.stumbleupon.com/submit?_nospa=true',
+
+	check(ps) {
+		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
+			if (ps.file) {
+				return ps.itemUrl;
+			}
+
+			return true;
+		}
 	},
-	
-	post : function(ps){
-		return this.iLikeIt(ps.item, ps.itemUrl, ps.description);
-	},
-	
-	iLikeIt : function(title, url, comment){
-		var username;
-		return StumbleUpon.getCurrentId().addCallback(function(id){
-			username = id;
-			
-			return StumbleUpon.getCurrentPassword();
-		}).addCallback(function(password){
-			return request('http://www.stumbleupon.com/rate.php', {
-				queryString : {
-					username : username,
-				},
-				sendContent : {
-					rating   : 1,
-					username : username,
-					password : ('StumbleUpon public salt' + username + password).sha1(),
-					url      : url,
-					yr       : 0,
-					yts      : 0,
-					yhd      : 0,
-					ycur_q   : 0,
-					ycur_t   : '',
-					ycur_s   : '',
-					ypre_q   : 0,
-					ypre_t   : '',
-					ypre_s   : '',
-					version  : 'mozbar 3.26 xpi',
-				},
+
+	post(ps) {
+		return request(this.POST_URL, {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			if (!doc.getElementById('submit-form')) {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+
+			return request(this.POST_URL, {
+				responseType : 'json',
+				sendContent  : Object.assign(formContents(doc.body), {
+					url         : ps.itemUrl,
+					'user-tags' : joinText(ps.tags),
+					review      : joinText([
+						Twitter.createQuote((ps.body || '').trimTag()),
+						ps.description
+					], '\n\n'),
+					language    : '',
+					_output     : 'json'
+				})
 			});
-		}).addCallback(function(res){
-			if(/NEWURL/.test(res.responseText))
-				return addTab('http://www.stumbleupon.com/newurl.php?' + queryString({
-					title   : title,
-					url     : url,
-					rating  : 1,
-					referer : url,
-				}), true).addCallback(function(win){
-					$x('id("searchtext")', win.document).value = comment;
-				});
+		}).addCallback(({response : json}) => {
+			if (!json._success) {
+				throw new Error(json._reason[0].message);
+			}
 		});
-	},
-	
-	getAuthCookie : function(){
-		return getCookieString('stumbleupon.com', 'PHPSESSID');
-	},
-	
-	getCurrentUser : function(){
-		return this.getSessionValue('user', function(){
-			return request('http://www.stumbleupon.com/').addCallback(function(res){
-				var doc = convertToHTMLDocument(res.responseText);
-				var user = $x('id("t-home")/a/@href', doc).extract('http://(.+?)\.stumbleupon\.com');
-				if(user=='www')
-					throw new Error(getMessage('error.notLoggedin'));
-				
-				return user;
-			});
-		});
-	},
-	
-	getCurrentId : function(){
-		return this.getSessionValue('id', function(){
-			var ps = {};
-			return succeed().addCallback(function(){
-				return StumbleUpon.getCurrentUser();
-			}).addCallback(function(user){
-				ps.username = user;
-				
-				return StumbleUpon.getCurrentPassword();
-			}).addCallback(function(password){
-				ps.password = password;
-				
-				return request('https://www.stumbleupon.com/userexists.php', {
-					sendContent : ps,
-				});
-			}).addCallback(function(res){
-				return res.responseText.extract(/USER (.+)/);
-			});
-		});
-	},
-	
-	getCurrentPassword : function(user){
-		return this.getSessionValue('password', function(){
-			return StumbleUpon.getCurrentUser().addCallback(function(user){
-				var passwords = getPasswords('http://www.stumbleupon.com', user);
-				if(!passwords.length)
-					throw new Error(getMessage('error.passwordNotFound'));
-				
-				return passwords[0].password;
-			});
-		});
-	},
-}));
+	}
+});
 
 
 Models.register({
