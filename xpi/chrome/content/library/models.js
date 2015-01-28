@@ -2772,58 +2772,45 @@ Models.register({
 Models.register({
 	name    : 'bit.ly',
 	ICON    : 'chrome://tombfix/skin/favicon/bitly.png',
-	URL     : 'http://api.bit.ly',
-	API_KEY : 'R_8d078b93e8213f98c239718ced551fad',
+	// via http://dev.bitly.com/authentication.html
+	API_URL : 'https://api-ssl.bitly.com/v3',
+	// see https://bitly.com/a/your_api_key
 	USER    : 'to',
-	VERSION : '2.0.1',
-	
-	shorten : function(url){
-		var self = this;
-		if(url.match('//(bit.ly|j.mp)/'))
-			return succeed(url);
-		
+	API_KEY : 'R_8d078b93e8213f98c239718ced551fad',
+
+	shorten(url) {
+		// via http://dev.bitly.com/links.html#v3_shorten
 		return this.callMethod('shorten', {
-			longUrl : url,
-		}).addCallback(function(res){
-			return res[url].shortUrl;
-		});
-	},
-	
-	expand : function(url){
-		var hash = url.split('/').pop();
-		return this.callMethod('expand', {
-			hash : hash,
-		}).addCallback(function(res){
-			return res[hash].longUrl;
-		});
-	},
-	
-	callMethod : function(method, ps){
-		var self = this;
-		return request(this.URL + '/' + method, {
-			queryString : update({
-				version : this.VERSION,
-				login   : this.USER,
-				apiKey  : this.API_KEY,
-			}, ps),
-		}).addCallback(function(res){
-			res = evalInSandbox('(' + res.responseText + ')', self.URL);
-			if(res.errorCode){
-				var error = new Error([res.statusCode, res.errorCode, res.errorMessage].join(': '))
-				error.detail = res;
-				throw error;
+			longUrl : url
+		}).addCallback(json => {
+			if (json.status_txt === 'OK') {
+				return json.data.url;
 			}
-			
-			return res.results;
+			if (json.status_txt === 'ALREADY_A_BITLY_LINK') {
+				return url;
+			}
+
+			throw new Error(json.status_txt);
 		});
 	},
+
+	callMethod(method, info) {
+		return request(this.API_URL + '/' + method, {
+			responseType : 'json',
+			queryString  : Object.assign({
+				// via http://dev.bitly.com/authentication.html#apikey
+				login  : this.USER,
+				apiKey : this.API_KEY,
+				domain : this.name
+			}, info)
+		}).addCallback(({response : json}) => json);
+	}
 });
 
 
-Models.register(update({}, Models['bit.ly'], {
+Models.register(Object.assign({}, Models['bit.ly'], {
 	name : 'j.mp',
-	ICON : 'https://j.mp/favicon.ico',
-	URL  : 'http://api.j.mp',
+	ICON : 'https://j.mp/favicon.ico'
 }));
 
 
