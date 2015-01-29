@@ -364,7 +364,7 @@ Models.register(Tumblr);
  *
  * 2013年5月末頃の変更に対応する為、UAをIE8に変更
  *
- * 2015年1月29日の変更に対応する為、UAをFirefox fox Android(Mobile)に変更
+ * 2015年1月29日の変更に対応する為、UAをFirefox for Android(Mobile)に変更
 */
 var request_ = request;
 request = function(url, opts){
