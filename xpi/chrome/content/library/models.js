@@ -379,6 +379,10 @@ request = function(url, opts){
 				'User-Agent' : 'Mozilla/5.0 (Android; Mobile; rv:35.0) Gecko/35.0 Firefox/35.0'
 			}
 		});
+		if (getCookieValue('www.tumblr.com', 'disable_mobile_layout') !== '1') {
+			// via https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsICookieManager2#add()
+			CookieManager.add('www.tumblr.com', '/', 'disable_mobile_layout', '1', false, false, true, Date.now());
+		}
 	}
 	
 	return request_(url, opts);
