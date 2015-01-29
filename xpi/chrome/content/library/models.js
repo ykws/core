@@ -363,6 +363,8 @@ Models.register(Tumblr);
  * https://gist.github.com/polygonplanet/4643063
  *
  * 2013年5月末頃の変更に対応する為、UAをIE8に変更
+ *
+ * 2015年1月29日の変更に対応する為、UAをFirefox fox Android(Mobile)に変更
 */
 var request_ = request;
 request = function(url, opts){
@@ -374,7 +376,7 @@ request = function(url, opts){
 		}
 		opts = updatetree(opts, {
 			headers : {
-				'User-Agent' : 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)'
+				'User-Agent' : 'Mozilla/5.0 (Android; Mobile; rv:35.0) Gecko/35.0 Firefox/35.0'
 			}
 		});
 	}
