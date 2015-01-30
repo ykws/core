@@ -18,39 +18,9 @@
     return Object.defineProperties(builtInObject, props);
   }
 
-  extendBuiltInObject(Date, {
-    TIME_SECOND : 1000,
-    TIME_MINUTE : 1000 * 60,
-    TIME_HOUR   : 1000 * 60 * 60,
-    TIME_DAY    : 1000 * 60 * 60 * 24
-  });
-
   extendBuiltInObject(Number.prototype, {
-    pad         : function pad(len, ch) {
-      return this.toString().pad(len, ch || '0');
-    },
     toHexString : function toHexString() {
       return ('0' + this.toString(16)).slice(-2);
-    }
-  });
-
-  extendBuiltInObject(Array.prototype, {
-    split : function split(step) {
-      var res, i, len;
-
-      if (!step) {
-        return this.slice();
-      }
-
-      res = [];
-      i = 0;
-      len = this.length;
-
-      while (i < len) {
-        res.push(this.slice(i, i += step));
-      }
-
-      return res;
     }
   });
 
@@ -269,15 +239,6 @@
   });
 
   extendBuiltInObject(String.prototype, {
-    pad : function pad(len, ch) {
-      len = len - this.length;
-
-      if (len <= 0) {
-        return this.toString();
-      }
-
-      return (ch || ' ').repeat(len) + this;
-    },
     indent : function indent(num, c) {
       c = c || ' ';
 
@@ -293,9 +254,6 @@
       group = group == null ? 1 : group;
 
       return res ? res[group] : '';
-    },
-    decapitalize : function decapitalize() {
-      return this.substr(0, 1).toLowerCase() + this.substr(1);
     },
     capitalize : function capitalize() {
       return this.substr(0, 1).toUpperCase() + this.substr(1);
@@ -313,14 +271,6 @@
         return char.charCodeAt().toHexString();
       }).join('');
     },
-    sha1 : function sha1(charset) {
-      var crypto = new CryptoHash(CryptoHash.SHA1),
-          data = this.toByteArray(charset);
-
-      crypto.update(data, data.length);
-
-      return crypto.finish(true);
-    },
     convertToUnicode : function convertToUnicode(charset) {
       return new UnicodeConverter(charset).ConvertToUnicode(this);
     },
@@ -335,17 +285,6 @@
     },
     includesFullwidth : function includesFullwidth() {
       return (/[^ -~｡-ﾟ]/).test(this);
-    },
-    // https://code.google.com/p/kanaxs/
-    toHiragana : function toHiragana() {
-      var c, i = this.length, ary = [];
-
-      while (i--) {
-        c = this.charCodeAt(i);
-        ary[i] = (0x30A1 <= c && c <= 0x30F6) ? c - 0x0060 : c;
-      }
-
-      return String.fromCharCode.apply(null, ary);
     },
     toKatakana : function toKatakana() {
       var c, i = this.length, ary = [];

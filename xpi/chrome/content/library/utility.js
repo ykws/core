@@ -1758,10 +1758,6 @@ function dynamicBind(func, self){
 }
 
 // ----[DOM/XML]-------------------------------------------------
-'tree treecols treecol treechildren treeitem treerow treecell splitter'.split(' ').forEach(function(tag){
-	grobal[tag.toUpperCase()] = bind(E, null, tag);
-});
-
 function E(){
 	var tag = Array.prototype.shift.call(arguments);
 	var elm = currentDocument().createElement(tag);
