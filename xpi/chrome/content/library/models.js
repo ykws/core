@@ -2249,35 +2249,126 @@ Models.register({
 });
 
 
-// http://developer.yahoo.co.jp/jlp/MAService/V1/parse.html
 Models.register({
-	name : 'Yahoo',
-	APP_ID : '16y9Ex6xg64GBDD.tmwF.WIdXURG0iTT25NUQ72RLF_Jzt2_MfXDDZfKehYkX6dPZqk-',
-	
-	parse : function(ps){
-		ps.appid = this.APP_ID;
-		return request('http://jlp.yahooapis.jp/MAService/V1/parse', {
-			charset     : 'utf-8',
-			sendContent : ps
-		}).addCallback(function(res){
-			return convertToDOM(res.responseText);
-		});
+	name    : 'Yahoo JMA',
+	// via http://developer.yahoo.co.jp/webapi/jlp/ma/v1/parse.html
+	API_URL : 'http://jlp.yahooapis.jp/MAService/V1/parse',
+	APP_ID  : '16y9Ex6xg64GBDD.tmwF.WIdXURG0iTT25NUQ72RLF_Jzt2_MfXDDZfKehYkX6dPZqk-',
+
+	parse(params) {
+		return request(this.API_URL, {
+			responseType : 'document',
+			sendContent  : Object.assign({
+				appid : this.APP_ID
+			}, params)
+		}).addCallback(({response : doc}) => doc);
 	},
-	
-	getKanaReadings : function(str){
+
+	getKanaReadings(str) {
 		return this.parse({
 			sentence : str,
-			response : 'reading',
-		}).addCallback(function(dom){
-			return $x('//reading/text()', dom, true);
+			results  : 'ma',
+			response : 'reading'
+		}).addCallback(doc => {
+			return Array.prototype.map.call(
+				doc.querySelectorAll('reading'),
+				reading => reading.textContent
+			);
 		});
 	},
-	
-	getRomaReadings : function(str){
-		return this.getKanaReadings(str).addCallback(function(readings){
-			return readings.join('\u0000').toRoma().split('\u0000');
+
+	getRomaReadings(str) {
+		return this.getKanaReadings(str).addCallback(readings => {
+			return this.kanaToRoma(readings.join('\u0000')).split('\u0000');
 		});
 	},
+
+	// via https://github.com/shogo4405/KanaXS/blob/master/src/main/javascript/toKatakanaCase.js
+	hiraganaToKatakana(str) {
+		return String.fromCodePoint.apply(null, Array.from(str).map(char => {
+			let codePoint = char.codePointAt();
+
+			return (0x3041 <= codePoint && codePoint <= 0x3096) ?
+				codePoint + 0x0060 :
+				codePoint;
+		}));
+	},
+
+	kanaToRoma(str) {
+		let charStr = this.hiraganaToKatakana(str),
+			len = charStr.length,
+			res = '';
+
+		for (let idx = 0, mora; idx < len; idx += mora.length) {
+			mora = charStr.slice(idx, idx + 2);
+
+			let roma = this.katakanaTable.get(mora);
+
+			if (!roma) {
+				mora = charStr.slice(idx, idx + 1);
+				roma = this.katakanaTable.get(mora);
+
+				if (!roma) {
+					roma = mora;
+				}
+			}
+
+			res += roma;
+		}
+
+		return res.replace(/ltu(.)/g, '$1$1');
+	},
+
+	katakanaTable : new Map([
+		['ウァ', 'wha'], ['ウィ', 'wi'], ['ウェ', 'we'], ['ウォ', 'who'],
+		['キャ', 'kya'], ['キィ', 'kyi'], ['キュ', 'kyu'], ['キェ', 'kye'],
+		['キョ', 'kyo'], ['クャ', 'qya'], ['クュ', 'qyu'], ['クァ', 'qwa'],
+		['クィ', 'qwi'], ['クゥ', 'qwu'], ['クェ', 'qwe'], ['クォ', 'qwo'],
+		['ギャ', 'gya'], ['ギィ', 'gyi'], ['ギュ', 'gyu'], ['ギェ', 'gye'],
+		['ギョ', 'gyo'], ['グァ', 'gwa'], ['グィ', 'gwi'], ['グゥ', 'gwu'],
+		['グェ', 'gwe'], ['グォ', 'gwo'], ['シャ', 'sha'], ['シィ', 'syi'],
+		['シュ', 'shu'], ['シェ', 'sye'], ['ショ', 'sho'], ['スァ', 'swa'],
+		['スィ', 'swi'], ['スゥ', 'swu'], ['スェ', 'swe'], ['スォ', 'swo'],
+		['ジャ', 'ja'], ['ジィ', 'jyi'], ['ジュ', 'ju'], ['ジェ', 'jye'],
+		['ジョ', 'jo'], ['チャ', 'cha'], ['チィ', 'tyi'], ['チュ', 'chu'],
+		['チェ', 'tye'], ['チョ', 'cho'], ['ツァ', 'tsa'], ['ツィ', 'tsi'],
+		['ツェ', 'tse'], ['ツォ', 'tso'], ['テャ', 'tha'], ['ティ', 'thi'],
+		['テュ', 'thu'], ['テェ', 'the'], ['テョ', 'tho'], ['トァ', 'twa'],
+		['トィ', 'twi'], ['トゥ', 'twu'], ['トェ', 'twe'], ['トォ', 'two'],
+		['ヂャ', 'dya'], ['ヂィ', 'dyi'], ['ヂュ', 'dyu'], ['ヂェ', 'dye'],
+		['ヂョ', 'dyo'], ['デャ', 'dha'], ['ディ', 'dhi'], ['デュ', 'dhu'],
+		['デェ', 'dhe'], ['デョ', 'dho'], ['ドァ', 'dwa'], ['ドィ', 'dwi'],
+		['ドゥ', 'dwu'], ['ドェ', 'dwe'], ['ドォ', 'dwo'], ['ニャ', 'nya'],
+		['ニィ', 'nyi'], ['ニュ', 'nyu'], ['ニェ', 'nye'], ['ニョ', 'nyo'],
+		['ヒャ', 'hya'], ['ヒィ', 'hyi'], ['ヒュ', 'hyu'], ['ヒェ', 'hye'],
+		['ヒョ', 'hyo'], ['フャ', 'fya'], ['フュ', 'fyu'], ['フョ', 'fyo'],
+		['ファ', 'fa'], ['フィ', 'fi'], ['フゥ', 'fwu'], ['フェ', 'fe'],
+		['フォ', 'fo'], ['ビャ', 'bya'], ['ビィ', 'byi'], ['ビュ', 'byu'],
+		['ビェ', 'bye'], ['ビョ', 'byo'], ['ヴァ', 'va'], ['ヴィ', 'vi'],
+		['ヴ', 'vu'], ['ヴェ', 've'], ['ヴォ', 'vo'], ['ヴャ', 'vya'],
+		['ヴュ', 'vyu'], ['ヴョ', 'vyo'], ['ピャ', 'pya'], ['ピィ', 'pyi'],
+		['ピュ', 'pyu'], ['ピェ', 'pye'], ['ピョ', 'pyo'], ['ミャ', 'mya'],
+		['ミィ', 'myi'], ['ミュ', 'myu'], ['ミェ', 'mye'], ['ミョ', 'myo'],
+		['リャ', 'rya'], ['リィ', 'ryi'], ['リュ', 'ryu'], ['リェ', 'rye'],
+		['リョ', 'ryo'], ['ア', 'a'], ['イ', 'i'], ['ウ', 'u'], ['エ', 'e'],
+		['オ', 'o'], ['カ', 'ka'], ['キ', 'ki'], ['ク', 'ku'], ['ケ', 'ke'],
+		['コ', 'ko'], ['サ', 'sa'], ['シ', 'shi'], ['ス', 'su'], ['セ', 'se'],
+		['ソ', 'so'], ['タ', 'ta'], ['チ', 'chi'], ['ツ', 'tsu'], ['テ', 'te'],
+		['ト', 'to'], ['ナ', 'na'], ['ニ', 'ni'], ['ヌ', 'nu'], ['ネ', 'ne'],
+		['ノ', 'no'], ['ハ', 'ha'], ['ヒ', 'hi'], ['フ', 'fu'], ['ヘ', 'he'],
+		['ホ', 'ho'], ['マ', 'ma'], ['ミ', 'mi'], ['ム', 'mu'], ['メ', 'me'],
+		['モ', 'mo'], ['ヤ', 'ya'], ['ユ', 'yu'], ['ヨ', 'yo'], ['ラ', 'ra'],
+		['リ', 'ri'], ['ル', 'ru'], ['レ', 're'], ['ロ', 'ro'], ['ワ', 'wa'],
+		['ヲ', 'wo'], ['ン', 'nn'], ['ガ', 'ga'], ['ギ', 'gi'], ['グ', 'gu'],
+		['ゲ', 'ge'], ['ゴ', 'go'], ['ザ', 'za'], ['ジ', 'zi'], ['ズ', 'zu'],
+		['ゼ', 'ze'], ['ゾ', 'zo'], ['ダ', 'da'], ['ヂ', 'di'], ['ヅ', 'du'],
+		['デ', 'de'], ['ド', 'do'], ['バ', 'ba'], ['ビ', 'bi'], ['ブ', 'bu'],
+		['ベ', 'be'], ['ボ', 'bo'], ['パ', 'pa'], ['ピ', 'pi'], ['プ', 'pu'],
+		['ペ', 'pe'], ['ポ', 'po'], ['ァ', 'la'], ['ィ', 'li'], ['ゥ', 'lu'],
+		['ェ', 'le'], ['ォ', 'lo'], ['ヵ', 'lka'], ['ヶ', 'lke'], ['ッ', 'ltu'],
+		['ャ', 'lya'], ['ュ', 'lyu'], ['ョ', 'lyo'], ['ヮ', 'lwa'],
+		['。', '.'], ['、', ', '], ['ー', '-']
+	])
 });
 
 

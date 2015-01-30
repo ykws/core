@@ -842,7 +842,7 @@ TagsPanel.prototype = {
 		var d;
 		
 		if(source.includesFullwidth()){
-			d = Yahoo.getRomaReadings(source).addCallback(function(result){
+			d = Models['Yahoo JMA'].getRomaReadings(source).addCallback(function(result){
 				return result.join('').split(' [');
 			});
 		} else {
