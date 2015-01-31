@@ -841,7 +841,7 @@ TagsPanel.prototype = {
 		var source = tags.join(' [');
 		var d;
 		
-		if(source.includesFullwidth()){
+		if(/[^ -~｡-ﾟ]/.test(source)){
 			d = Models['Yahoo JMA'].getRomaReadings(source).addCallback(function(result){
 				return result.join('').split(' [');
 			});
