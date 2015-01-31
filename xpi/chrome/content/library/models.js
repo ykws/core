@@ -1247,7 +1247,12 @@ Models.register(update({
 
 Models.register({
 	name : 'Google',
-	ICON : 'http://www.google.com/favicon.ico',
+	ICON : 'https://www.google.com/favicon.ico',
+
+	getAuthCookie() {
+		// via https://www.google.com/policies/technologies/types/
+		return getCookieValue('.google.com', 'SID');
+	}
 });
 
 
@@ -1343,67 +1348,94 @@ Models.register({
 
 
 Models.register({
-	name : 'GoogleCalendar',
-	ICON : 'http://calendar.google.com/googlecalendar/images/favicon.ico',
-	
-	check : function(ps){
-		return (/(regular|link)/).test(ps.type) && !ps.file;
+	name         : 'GoogleCalendar',
+	ICON         : 'https://calendar.google.com/googlecalendar/images/favicon.ico',
+	CALENDAR_URL : 'https://www.google.com/calendar/',
+
+	check(ps) {
+		return /^(?:regular|link)$/.test(ps.type);
 	},
-	
-	getAuthCookie : function(){
-		return getCookieString('www.google.com', 'secid').split('=').pop();
-	},
-	
-	post : function(ps){
-		if(ps.item && (ps.itemUrl || ps.description)){
-			return this.addSchedule(ps.item, joinText([ps.itemUrl, ps.body, ps.description], '\n'), ps.date);
+
+	post(ps) {
+		if (!Google.getAuthCookie()) {
+			throw new Error(getMessage('error.notLoggedin'));
+		}
+
+		if (ps.item && (ps.itemUrl || ps.description)) {
+			return this.addSchedule(
+				ps.item,
+				joinText([ps.itemUrl, ps.body, ps.description], '\n', true),
+				ps.date
+			);
 		} else {
 			return this.addSimpleSchedule(ps.description);
 		}
 	},
-	
-	addSimpleSchedule : function(description){
-		if(!this.getAuthCookie())
-			throw new Error(getMessage('error.notLoggedin'));
-		
-		var endpoint = 'http://www.google.com/calendar/m';
-		return request(endpoint, {
-			queryString : {
-				hl : 'en',
-			},
-		}).addCallback(function(res){
-			// form.secidはクッキー内のsecidとは異なる
-			var form = formContents(res.responseText);
-			return request(endpoint, {
-				redirectionLimit : 0,
-				sendContent: {
-					ctext  : description,
-					secid  : form.secid,
-					as_sdt : form.as_sdt,
-				},
+
+	addSchedule(title, description, from, to) {
+		return this.getToken().addCallback(token => {
+			return request(this.CALENDAR_URL + 'event', {
+				sendContent : {
+					action  : 'CREATE',
+					crm     : 'AVAILABLE',
+					icc     : 'DEFAULT',
+					scp     : 'ONE',
+					sf      : true,
+					secid   : token,
+					text    : title,
+					details : description,
+					dates   : this.getDates(from, to)
+				}
 			});
 		});
 	},
-	
-	addSchedule : function(title, description, from, to){
-		from = from || new Date();
-		to = to || new Date(from.getTime() + (86400 * 1000));
-		
-		return request('http://www.google.com/calendar/event', {
-				queryString : {
-					action  : 'CREATE', 
-					secid   : this.getAuthCookie(), 
-					dates   : from.toLocaleFormat('%Y%m%d') + '/' + to.toLocaleFormat('%Y%m%d'),
-					text    : title, 
-					details : description,
-					sf      : true,
-					crm     : 'AVAILABLE',
-					icc     : 'DEFAULT',
-					output  : 'js',
-					scp     : 'ONE',
-				}
+
+	addSimpleSchedule(description) {
+		return request(this.CALENDAR_URL + 'm?hl=en', {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			return request(this.CALENDAR_URL + 'm', {
+				sendContent : Object.assign(formContents(doc.documentElement), {
+					ctext : description
+				})
+			});
 		});
 	},
+
+	getToken() {
+		return maybeDeferred(
+			this.getSECID() || request(this.CALENDAR_URL + 'render', {
+				method : 'HEAD'
+			}).addCallback(() => this.getSECID())
+		);
+	},
+
+	getSECID() {
+		return getCookieValue('www.google.com', 'secid');
+	},
+
+	getDates(from, to) {
+		let begin = from || new Date(),
+			end = to || new Date(begin.getTime() + 86400000);
+
+		return this.createDateString(begin) + '/' + this.createDateString(end);
+	},
+
+	// via Taberareloo 4.0.4's GoogleCalendar.createDateString()
+	// https://github.com/taberareloo/taberareloo/blob/4.0.4/src/lib/models.js#L1618-1629
+	createDateString(dateObj) {
+		return [
+			dateObj.getFullYear(), dateObj.getMonth() + 1, dateObj.getDate()
+		].map(date => {
+			let numStr = String(date);
+
+			if (numStr.length === 1) {
+				numStr = '0' + numStr;
+			}
+
+			return numStr;
+		}).join('');
+	}
 });
 
 
