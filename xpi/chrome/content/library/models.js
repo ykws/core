@@ -1707,14 +1707,12 @@ Models.register(update({
 
 
 Models.register({
-	name         : 'Delicious',
-	ICON         : 'https://delicious.com/favicon.ico',
-	ORIGIN       : 'https://delicious.com',
-	API_URL      : 'https://avosapi.delicious.com/api/v1/',
-	// https://delicious.com/rss
-	FEED_API_URL : 'http://feeds.delicious.com/v2/json/',
+	name    : 'Delicious',
+	ICON    : 'https://delicious.com/favicon.ico',
+	ORIGIN  : 'https://delicious.com',
+	API_URL : 'https://avosapi.delicious.com/api/v1/',
 
-	check : function (ps) {
+	check(ps) {
 		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
 			if (ps.file) {
 				return ps.itemUrl;
@@ -1724,15 +1722,15 @@ Models.register({
 		}
 	},
 
-	post : function (ps) {
-		var user = this.getInfo(), that, retry;
+	post(ps) {
+		let info = this.getInfo();
 
-		if (!user) {
+		if (!info) {
 			throw new Error(getMessage('error.notLoggedin'));
 		}
 
-		that = this;
-		retry = true;
+		let that = this,
+			retry = true;
 
 		return (function addBookmark() {
 			return request(that.API_URL + 'posts/addoredit', {
@@ -1741,48 +1739,76 @@ Models.register({
 					description : ps.item,
 					url         : ps.itemUrl,
 					tags        : joinText(ps.tags),
-					note        : joinText([ps.body, ps.description], ' ', true),
+					note        : joinText(
+						[ps.body, ps.description],
+						' ',
+						true
+					),
 					private     : ps.private ? 'on' : '',
 					replace     : 'true'
 				}
-			}).addCallback(({response : info}) => {
-				if (info.error) {
+			}).addCallback(({response : json}) => {
+				let {error} = json;
+
+				if (json.status === 'success' && !error) {
+					return;
+				}
+
+				if (error) {
 					if (retry) {
 						retry = false;
 
-						return that.updateSessionStatus(user).addCallback(addBookmark);
+						return that.updateSessionStatus(info).addCallback(
+							addBookmark
+						);
 					}
 
-					throw new Error(info.error);
+					throw new Error(error);
 				}
+
+				throw new Error(getMessage('error.postingContentsIncorrect'));
 			});
 		}());
 	},
 
-	getInfo : function () {
-		var {user} = getLocalStorage(this.ORIGIN);
+	getInfo() {
+		let {user} = getLocalStorage(this.ORIGIN);
 
 		if (user) {
-			user = JSON.parse(user);
+			let info = JSON.parse(user);
 
-			if (user.isLoggedIn) {
-				return user;
+			if (info.isLoggedIn) {
+				return info;
 			}
 		}
 	},
 
-	updateSessionStatus : function ({username, password_hash}) {
-		return request(
-			this.API_URL + 'account/webloginhash/' + username + '/' + password_hash,
-			{ responseType : 'json' }
-		).addCallback(res => res.response);
+	updateSessionStatus({username, password_hash}) {
+		return request([
+			this.API_URL + 'account/webloginhash',
+			username,
+			password_hash
+		].join('/'), {
+			responseType : 'json'
+		}).addCallback(({response : json}) => json);
 	},
 
-	getCompose : function (url) {
+	md5(str, charset) {
+		let crypto = new CryptoHash(CryptoHash.MD5),
+			data = new UnicodeConverter(charset).convertToByteArray(str, {});
+
+		crypto.update(data, data.length);
+
+		return crypto.finish(false).split('').map(char =>
+			('0' + char.charCodeAt().toString(16)).slice(-2)
+		).join('');
+	},
+
+	getCompose(url) {
 		return request(this.API_URL + 'posts/compose', {
 			responseType : 'json',
-			queryString  : { url : url }
-		}).addCallback(res => res.response);
+			queryString  : {url}
+		}).addCallback(({response : json}) => json);
 	},
 
 	/**
@@ -1790,19 +1816,19 @@ Models.register({
 	 *
 	 * @return {Array}
 	 */
-	getUserTags : function () {
+	getUserTags() {
 		// 下記のAPIではプライベートなタグは取得できない
 		// http://feeds.delicious.com/v2/json/tags/{username}
 		return this.getInfo() ? request(this.API_URL + 'posts/you/tags', {
 			responseType : 'json'
-		}).addCallback(res => {
-			var {pkg} = res.response, tags;
+		}).addCallback(({response : json}) => {
+			let {pkg} = json;
 
 			if (!(pkg && pkg.num_tags)) {
 				return [];
 			}
 
-			tags = pkg.tags;
+			let {tags} = pkg;
 
 			return Object.keys(tags).map(tag => ({
 				name      : tag,
@@ -1816,13 +1842,19 @@ Models.register({
 	 *
 	 * @return {Array}
 	 */
-	getPopularTags : function (url) {
-		return request(this.FEED_API_URL + 'urlinfo/' + url.md5(), {
+	getPopularTags(url) {
+		return request(this.API_URL + 'posts/md5/' + this.md5(url), {
 			responseType : 'json'
-		}).addCallback(res => {
-			var [info] = res.response;
+		}).addCallback(({response : json}) => {
+			let {pkg} = json;
 
-			return info ? Object.keys(info.top_tags) : [];
+			if (!pkg) {
+				return [];
+			}
+
+			let [info] = pkg;
+
+			return info ? info.tags : [];
 		});
 	},
 
@@ -1833,29 +1865,29 @@ Models.register({
 	 * @param {String} url 関連情報を取得する対象のページURL。
 	 * @return {Object}
 	 */
-	getSuggestions : function (url) {
+	getSuggestions(url) {
 		return new DeferredHash({
 			tags    : this.getUserTags(),
 			popular : this.getPopularTags(url),
 			compose : this.getCompose(url)
 		}).addCallback(ress => {
-			var {pkg} = ress.compose[1],
+			let {pkg} = ress.compose[1],
 				suggestions = {
 					tags        : ress.tags[1],
 					popular     : ress.popular[1],
-					recommended : pkg.suggested_tags,
-					duplicated  : pkg.previously_saved
+					recommended : pkg ? pkg.suggested_tags : [],
+					duplicated  : pkg ? pkg.previously_saved : false
 				};
 
 			if (suggestions.duplicated) {
-				update(suggestions, {
+				Object.assign(suggestions, {
 					form     : {
 						item        : pkg.previously_saved_title,
 						tags        : pkg.previous_tags,
 						description : pkg.previously_saved_note,
 						private     : pkg.previously_saved_privacy
 					},
-					editPage : this.ORIGIN + '/save?url=' + url
+					editPage : this.ORIGIN + '/save' + queryString({url}, true)
 				});
 			}
 
