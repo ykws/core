@@ -1,4 +1,4 @@
-/* global UnicodeConverter, CryptoHash, TextToSubURI */
+/* global UnicodeConverter, TextToSubURI */
 
 (function executePrototype() {
   'use strict';
@@ -17,12 +17,6 @@
 
     return Object.defineProperties(builtInObject, props);
   }
-
-  extendBuiltInObject(Number.prototype, {
-    toHexString : function toHexString() {
-      return ('0' + this.toString(16)).slice(-2);
-    }
-  });
 
   extendBuiltInObject(String.prototype, {
     indent : function indent(num, c) {
@@ -43,19 +37,6 @@
     },
     capitalize : function capitalize() {
       return this.substr(0, 1).toUpperCase() + this.substr(1);
-    },
-    toByteArray : function toByteArray(charset) {
-      return new UnicodeConverter(charset).convertToByteArray(this, {});
-    },
-    md5 : function md5(charset) {
-      var crypto = new CryptoHash(CryptoHash.MD5),
-          data = this.toByteArray(charset);
-
-      crypto.update(data, data.length);
-
-      return crypto.finish(false).split('').map(function getHexString(char) {
-        return char.charCodeAt().toHexString();
-      }).join('');
     },
     convertToUnicode : function convertToUnicode(charset) {
       return new UnicodeConverter(charset).ConvertToUnicode(this);

@@ -1870,10 +1870,6 @@ function $x(exp, context, multi) {
 	return null;
 }
 
-function convertToDOM(text){
-	return new DOMParser().parseFromString(text.replace(/xmlns=["'].*?["']/g,''), 'text/xml');
-}
-
 function convertToHTMLDocument(html, doc) {
 	html = html.replace(/<!DOCTYPE.*?>/, '').replace(/<html.*?>/, '').replace(/<\/html>.*/, '');
 	

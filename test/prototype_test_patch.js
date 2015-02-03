@@ -1,4 +1,3 @@
-log((100).toHexString() === '64');
 log('a'.indent(2) === '  a');
 log('a'.indent(2, '	') === '		a');
 log('a\na'.indent(2) === '  a\n  a');
@@ -9,13 +8,6 @@ log('e'.wrap(9) === '9e9');
 log('test'.extract(/^(t)e(st)$/) === 't');
 log('test'.extract(/^(t)e(st)$/, 2) === 'st');
 log('test'.capitalize() === 'Test');
-log('a'.toByteArray()[0] === 97);
-log('a'.toByteArray().join(', ') === '97');
-log('テスト'.toByteArray('utf8').join(', ') === '227, 131, 134, 227, 130, 185, 227, 131, 136');
-log('テスト'.toByteArray('Shift_JIS').join(', ') === '131, 101, 131, 88, 131, 103');
-log('a'.md5() === '0cc175b9c0f1b6a831c399e269772661');
-log('テスト'.md5('utf8') === 'b0f1c5a480f416234a803b35d9932c57');
-log('テスト'.md5('Shift_JIS') === '3f0326f4e56c3f4b54feede9071cafbf');
 log('テスト'.convertToUnicode() === 'ƹ');
 log('テスト'.convertToUnicode('Shift_JIS') === 'ﾆｹﾈ');
 log('テスト'.convertToUnicode('EUC-JP') === '胴');
