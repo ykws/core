@@ -1,116 +1,188 @@
 var Extractors;
 this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 	{
-		name : 'LDR',
-		getItem : function(ctx, getOnly){
-			if(ctx.host != 'reader.livedoor.com' && ctx.host != 'fastladder.com')
-				return;
-			
-			var item  = $x('ancestor-or-self::div[starts-with(@id, "item_count")]', ctx.target);
-			if(!item)
-				return;
-			
-			var channel = $x('id("right_body")/div[@class="channel"]//a');
-			var res = {
-				author : ($x('div[@class="item_info"]/*[@class="author"]/text()', item) || '').extract(/by (.*)/),
-				title  : $x('div[@class="item_header"]//a/text()', item) || '',
-				feed   : channel.textContent,
-				href   : $x('(div[@class="item_info"]/a)[1]/@href', item).replace(/[?&;](fr?(om)?|track|ref|FM)=(r(ss(all)?|df)|atom)([&;].*)?/,'') || channel.href,
-			};
-			
-			var uri = createURI(res.href);
-			if(!getOnly){
-				ctx.title = res.feed + (res.title? ' - ' + res.title : '');
-				ctx.href  = res.href;
-				ctx.host  = uri.host;
+		name     : 'LDR',
+		PARAM_RE : new RegExp(
+			'[?&;]' +
+				'(?:fr?(?:om)?|track|ref|FM)=(?:r(?:ss(?:all)?|df)|atom)' +
+				'(?:[&;].*)?'
+		),
+		getItem(ctx) {
+			if (
+				ctx.host === 'reader.livedoor.com' &&
+					ctx.pathname === '/reader/'
+			) {
+				let {target} = ctx;
+
+				if (target) {
+					return target.closest('.item');
+				}
 			}
-			
-			return res
 		},
+		getInfo(ctx) {
+			let item = this.getItem(ctx);
+
+			if (!item) {
+				return;
+			}
+
+			let info = {},
+				itemTitle = item.querySelector('.item_title > a');
+
+			info.title = itemTitle ? itemTitle.textContent : '';
+
+			let permalink = item.querySelector('.item_info > a');
+
+			info.href = permalink ?
+				permalink.href.replace(this.PARAM_RE, '') :
+				'';
+
+			if (!info.href) {
+				let feedTitle = this.getFeedTitle(ctx);
+
+				info.href = feedTitle ? feedTitle.href : '';
+
+				if (!info.href && itemTitle) {
+					info.href = itemTitle.href;
+				}
+				if (!info.href) {
+					info.href = ctx.href;
+				}
+			}
+
+			let author = item.querySelector('.author');
+
+			info.author = author ? author.textContent.replace('by ', '') : '';
+
+			return info;
+		},
+		overwriteCTX(ctx) {
+			let info = this.getInfo(ctx);
+
+			if (info) {
+				let feedTitle = this.getFeedTitle(ctx);
+
+				ctx.title = feedTitle ?
+					feedTitle.textContent + (info.title && ' - ' + info.title) :
+					info.title;
+
+				ctx.href = info.href;
+				ctx.host = (new URL(info.href)).hostname;
+			}
+
+			return ctx;
+		},
+		getFeedTitle(ctx) {
+			return ctx.document.querySelector('.title a');
+		}
 	},
-	
+
 	{
 		name : 'Quote - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
-		check : function(ctx){
-			return Extractors.LDR.getItem(ctx, true) && ctx.selection;
+		check(ctx) {
+			return ctx.selection && !ctx.onImage && Extractors.LDR.getItem(ctx);
 		},
-		extract : function(ctx){
-			Extractors.LDR.getItem(ctx);
-			return Extractors.Quote.extract(ctx);
-		},
+		extract(ctx) {
+			return Extractors.Quote.extract(Extractors.LDR.overwriteCTX(ctx));
+		}
 	},
-	
+
 	{
 		name : 'ReBlog - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
-		check : function(ctx){
-			var item = Extractors.LDR.getItem(ctx, true);
-			return item && (
-				item.href.match('^http://.*?\\.tumblr\\.com/') ||
-				(ctx.onImage && ctx.target.src.match('^http://data\.tumblr\.com/')));
+		check(ctx) {
+			if (ctx.selection || (ctx.onLink && !ctx.onImage)) {
+				return;
+			}
+
+			let info = Extractors.LDR.getInfo(ctx);
+
+			if (!info) {
+				return;
+			}
+
+			if (/^[^.]+\.tumblr\.com$/.test((new URL(info.href)).hostname)) {
+				return true;
+			}
+
+			if (ctx.onImage) {
+				let {src} = ctx.target;
+
+				if (src) {
+					return (new URL(src)).hostname === 'data.tumblr.com';
+				}
+			}
 		},
-		extract : function(ctx){
-			Extractors.LDR.getItem(ctx);
+		extract(ctx) {
+			Extractors.LDR.overwriteCTX(ctx);
+
 			return Extractors.ReBlog.extractByLink(ctx, ctx.href);
-		},
+		}
 	},
-	
+
 	{
 		name : 'Photo - LDR(FFFFOUND!)',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
-		check : function(ctx){
-			var item = Extractors.LDR.getItem(ctx, true);
-			return item &&
-				ctx.onImage &&
-				item.href.match('^http://ffffound\\.com/');
+		check(ctx) {
+			if (!ctx.selection && ctx.onImage) {
+				let info = Extractors.LDR.getInfo(ctx);
+
+				if (info) {
+					return (new URL(info.href)).hostname === 'ffffound.com';
+				}
+			}
 		},
-		extract : function(ctx){
-			var item = Extractors.LDR.getItem(ctx);
-			ctx.title = item.title;
-			
-			with(createURI(ctx.href))
-				ctx.href = prePath + filePath;
-			
+		extract(ctx) {
+			let info = Extractors.LDR.getInfo(ctx);
+
+			Extractors.LDR.overwriteCTX(ctx);
+
+			let uriObj = createURI(info.href);
+
+			ctx.href = uriObj.prePath + uriObj.filePath;
+
+			let {author} = info;
+
 			return {
 				type      : 'photo',
-				item      : item.title,
-				itemUrl   : ctx.target.src.replace(/_m(\..{3})/, '$1'),
-				author    : item.author,
-				authorUrl : 'http://ffffound.com/home/' + item.author + '/found/',
-				favorite : {
+				item      : info.title,
+				itemUrl   : ctx.target.src,
+				author    : author,
+				authorUrl : 'http://ffffound.com/home/' + author + '/found/',
+				favorite  : {
 					name : 'FFFFOUND',
-					id   : ctx.href.split('/').pop(),
-				},
+					id   : ctx.href.split('/').pop()
+				}
 			};
-		},
+		}
 	},
-	
+
 	{
 		name : 'Photo - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
-		check : function(ctx){
-			return Extractors.LDR.getItem(ctx, true) &&
-				ctx.onImage;
+		check(ctx) {
+			return !ctx.selection && ctx.onImage && Extractors.LDR.getItem(ctx);
 		},
-		extract : function(ctx){
-			Extractors.LDR.getItem(ctx);
+		extract(ctx) {
+			Extractors.LDR.overwriteCTX(ctx);
+
 			return Extractors.check(ctx)[0].extract(ctx);
-		},
+		}
 	},
-	
+
 	{
 		name : 'Link - LDR',
 		ICON : 'http://reader.livedoor.com/favicon.ico',
-		check : function(ctx){
-			return Extractors.LDR.getItem(ctx, true);
+		check(ctx) {
+			return !(ctx.selection || ctx.onImage || ctx.onLink) &&
+				Extractors.LDR.getItem(ctx);
 		},
-		extract : function(ctx){
-			Extractors.LDR.getItem(ctx);
-			return Extractors.Link.extract(ctx);
-		},
+		extract(ctx) {
+			return Extractors.Link.extract(Extractors.LDR.overwriteCTX(ctx));
+		}
 	},
-	
+
 	{
 		name : 'Quote - Twitter',
 		ICON : Models.Twitter.ICON,
