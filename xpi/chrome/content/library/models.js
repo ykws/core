@@ -1364,7 +1364,11 @@ Models.register({
 		if (ps.item && (ps.itemUrl || ps.description)) {
 			return this.addSchedule(
 				ps.item,
-				joinText([ps.itemUrl, ps.body, ps.description], '\n', true),
+				joinText([
+					ps.itemUrl,
+					(ps.body || '').trimTag(),
+					ps.description
+				], '\n'),
 				ps.date
 			);
 		} else {
@@ -1396,7 +1400,7 @@ Models.register({
 		}).addCallback(({response : doc}) => {
 			return request(this.CALENDAR_URL + 'm', {
 				sendContent : Object.assign(formContents(doc.documentElement), {
-					ctext : description
+					ctext : description || ''
 				})
 			});
 		});
@@ -1404,9 +1408,9 @@ Models.register({
 
 	getToken() {
 		return maybeDeferred(
-			this.getSECID() || request(this.CALENDAR_URL + 'render', {
-				method : 'HEAD'
-			}).addCallback(() => this.getSECID())
+			this.getSECID() || request(
+				this.CALENDAR_URL + 'render'
+			).addCallback(() => this.getSECID())
 		);
 	},
 
