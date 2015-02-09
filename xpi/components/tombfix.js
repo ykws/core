@@ -35,7 +35,7 @@
     'twitter-text.js',
     // library
     'component.js',
-    'prototype.js',
+    'expand.js',
     'utility.js',
     'tabWatcher.js',
     'repository.js',
