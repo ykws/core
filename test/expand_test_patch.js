@@ -1,31 +1,98 @@
-log('a'.indent(2) === '  a');
-log('a'.indent(2, '	') === '		a');
-log('a\na'.indent(2) === '  a\n  a');
-log('a'.indent(0) === 'a');
-log('a'.wrap('t') === 'tat');
-log('a'.wrap('t', 's') === 'tas');
-log('e'.wrap(9) === '9e9');
-log('test'.extract(/^(t)e(st)$/) === 't');
-log('test'.extract(/^(t)e(st)$/, 2) === 'st');
-log('test'.capitalize() === 'Test');
-log('テスト'.convertToUnicode() === 'ƹ');
-log('テスト'.convertToUnicode('Shift_JIS') === 'ﾆｹﾈ');
-log('テスト'.convertToUnicode('EUC-JP') === '胴');
-log('テスト'.convertToUnicode('iso-2022-jp') === '���');
-log('テスト'.convertFromUnicode() === 'ãã¹ã');
-log('テスト'.convertFromUnicode('Shift_JIS') === 'eXg');
-log('テスト'.convertFromUnicode('EUC-JP') === '¥Æ¥¹¥È');
-log('テスト'.convertFromUnicode('iso-2022-jp') === '$B%F%9%H');
-log('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === ':@/#?=+&;,$"テスト');
-log('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === decodeURIComponent('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'));
-log('abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()'.unEscapeURI() === 'abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()');
-log('%A5%C6%A5%B9%A5%C8'.unEscapeURI() === '%A5%C6%A5%B9%A5%C8');
-log('%A5%C6%A5%B9%A5%C8'.unEscapeURI('EUC-JP') === 'テスト');
-log('a<!--test-->a'.trimTag() === 'aa');
-log('<div>a</div>'.trimTag() === 'a');
-log('<div>a<p>a</div>'.trimTag() === 'aa');
-log('<!--test--><div>a</div>'.trimTag() === 'a');
-log('<!--test-->\n<div>a</div>'.trimTag() === '\na');
-log('123abc'.charLength === 6);
-log('吉野家'.charLength === 3);
-log('𠮷野家'.charLength === 3);
+{
+  let assert = function assert(bool) {
+    if (bool) {
+      console.log(bool);
+
+      return;
+    }
+
+    console.trace();
+  };
+
+  {
+    let obj = {};
+
+    assert(Object.expand(obj, {test : 0}) === obj);
+    assert('test' in obj);
+    assert(obj.hasOwnProperty('test'));
+    assert(Object.keys(obj).indexOf('test') === -1);
+    assert(Object.getOwnPropertyNames(obj).indexOf('test') !== -1);
+    assert(obj.test === 0);
+
+    obj.test = true;
+
+    assert(obj.test);
+
+    obj = {record : 1};
+
+    assert(Object.expand(obj, {get test() {return this.record;}, set test(val) {this.record = val;}}) === obj);
+    assert('test' in obj);
+    assert(obj.hasOwnProperty('test'));
+    assert(Object.keys(obj).indexOf('test') === -1);
+    assert(Object.getOwnPropertyNames(obj).indexOf('test') !== -1);
+    assert(obj.test === 1);
+
+    obj.test = false;
+
+    assert(obj.test === false);
+
+    assert(Object.expand(obj, {get test() {return 1;}, set test(val) {return 1;}}).test === 1);
+    assert(Object.expand(obj, {get test() {return 2;}}).test === 2);
+    assert(Object.expand(obj, {hoge : 3, set fuga(val) {return 4;}}).test === 2);
+    assert(obj.hoge === 3);
+    assert(obj.fuga === void 0);
+    assert(Object.expand(obj, {fuga : 5}).fuga === 5);
+
+    assert(Object.expand(obj, {get piyo() {return 6;}}).piyo === 6);
+
+    obj.piyo = 7;
+
+    assert(obj.piyo === 6);
+
+    assert(Object.expand(obj, {get foo() {return 8;}, set foo(val) {}}).foo === 8);
+
+    obj.foo = 9;
+
+    assert(obj.foo === 8);
+
+    obj = {get test() {}, set test(val) {}};
+
+    assert(Object.expand(obj, {get test() {return 10;}}).test === 10);
+
+    assert(Object.getOwnPropertyDescriptor(obj, 'test').set === void 0);
+
+    assert(Object.expand(obj, {}) === obj);
+  }
+
+  assert('a'.indent(2) === '  a');
+  assert('a'.indent(2, '	') === '		a');
+  assert('a\na'.indent(2) === '  a\n  a');
+  assert('a'.indent(0) === 'a');
+  assert('a'.wrap('t') === 'tat');
+  assert('a'.wrap('t', 's') === 'tas');
+  assert('e'.wrap(9) === '9e9');
+  assert('test'.extract(/^(t)e(st)$/) === 't');
+  assert('test'.extract(/^(t)e(st)$/, 2) === 'st');
+  assert('test'.capitalize() === 'Test');
+  assert('テスト'.convertToUnicode() === 'ƹ');
+  assert('テスト'.convertToUnicode('Shift_JIS') === 'ﾆｹﾈ');
+  assert('テスト'.convertToUnicode('EUC-JP') === '胴');
+  assert('テスト'.convertToUnicode('iso-2022-jp') === '���');
+  assert('テスト'.convertFromUnicode() === 'ãã¹ã');
+  assert('テスト'.convertFromUnicode('Shift_JIS') === 'eXg');
+  assert('テスト'.convertFromUnicode('EUC-JP') === '¥Æ¥¹¥È');
+  assert('テスト'.convertFromUnicode('iso-2022-jp') === '$B%F%9%H');
+  assert('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === ':@/#?=+&;,$"テスト');
+  assert('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === decodeURIComponent('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'));
+  assert('abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()'.unEscapeURI() === 'abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()');
+  assert('%A5%C6%A5%B9%A5%C8'.unEscapeURI() === '%A5%C6%A5%B9%A5%C8');
+  assert('%A5%C6%A5%B9%A5%C8'.unEscapeURI('EUC-JP') === 'テスト');
+  assert('a<!--test-->a'.trimTag() === 'aa');
+  assert('<div>a</div>'.trimTag() === 'a');
+  assert('<div>a<p>a</div>'.trimTag() === 'aa');
+  assert('<!--test--><div>a</div>'.trimTag() === 'a');
+  assert('<!--test-->\n<div>a</div>'.trimTag() === '\na');
+  assert('123abc'.charLength === 6);
+  assert('吉野家'.charLength === 3);
+  assert('𠮷野家'.charLength === 3);
+}
