@@ -6,6 +6,7 @@ var Tumblr = update({}, AbstractSessionService, {
 	name : 'Tumblr',
 	ICON : 'http://www.tumblr.com/images/favicon.gif',
 	TUMBLR_URL : 'http://www.tumblr.com/',
+	SVC_URL : 'https://www.tumblr.com/svc/',
 	
 	/**
 	 * reblog情報を取り除く。
@@ -80,19 +81,48 @@ var Tumblr = update({}, AbstractSessionService, {
 	 * @return {Deferred}
 	 */
 	getForm : function(url){
-		var self = this;
+		var self = this, doc;
 		return request(url).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
+			doc = convertToHTMLDocument(res.responseText);
+
 			var form = formContents(doc);
 			delete form.preview_post;
 			form.redirect_to = Tumblr.TUMBLR_URL+'dashboard';
-			
+
+			if (!form['post[type]']) {
+				let {pathname} = new URL(url),
+					match = /^\/reblog\/(\d+)\/([^\/]+)/.exec(pathname);
+
+				if (match) {
+					let [reblogID, reblogKey] = match.slice(1);
+
+					return Tumblr.getReblogPostInfo(reblogID, reblogKey).addCallback(info => {
+						form['post[type]'] = info.type;
+
+						if (!form.reblog_post_id) {
+							form.reblog_post_id = info.parent_id;
+						}
+
+						return form;
+					});
+				}
+			}
+
+			return form;
+		}).addCallback(function(form){
 			if(form.reblog_post_id){
 				self.trimReblogInfo(form);
 				
 				// Tumblrから他サービスへポストするため画像URLを取得しておく
 				if (form['post[type]'] === 'photo') {
 					form.image = $x('id("edit_post")//img[contains(@src, "media.tumblr.com/") or contains(@src, "data.tumblr.com/")]/@src', doc);
+					if (!form.image) {
+						let img = doc.querySelector('.reblog_content img');
+
+						if (img) {
+							form.image = img.src;
+						}
+					}
 					if (!form.image) {
 						let photoset = doc.querySelector('iframe.photoset');
 						if (photoset) {
@@ -201,7 +231,7 @@ var Tumblr = update({}, AbstractSessionService, {
 					throw new Error("You've exceeded your daily post limit.");
 				
 				var doc = convertToHTMLDocument(res.responseText);
-				throw new Error(convertToPlainText(doc.getElementById('errors')));
+				throw new Error(convertToPlainText(doc.getElementById('errors') || doc.querySelector('.errors')));
 			}
 		});
 		return d;
@@ -278,6 +308,27 @@ var Tumblr = update({}, AbstractSessionService, {
 			});
 		});
 	},
+
+	getReblogPostInfo(reblogID, reblogKey, postType) {
+		return request(this.SVC_URL + 'post/fetch', {
+			responseType : 'json',
+			queryString  : {
+				reblog_id  : reblogID,
+				reblog_key : reblogKey,
+				post_type  : postType || ''
+			}
+		}).addCallback(({response : json}) => {
+			if (json.errors === false) {
+				let {post} = json;
+
+				if (post) {
+					return post;
+				}
+			}
+
+			throw new Error(json.error || getMessage('error.contentsNotFound'));
+		});
+	}
 });
 
 
@@ -379,9 +430,9 @@ request = function(url, opts){
 				'User-Agent' : 'Mozilla/5.0 (Android; Mobile; rv:35.0) Gecko/35.0 Firefox/35.0'
 			}
 		});
-		if (getCookieValue('www.tumblr.com', 'disable_mobile_layout') !== '1') {
-			// via https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsICookieManager2#add()
-			CookieManager.add('www.tumblr.com', '/', 'disable_mobile_layout', '1', false, false, true, Date.now());
+		if (getCookieValue('www.tumblr.com', 'disable_mobile_layout') === '1') {
+			// via https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsICookieManager#remove()
+			CookieManager.remove('www.tumblr.com', 'disable_mobile_layout', '/', false);
 		}
 	}
 	
