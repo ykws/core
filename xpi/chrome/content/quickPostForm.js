@@ -119,8 +119,9 @@ function DialogPanel(position, message){
 					Math.min(win.screenY + win.outerHeight - window.innerHeight, Math.max(win.screenY, position.y - (box.y + (box.height / 2))))
 				);
 			} else {
-				with(QuickPostForm.dialog.snap)
-					self.snapToContentCorner(top, left);
+				let {top, left} = QuickPostForm.dialog.snap;
+
+				self.snapToContentCorner(top, left);
 			}
 			
 			self.elmWindow.style.opacity = 1;
@@ -1194,10 +1195,10 @@ DescriptionBox.prototype = {
 		if(!this.locked)
 			return;
 		
-		with(this.elmBox.style){
-			minHeight = this.minHeight + 'px';
-			maxHeight = '10000px';
-		}
+		Object.assign(this.elmBox.style, {
+			minHeight : this.minHeight + 'px',
+			maxHeight : '10000px'
+		});
 		this.locked = false;
 	},
 }
