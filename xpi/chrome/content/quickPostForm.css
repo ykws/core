@@ -299,6 +299,7 @@ div{
 }
 
 #posters image.poster[disabled=true]{
+	filter: grayscale(100%);
 	opacity: 0.4;
 }
 

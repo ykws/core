@@ -1216,10 +1216,9 @@ function PostersPanel(){
 		self.elmTooltip = self.elmPanel.appendChild(TOOLTIP());
 		
 		forEach(self.posters, function([name, poster]){
-			var disabled = poster.config[ps.type] != 'default';
 			var image = self.elmPanel.appendChild(IMAGE({
-				class : 'poster button', 
-				disabled : disabled,
+				class    : 'poster button',
+				disabled : poster.config[ps.type] !== 'default'
 			}));
 			image.name = name;
 			
@@ -1228,8 +1227,11 @@ function PostersPanel(){
 			if(AppInfo.OS == 'Darwin'){
 				image.setAttribute('tooltiptext', name);
 			}
-			
-			self.setIcon(image, poster, !disabled);
+
+			// QuickPostFormがアイコンの読み込み待ちで遅く表示されるのを防ぐ
+			loadImage(poster.ICON).addCallback(img => {
+				image.setAttribute('src', img.src);
+			});
 		});
 		
 		self.elmAllOff = self.elmPanel.appendChild(LABEL({
@@ -1264,22 +1266,6 @@ PostersPanel.prototype = {
 		return $x('.//xul:image', this.elmPanel, true);
 	},
 	
-	setIcon : function(image, poster, enabled){
-		var prop = (enabled)? 'ICON' : 'DISABLED_ICON';
-		var src = poster[prop];
-		var d;
-		if(/^data:/.test(src)){
-			d = succeed(src);
-		} else {
-			d = ((enabled)? convertToDataURL(poster.ICON) : toGrayScale(poster.ICON)).addCallback(function(src){
-				return poster[prop] = src;
-			});
-		}
-		d.addCallback(function(src){
-			image.setAttribute('src', src);
-		});
-	},
-	
 	allOff : function(){
 		var self = this;
 		this.icons.forEach(function(image){
@@ -1288,11 +1274,7 @@ PostersPanel.prototype = {
 	},
 	
 	setDisabled : function(image, disabled){
-		var poster = this.posters[image.name];
-		
 		image.setAttribute('disabled', disabled);
-				
-		this.setIcon(image, poster, !disabled);
 		
 		this.elmButton.disabled = !this.checked.length;
 	},
