@@ -1403,75 +1403,146 @@ Models.register({
 Models.register({
 	name       : 'Dropmark',
 	ICON       : 'chrome://tombfix/skin/favicon/dropmark.ico',
+	// via http://dropmark.com/support/getting-started/browser-extensions-bookmarklets/
+	ORIGIN     : 'https://app.dropmark.com',
 	CONVERTERS : {
 		regular      : ps => ({
-			content_type : 'text',
-			name         : ps.item,
-			content_text : ps.description
+			item_type   : 'text',
+			content     : ps.description,
+			description : ''
 		}),
 		photo        : ps => ps.file ? {
-			content_type      : 'file',
-			name              : ps.item + (ps.itemUrl || ps.pageUrl).wrap(' (', ')'),
-			'content_files[]' : ps.file
+			item_type   : 'file',
+			'file[]'    : ps.file,
+			link        : '',
+			description : joinText([
+				ps.itemUrl,
+				ps.pageUrl,
+				ps.description
+			], '\n')
 		} : {
-			content_type : 'link',
-			name         : ps.item + ps.pageUrl.wrap(' (', ')'),
-			content_link : ps.itemUrl
+			description : joinText([ps.pageUrl, ps.description], '\n')
 		},
-		quote        : ps => ({
-			content_type : 'text',
-			name         : ps.item + ps.itemUrl.wrap(' (', ')'),
-			content_text : joinText([ps.body.wrap('"'), ps.description], '\n', true)
-		}),
-		link         : ps => ({
-			content_type : 'link',
-			name         : ps.item,
-			content_link : ps.itemUrl
-		}),
-		video        : ps => ({
-			content_type : 'link',
-			name         : ps.item,
-			content_link : ps.itemUrl
-		}),
+		quote        : ps => {
+			let content = Twitter.createQuote((ps.body || '').trimTag())
+
+			return Object.assign({
+				item_type : 'text',
+				content   : content
+			}, content ? {} : {
+				// contentが無い時に、item_typeがtextからlinkになってしまうのを防ぐ
+				link : ''
+			});
+		},
 		conversation : ps => ({
-			content_type : 'text',
-			name         : ps.item + ps.itemUrl.wrap(' (', ')'),
-			content_text : joinText([ps.body, ps.description], '\n', true)
+			item_type : 'text',
+			content   : ps.body
 		})
 	},
 
-	check : function (ps) {
+	check(ps) {
 		return /^(?:regular|photo|quote|link|video|conversation)$/.test(ps.type);
 	},
 
-	post : function (ps) {
-		this.checkLogin();
-
-		return this.getLastViewedPageURL().addCallback(url => {
-			return request(url + '/items', {
-				sendContent : update({
-					csrf_token : this.getToken((new URL(url)).hostname)
-				}, this.CONVERTERS[ps.type](ps))
+	post(ps) {
+		return this.getInfo(ps).addCallback(({url, data}) => {
+			return request(url + '/items/new', {
+				sendContent : Object.assign({}, data, {
+					// item_typeがlinkやtextの場合は、
+					// このリクエストでもdescriptionをポストできるが、fileの場合はポストできない。
+					// よって、このリクエストではdescriptionの内容をsendContentに反映させず、
+					// 次のputDescription()のリクエストでdescriptionを個別にポストする。
+					description : ''
+				})
 			}).addErrback(err => {
 				throw new Error(err.message.responseText);
+			}).addCallback(res => {
+				let json = JSON.parse(res.responseText);
+
+				if (!json.success) {
+					throw new Error(json.message);
+				}
+
+				if (data.description) {
+					return this.putDescription((
+						new URL(url)
+					).origin, json.id, data);
+				}
 			});
 		});
 	},
 
-	getLastViewedPageURL : function () {
-		// via http://dropmark.com/support/getting-started/browser-extensions-bookmarklets/
-		return getFinalUrl('https://app.dropmark.com/?view=bookmarklet');
-	},
+	getInfo(ps) {
+		return request(this.ORIGIN + '/?view=bookmarklet', {
+			responseType : 'document'
+		}).addCallback(({response : doc}) => {
+			if ((new URL(doc.URL)).pathname !== '/login') {
+				let collectionName = doc.querySelector('.collection-name');
 
-	getToken : function (hostname) {
-		// ホストによりトークンが異なる
-		return getCookieValue(hostname, 'csrf_token');
-	},
+				if (collectionName) {
+					let tokenElm = doc.querySelector('meta[name="_csrf"]');
 
-	checkLogin : function () {
-		if (!getCookieString('.dropmark.com', 'user_id')) {
+					if (tokenElm) {
+						let converter = this.CONVERTERS[ps.type];
+
+						return {
+							url  : collectionName.href,
+							data : Object.assign({
+								_csrf       : tokenElm.content,
+								item_type   : 'link',
+								name        : ps.item || '',
+								link        : ps.itemUrl || '',
+								tags        : joinText(ps.tags),
+								description : ps.description || ''
+							}, converter ? converter(ps) : {})
+						};
+					}
+				}
+			}
+
 			throw new Error(getMessage('error.notLoggedin'));
-		}
+		});
+	},
+
+	putDescription(origin, id, data) {
+		return request(origin + '/items/' + id, {
+			method       : 'PUT',
+			mode         : 'raw',
+			responseType : 'json',
+			headers      : {
+				'X-CSRF-TOKEN' : data._csrf
+			},
+			sendContent  : queryString({
+				description : data.description
+			})
+		}).addCallback(({response : json}) => {
+			if (!json.success) {
+				throw new Error(json.message);
+			}
+		});
+	},
+
+	/**
+	 * ユーザーの利用しているタグ一覧を取得する。
+	 *
+	 * @return {Array}
+	 */
+	getUserTags() {
+		return request(this.ORIGIN + '/tags', {
+			responseType : 'json'
+		}).addCallback(({response : json}) => json ? json.map(tag => ({
+			name      : tag.name,
+			frequency : tag.items_total_count
+		})) : []);
+	},
+
+	/**
+	 * タグを取得する。
+	 *
+	 * @return {Object}
+	 */
+	getSuggestions() {
+		return this.getUserTags().addCallback(tags => ({tags}));
 	}
 });
 
