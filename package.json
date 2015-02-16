@@ -1,10 +1,6 @@
 {
-  "name": "tombfix",
-  "description": "Tombfix is Fork of Tombloo. The main purpose is the maintenance of Tombloo.",
-  "version": "0.0.1",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tombfix/core.git"
+  "scripts": {
+    "test": "grunt"
   },
   "devDependencies": {
     "grunt": "",
@@ -13,7 +9,5 @@
     "grunt-jscs": "",
     "grunt-contrib-compress": ""
   },
-  "scripts": {
-    "test": "grunt"
-  }
+  "private": true
 }
