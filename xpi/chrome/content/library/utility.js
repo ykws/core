@@ -2602,3 +2602,9 @@ function getNodesFromPosition(screenX, screenY) {
 
 	return domWindowUtils.nodesFromRect(xPos, yPos, 0, 0, 0, 0, false, false);
 }
+
+function getFileFromPS(ps) {
+	let {file} = ps;
+
+	return file ? succeed(file) : download(ps.itemUrl, getTempDir());
+}

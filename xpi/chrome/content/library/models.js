@@ -575,7 +575,7 @@ Models.register({
 
 // Flickr API Documentation
 // https://www.flickr.com/services/api/
-Models.register(update({
+Models.register(Object.assign({
 	name           : 'Flickr',
 	ICON           : 'https://www.flickr.com/favicon.ico',
 	API_KEY        : 'ecf21e55123e4b31afa8dd344def5cc5',
@@ -583,32 +583,80 @@ Models.register(update({
 	REST_API_URL   : 'https://api.flickr.com/services/rest',
 	UPLOAD_API_URL : 'https://up.flickr.com/services/upload/',
 
-	check : function (ps) {
-		return ps.type == 'photo';
+	check(ps) {
+		return ps.type === 'photo';
 	},
 
-	post : function (ps) {
+	post(ps) {
 		return this.getToken().addCallback(token => {
-			return (ps.file ? succeed(ps.file) : download(ps.itemUrl, getTempFile())).addCallback(file => {
+			return getFileFromPS(ps).addCallback(file => {
 				return request(this.UPLOAD_API_URL, {
+					responseType : 'document',
 					// via https://www.flickr.com/services/api/upload.api.html
-					sendContent : update({
+					sendContent  : Object.assign({
 						photo       : file,
-						title       : ps.item || ps.page,
+						title       : ps.item,
 						description : ps.description,
-						tags        : joinText(ps.tags, ' '),
-						is_public   : ps.private ? 0 : 1
+						tags        : joinText(ps.tags, ' ')
+					}, ps.private == null ? {} : {
+						is_public : ps.private ? 0 : 1
 					}, token)
 				});
+			}).addCallback(({response : doc}) => {
+				if (doc.querySelector('rsp').getAttribute('stat') !== 'ok') {
+					throw new Error(
+						doc.querySelector('err').getAttribute('msg')
+					);
+				}
 			});
 		});
 	},
 
-	callMethod : function (info, apiKey) {
-		return this.getToken(apiKey).addCallback(token => {
+	favor(ps) {
+		// via https://www.flickr.com/services/api/flickr.favorites.add.html
+		return this.callMethod('favorites.add', {
+			photo_id : ps.favorite.id
+		}).addErrback(err => {
+			// Error Codes: 3
+			if (err.message !== 'Photo is already in favorites') {
+				throw err;
+			}
+		});
+	},
+
+	getToken(apiKeyOnly) {
+		if (apiKeyOnly && !this.getAuthCookie()) {
+			return succeed({api_key : this.API_KEY});
+		}
+
+		return this.getSessionValue('token', () => {
+			return request(this.ORIGIN, {
+				responseType : 'document'
+			}).addCallback(({response : doc}) => {
+				for (let script of doc.scripts) {
+					let text = script.textContent.extract(
+						/var yconf = ({.+});/
+					);
+
+					if (text) {
+						let {flickrAPI} = JSON.parse(text);
+
+						return {
+							api_key   : flickrAPI.api_key,
+							auth_hash : flickrAPI.auth_hash
+						};
+					}
+				}
+			});
+		});
+	},
+
+	callMethod(method, info, apiKeyOnly) {
+		return this.getToken(apiKeyOnly).addCallback(token => {
 			return request(this.REST_API_URL, {
 				responseType : 'json',
-				queryString  : update({
+				queryString  : Object.assign({
+					method         : 'flickr.' + method,
 					nojsoncallback : 1,
 					format         : 'json'
 				}, info, token)
@@ -622,50 +670,44 @@ Models.register(update({
 		});
 	},
 
-	favor : function (ps) {
-		return this.callMethod({
-			// via https://www.flickr.com/services/api/flickr.favorites.add.html
-			method   : 'flickr.favorites.add',
-			photo_id : ps.favorite.id
-		}).addErrback(err => {
-			// Error Codes: 3
-			if (err.message !== 'Photo is already in favorites') {
-				throw err;
-			}
-		});
-	},
-
-	getSizes : function (id) {
-		return this.callMethod({
-			// via https://www.flickr.com/services/api/flickr.photos.getSizes.html
-			method   : 'flickr.photos.getSizes',
-			photo_id : id
-		}, true).addCallback(json => json.sizes.size);
-	},
-
-	getInfo : function (id) {
-		return this.callMethod({
-			// via https://www.flickr.com/services/api/flickr.photos.getInfo.html
-			method   : 'flickr.photos.getInfo',
-			photo_id : id
+	getInfo(photoID) {
+		// via https://www.flickr.com/services/api/flickr.photos.getInfo.html
+		return this.callMethod('photos.getInfo', {
+			photo_id : photoID
 		}, true).addCallback(json => json.photo);
 	},
 
-	getToken : function (apiKey) {
-		return apiKey ? succeed({api_key : this.API_KEY}) : this.getSessionValue('token', () => {
-			return request(this.ORIGIN).addCallback(({responseText : html}) => {
-				var {flickrAPI} = JSON.parse(html.extract(/var yconf = ({.+});/));
-
-				return {
-					api_key    : flickrAPI.api_key,
-					auth_hash  : flickrAPI.auth_hash,
-					auth_token : flickrAPI.auth_token
-				};
-			});
-		});
+	getSizes(photoID) {
+		// via https://www.flickr.com/services/api/flickr.photos.getSizes.html
+		return this.callMethod('photos.getSizes', {
+			photo_id : photoID
+		}, true).addCallback(json => json.sizes.size);
 	},
 
-	getAuthCookie : function () {
+	/**
+	 * ユーザーの利用しているタグ一覧を取得する。
+	 *
+	 * @return {Array}
+	 */
+	getUserTags() {
+		// via https://www.flickr.com/services/api/flickr.tags.getListUser.html
+		return this.callMethod('tags.getListUser').addCallback(
+			json => json.who.tags.tag.map(tag => ({
+				name : tag._content
+			}))
+		).addErrback(() => []);
+	},
+
+	/**
+	 * タグを取得する。
+	 *
+	 * @return {Object}
+	 */
+	getSuggestions() {
+		return this.getUserTags().addCallback(tags => ({tags}));
+	},
+
+	getAuthCookie() {
 		return getCookieString('flickr.com', 'cookie_accid');
 	}
 }, AbstractSessionService));
