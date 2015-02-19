@@ -506,8 +506,14 @@ function download(sourceURL, targetFile){
 		p.PERSIST_FLAGS_FROM_CACHE |
 		p.PERSIST_FLAGS_REPLACE_EXISTING_FILES |
 		p.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
-	p.saveURI(sourceURI, null, null, null, null, targetURI, null);
-	
+
+	// for Firefox 36+
+	if (p.saveURI.length === 8) {
+		p.saveURI(sourceURI, null, null, null, null, null, targetURI, null);
+	} else {
+		p.saveURI(sourceURI, null, null, null, null, targetURI, null);
+	}
+
 	return d;
 }
 
