@@ -626,31 +626,35 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			};
 		},
 	},
-	
+
 	{
 		name          : 'Photo - Flickr',
 		ICON          : Models.Flickr.ICON,
-		PHOTO_PAGE_RE : /^(https?:\/\/(?:www\.)?flickr\.com\/photos\/[^\/]+\/)(\d+)/,
-		IMAGE_RE      : /^https?:\/\/(?:[^\/.]+\.)?static\.?flickr\.com\/\d+(?:\/\d+)?\/(\d+)_/,
-		check : function (ctx) {
-			return !ctx.selection && this.getImageID(ctx);
+		// via https://www.flickr.com/services/api/misc.urls.html
+		PHOTO_PAGE_RE : new RegExp(
+			'^(https?://(?:www\\.)?flickr\\.com/photos/[^/]+/)(\\d+)'
+		),
+		IMAGE_RE      : new RegExp(
+			'^https?://(?:[^/.]+\\.)?static\\.?flickr\\.com' +
+				'/\\d+(?:/\\d+)?/(\\d+)_'
+		),
+		check(ctx) {
+			return !ctx.selection && this.getPhotoID(ctx);
 		},
-		extract : function (ctx) {
-			var id = this.getImageID(ctx);
+		extract(ctx) {
+			let photoID = this.getPhotoID(ctx);
 
 			return new DeferredHash({
-				info  : Flickr.getInfo(id),
-				sizes : Flickr.getSizes(id)
+				info  : Flickr.getInfo(photoID),
+				sizes : Flickr.getSizes(photoID)
 			}).addCallback(ress => {
-				var [success, info] = ress.info,
-					sizes, title;
+				let [success, info] = ress.info;
 
 				if (!success) {
 					throw new Error(info.message);
 				}
 
-				sizes = ress.sizes[1];
-				title = info.title._content || 'Untitled';
+				let title = info.title._content || 'Untitled';
 
 				ctx.title = title + ' on Flickr';
 				ctx.href  = info.urls.url[0]._content;
@@ -658,43 +662,47 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				return {
 					type      : 'photo',
 					item      : title,
-					itemUrl   : this.getImageURL(sizes),
+					itemUrl   : this.getImageURL(ress.sizes[1]),
 					author    : info.owner.username,
 					authorUrl : ctx.href.extract(this.PHOTO_PAGE_RE),
 					favorite  : {
 						name : 'Flickr',
-						id   : id
+						id   : photoID
 					}
 				};
 			});
 		},
-		getImageID : function (ctx) {
-			var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
-				targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
+		getPhotoID(ctx) {
+			let targetURL = ctx.onLink ? ctx.link.href : ctx.href;
 
 			if (this.PHOTO_PAGE_RE.test(ctx.href)) {
-				if ($x(
-					'./ancestor::*[' + [
-						'contains(concat(" ", (@class), " "), " photo-well-scrappy-view ")',
-						'contains(concat(" ", (@class), " "), " photo-well-view ")'
-					].join(' or ') + ']',
-					ctx.target
-				)) {
+				if (ctx.document.querySelector('.error-404-page-view')) {
+					return;
+				}
+
+				let {target} = ctx;
+
+				if (target && target.closest('.photo-well-scrappy-view')) {
 					targetURL = ctx.href;
 				}
 			}
 
+			let imageURL = ctx.onImage ? ctx.target.src : (
+				ctx.hasBGImage ? ctx.bgImageURL : ''
+			);
+
 			for (let url of [imageURL, targetURL]) {
 				if (url) {
-					let id = url.extract(this.PHOTO_PAGE_RE, 2) || url.extract(this.IMAGE_RE);
+					let photoID = url.extract(this.PHOTO_PAGE_RE, 2) ||
+						url.extract(this.IMAGE_RE);
 
-					if (id) {
-						return id;
+					if (photoID) {
+						return photoID;
 					}
 				}
 			}
 		},
-		getImageURL : function (sizes) {
+		getImageURL(sizes) {
 			for (let size of sizes.slice().reverse()) {
 				if (size.media === 'photo') {
 					return size.source;
@@ -702,7 +710,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}
 		}
 	},
-	
+
 	{
 		name : 'Photo - Google Book Search',
 		ICON : Models.Google.ICON,
