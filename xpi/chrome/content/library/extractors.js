@@ -703,11 +703,25 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			}
 		},
 		getImageURL(sizes) {
+			let limitSize = getPref('extractor.photo.flickr.limitSize'),
+				limit = Number(limitSize),
+				url;
+
 			for (let size of sizes.slice().reverse()) {
 				if (size.media === 'photo') {
-					return size.source;
+					url = size.source;
+
+					if (limitSize) {
+						if (size.width <= limit && size.height <= limit) {
+							return url;
+						}
+					} else {
+						return url;
+					}
 				}
 			}
+
+			return url;
 		}
 	},
 
