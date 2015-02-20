@@ -638,6 +638,8 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			'^https?://(?:[^/.]+\\.)?static\\.?flickr\\.com' +
 				'/\\d+(?:/\\d+)?/(\\d+)_'
 		),
+		// via https://www.flickr.com/groups/api/discuss/72157616713786392/
+		SHORT_RE      : /^https?:\/\/flic\.kr\/p(?:\/img)?\/([^\/._?#]+)/,
 		check(ctx) {
 			return !ctx.selection && this.getPhotoID(ctx);
 		},
@@ -694,13 +696,26 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			for (let url of [imageURL, targetURL]) {
 				if (url) {
 					let photoID = url.extract(this.PHOTO_PAGE_RE, 2) ||
-						url.extract(this.IMAGE_RE);
+						url.extract(this.IMAGE_RE) ||
+						String(this.decodeBase58(url.extract(this.SHORT_RE)));
 
-					if (photoID) {
+					if (0 < Number(photoID)) {
 						return photoID;
 					}
 				}
 			}
+		},
+		// via http://d.hatena.ne.jp/NeoCat/20091228/1262015896
+		decodeBase58(str) {
+			let base58Letters = '123456789' +
+					'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ',
+				num = 0;
+
+			for (let len = str.length, multi = 1; len; len -= 1, multi *= 58) {
+				num += base58Letters.indexOf(str[len - 1]) * multi;
+			}
+
+			return num;
 		},
 		getImageURL(sizes) {
 			let limitSize = getPref('extractor.photo.flickr.limitSize'),
