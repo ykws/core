@@ -1297,7 +1297,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 				// mode=big and mode=manga_big on login
 				'body > img:only-child',
 				// mode=manga
-				'.image',
+				'img.image',
 				// non-r18 illust on logout
 				'.cool-work-main > .img-container > a.medium-image > img',
 				// r18 on logout
