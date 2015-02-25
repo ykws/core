@@ -3,27 +3,10 @@ function Repository(){
 }
 
 Repository.prototype = {
-  get names(){
-    return this.values.map(itemgetter('name'));
-  },
-
   get values(){
     return map(itemgetter(1), this).filter(function(v){
       return v.name;
     });
-  },
-
-  clear : function(){
-    this.names.forEach(function(name){
-      delete this[name];
-    }, this);
-  },
-
-  copyTo : function(t){
-    forEach(this, function(m){
-      t[m[0]] = m[1];
-    });
-    return t;
   },
 
   check : function(){
@@ -49,7 +32,9 @@ Repository.prototype = {
     defs = [].concat(defs);
     if(target){
       var vals = this.values;
-      this.clear();
+      this.values.map(itemgetter('name')).forEach(function(name){
+        delete this[name];
+      }, this);
 
       for(var i=0 ; i < vals.length ; i++)
         if(vals[i].name == target)

@@ -3042,7 +3042,7 @@ Models.register(Object.assign({}, Models['bit.ly'], {
 
 
 // 全てのサービスをグローバルコンテキストに置く(後方互換)
-Models.copyTo(this);
+Object.assign(this, Models);
 
 
 /**
