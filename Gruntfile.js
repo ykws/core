@@ -12,7 +12,7 @@ module.exports = function (grunt) {
         'xpi/chrome/content/library/expand.js',
         // 'xpi/chrome/content/library/utility.js',
         // 'xpi/chrome/content/library/tabWatcher.js',
-        // 'xpi/chrome/content/library/repository.js',
+        'xpi/chrome/content/library/repository.js',
         // 'xpi/chrome/content/library/models.js',
         // 'xpi/chrome/content/library/Tombfix.Service.js',
         'xpi/chrome/content/library/actions.js',
