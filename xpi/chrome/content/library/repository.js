@@ -3,10 +3,6 @@ function Repository(){
 }
 
 Repository.prototype = {
-  get size(){
-    return this.names.length;
-  },
-
   get names(){
     return this.values.map(itemgetter('name'));
   },
@@ -21,12 +17,6 @@ Repository.prototype = {
     this.names.forEach(function(name){
       delete this[name];
     }, this);
-  },
-
-  find : function(name){
-    return this.values.filter(function(i){
-      return i.name && i.name.search(name) != -1;
-    });
   },
 
   copyTo : function(t){
