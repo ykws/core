@@ -2609,3 +2609,46 @@ function getFileFromPS(ps) {
 
 	return file ? succeed(file) : download(ps.itemUrl, getTempDir());
 }
+
+function getQuoteFromPS(ps, option) {
+	let {body} = ps;
+
+	if (!(Object(body) instanceof String && String(body))) {
+		return '';
+	}
+
+	let opt = Object.assign({
+			quoteOnly : true,
+			trimTag   : false,
+			trimSpace : false,
+			wrap      : '"'
+		}, option),
+		fav = ps.favorite;
+
+	if (opt.quoteOnly) {
+		if (
+			ps.type !== 'quote' || (
+				fav && fav.name === 'Tumblr' &&
+					fav.form['post[type]'] !== 'quote'
+			)
+		) {
+			return '';
+		}
+	} else if (
+		!/^(?:quote|conversation)$/.test(ps.type) || (
+			fav && fav.name === 'Tumblr' &&
+				!/^(?:quote|conversation)$/.test(fav.form['post[type]'])
+		)
+	) {
+		body = body.trimTag();
+	}
+
+	if (opt.trimTag) {
+		body = body.trimTag();
+	}
+	if (opt.trimSpace) {
+		body = body.trim();
+	}
+
+	return body ? body.wrap(...Array.wrap(opt.wrap)) : '';
+}
