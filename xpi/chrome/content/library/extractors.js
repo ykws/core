@@ -1289,7 +1289,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 		getInfo : function (ctx, illustID, doc = ctx.document) {
 			var isUgoira = this.isUgoiraPage({document : doc}),
 				img = this.getImageElement({document : doc}, illustID),
-				url = img ? img.src : '',
+				url = img ? (img.src || img.dataset.src) : '',
 				info =  {
 					imageURL  : url,
 					pageTitle : doc.title,
