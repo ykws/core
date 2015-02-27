@@ -2877,40 +2877,174 @@ Models.register(Object.assign({
 
 
 Models.register({
-	name : 'MediaMarker',
-	ICON : 'http://mediamarker.net/favicon.ico',
-	check : function(ps){
-		return ps.type == 'link' && !ps.file;
+	name      : 'MediaMarker',
+	ICON      : 'http://mediamarker.net/favicon.ico',
+	// via http://mediamarker.net/help/tool#addbinder
+	ORIGIN    : 'http://mediamarker.net',
+	ORIGIN_RE : /^https?:\/\/mediamarker\.net$/,
+
+	check(ps) {
+		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) &&
+			(!ps.file || ps.itemUrl);
 	},
-	
-	getAuthCookie : function(){
-		return getCookieString('mediamarker.net', 'mediax_ss');
-	},
-	
-	post : function(ps){
-		if(!this.getAuthCookie())
-			throw new Error(getMessage('error.notLoggedin'));
-		
-		return request('http://mediamarker.net/reg', {
-			queryString : {
-				mode    : 'marklet',
-				url     : ps.itemUrl,
-				comment : ps.description,
-			}
-		}).addCallback(function(res){
-			var doc = convertToHTMLDocument(res.responseText);
-			var url = $x('id("reg")/@action', doc);
-			if(!url)
-				throw new Error(getMessage('error.alreadyExists'));
-			
-			return request(url, {
-				redirectionLimit : 0,
-				sendContent : update(formContents(doc), {
-					title : ps.item,
-					tag   : joinText(ps.tags, '\n'),
+
+	post(ps) {
+		return this.getInfo(ps.itemUrl).addCallback(({form, editURL}) => {
+			let comment = joinText([getQuoteFromPS(ps), ps.description], '\n'),
+				tag = joinText(ps.tags, '\n');
+
+			return request(form.action, {
+				responseType : 'document',
+				sendContent  : Object.assign(formContents(form), {
+					// タイトルはユーザー間で共有されるので送信しない
+					// title : ps.item || '',
+					// 対象のURLにリダイレクトされるのを防ぐ
+					reg2 : null
+				}, (editURL || comment) ? {
+					comment : comment
+				} : {}, (editURL || tag) ? {
+					tag : tag
+				} : {}, ps.private == null ? {} : {
+					public : ps.private ? '1' : '0'
 				})
 			});
+		}).addCallback(({response : doc}) => {
+			let message = doc.querySelector('.message');
+
+			if (message) {
+				this.checkMessRed(message);
+
+				throw new Error(getMessage('error.unknown'));
+			}
 		});
+	},
+
+	getInfo(url, params) {
+		return request(this.ORIGIN + '/reg', {
+			responseType : 'document',
+			queryString  : Object.assign({
+				mode : 'marklet',
+				url  : url
+			}, params)
+		}).addCallback(({response : doc}) => {
+			let form = doc.querySelector('form#reg');
+
+			return form ? {form} : request(this.getEditURL(doc), {
+				responseType : 'document'
+			}).addCallback(({response : editDoc}) => ({
+				form    : editDoc.querySelector('form#edit'),
+				editURL : editDoc.URL
+			}));
+		}).addCallback(info => {
+			let {form} = info;
+
+			if (form) {
+				let actionURL = form.action;
+
+				if (actionURL) {
+					let urlObj = new URL(actionURL);
+
+					if (
+						this.ORIGIN_RE.test(urlObj.origin) &&
+							/^\/u\/[^\/]+\/(?:reg|edit)$/.test(urlObj.pathname)
+					) {
+						return info;
+					}
+				}
+			}
+
+			throw new Error(getMessage('error.unknown'));
+		});
+	},
+
+	getEditURL(doc) {
+		let message = doc.querySelector('.message');
+
+		if (message) {
+			this.checkMessRed(message);
+
+			let link = message.querySelector('td > a[href]:nth-of-type(2)');
+
+			if (
+				link && this.ORIGIN_RE.test(link.origin) &&
+					/^\/u\/[^\/]+\/edit\d+$/.test(link.pathname)
+			) {
+				return link.href;
+			}
+		}
+
+		throw new Error(getMessage('error.unknown'));
+	},
+
+	checkMessRed(message) {
+		let messRed = message.querySelector('.message .mess_red');
+
+		if (messRed) {
+			throw new Error((messRed.firstChild || messRed).textContent.trim());
+		}
+	},
+
+	/**
+	 * ユーザーの利用しているタグ一覧を取得する。
+	 *
+	 * @return {Array}
+	 */
+	getUserTags() {
+		return this.getInfo(this.ORIGIN, {
+			again : 1
+		}).addCallback(info => {
+			return [...info.form.querySelectorAll('#usetag > #view1 > a')].map(
+				link => ({
+					name : link.textContent
+				})
+			);
+		}).addErrback(() => []);
+	},
+
+	getRecommendedTagsFromForm(form) {
+		return [...form.querySelectorAll('#poptag > a')].map(
+			link => link.textContent
+		);
+	},
+
+	/**
+	 * ユーザーのタグ、おすすめのタグを取得する。
+	 * ブックマーク済みでも取得できる。
+	 *
+	 * @param {String} url 関連情報を取得する対象のページURL。
+	 * @return {Object}
+	 */
+	getSuggestions(url) {
+		return new DeferredHash({
+			tags : this.getUserTags(),
+			info : this.getInfo(url)
+		}).addCallback(ress => {
+			let suggestions = {
+				tags : ress.tags[1]
+			};
+
+			if (ress.info[0]) {
+				let {form, editURL} = ress.info[1];
+
+				suggestions.recommended = this.getRecommendedTagsFromForm(form);
+				suggestions.duplicated = Boolean(editURL);
+
+				if (suggestions.duplicated) {
+					let data = formContents(form);
+
+					suggestions.form = Object.assign({
+						item        : data.title || '',
+						tags        : (data.tag || '').split('\n'),
+						description : data.comment || ''
+					}, data.public == null ? {} : {
+						private : data.public === '1'
+					});
+					suggestions.editPage = editURL;
+				}
+			}
+
+			return suggestions;
+		}).addErrback(() => ({}));
 	}
 });
 
