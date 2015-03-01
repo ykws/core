@@ -22,6 +22,12 @@
     configurable : true
   });
 
+  Object.expand(Array, {
+    wrap(target) {
+      return target == null ? [] : (Array.isArray(target) ? target : [target]);
+    }
+  });
+
   Object.expand(String.prototype, {
     indent(num, char) {
       return this.replace(/^/mg, (char || ' ').repeat(num));

@@ -64,6 +64,29 @@
     assert(Object.expand(obj, {}) === obj);
   }
 
+  {
+    assert(Array.isArray(Array.wrap()));
+    assert(Array.wrap().length === 0);
+    assert(Array.wrap(void 0).length === 0);
+    assert(Array.isArray(Array.wrap(null)));
+    assert(Array.wrap(null).length === 0);
+
+    let arr = [];
+
+    assert(Array.isArray(Array.wrap(arr)));
+    assert(Array.wrap(arr).length === 0);
+    assert(Array.wrap(arr) === arr);
+    assert(Array.wrap('"').length === 1);
+    assert(Array.wrap('test').length === 1);
+    assert(Array.wrap('test')[0] === 'test');
+    assert(Array.wrap('').length === 1);
+    assert(Array.wrap('')[0] === '');
+    assert(Array.wrap(0).length === 1);
+    assert(Array.wrap(false).length === 1);
+    assert(Array.wrap(['"']).length === 1);
+    assert(Array.wrap(['「', '」']).length === 2);
+  }
+
   assert('a'.indent(2) === '  a');
   assert('a'.indent(2, '	') === '		a');
   assert('a\na'.indent(2) === '  a\n  a');
