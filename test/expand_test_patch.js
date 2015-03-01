@@ -91,9 +91,28 @@
   assert('a'.indent(2, '	') === '		a');
   assert('a\na'.indent(2) === '  a\n  a');
   assert('a'.indent(0) === 'a');
+
+  assert('a'.wrap() === 'a');
+  assert('a'.wrap(void 0) === 'a');
+  assert('a'.wrap(null) === 'a');
+  assert('a'.wrap('') === 'a');
+  assert('a'.wrap('"') === '"a"');
+  assert('a'.wrap('\'') === '\'a\'');
   assert('a'.wrap('t') === 'tat');
+  assert('a'.wrap('t', void 0) === 'tat');
+  assert('a'.wrap('t', null) === 'tat');
   assert('a'.wrap('t', 's') === 'tas');
+  assert('a'.wrap('t', '') === 'ta');
+  assert('a'.wrap('', 's') === 'as');
+  assert('test'.wrap('[', ']') === '[test]');
+  assert('test'.wrap('「', '」') === '「test」');
+  assert('e'.wrap(0) === '0e0');
   assert('e'.wrap(9) === '9e9');
+  assert('e'.wrap(0, 0) === '0e0');
+  assert('e'.wrap(0, 1) === '0e1');
+  assert('e'.wrap(1, 0) === '1e0');
+  assert('true'.wrap(false) === 'falsetruefalse');
+
   assert('test'.extract(/^(t)e(st)$/) === 't');
   assert('test'.extract(/^(t)e(st)$/, 2) === 'st');
   assert('test'.capitalize() === 'Test');

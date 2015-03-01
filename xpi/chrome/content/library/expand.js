@@ -33,7 +33,9 @@
       return this.replace(/^/mg, (char || ' ').repeat(num));
     },
     wrap(prefix, suffix) {
-      return prefix + this + (suffix || prefix);
+      return prefix == null ? this : (
+        prefix + this + (suffix == null ? prefix : suffix)
+      );
     },
     extract(re, group) {
       let match = this.match(re);
