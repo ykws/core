@@ -14,11 +14,7 @@
      * @param {Boolean} after 追加対象の前に追加するか否か(後か)。
      */
     register(items, targetName, after) {
-      if (!items) {
-        return;
-      }
-
-      let defs = [].concat(items);
+      let defs = Array.wrap(items);
 
       if (!defs.length) {
         return;
