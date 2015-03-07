@@ -19,9 +19,9 @@ module.exports = function (grunt) {
         // 'xpi/chrome/content/library/extractors.js',
         // 'xpi/chrome/content/library/ui.js',
         // 'xpi/chrome/content/quickPostForm.js',
-        'xpi/chrome/content/changeAccount/changeAccount.js'
+        'xpi/chrome/content/changeAccount/changeAccount.js',
         // 'xpi/chrome/content/wsh.js',
-        // 'xpi/defaults/preferences/prefs.js'
+        'xpi/defaults/preferences/prefs.js'
       ],
       options: {
         jshintrc: '.jshintrc'
