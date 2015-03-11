@@ -2548,57 +2548,43 @@ Models.register(update({
 }, AbstractSessionService));
 
 
-Models.register(update({
+Models.register(Object.assign({
 	name    : 'Hatena',
 	ICON    : 'https://www.hatena.ne.jp/favicon.ico',
 	ORIGIN  : 'https://www.hatena.ne.jp',
-	API_URL : 'http://b.hatena.ne.jp/my.name',
+	API_URL : 'https://b.hatena.ne.jp/my.name',
 
-	getPasswords : function () {
-		return getPasswords(this.ORIGIN);
-	},
+	login(user, password) {
+		let modelName = this.name,
+			icon = this.ICON;
 
-	login : function (user, password) {
-		notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
+		notify(modelName, getMessage('message.changeAccount.login'), icon);
 
-		return (this.getAuthCookie() ? this.logout() : succeed()).addCallback(() => {
-			notify(this.name, getMessage('message.changeAccount.login'), this.ICON);
-
-			return request(this.ORIGIN + '/login', {
-				sendContent : {
-					name       : user,
-					password   : password,
-					persistent : 1
-				}
-			});
+		return request(this.ORIGIN + '/login', {
+			sendContent : {
+				name       : user,
+				password   : password,
+				persistent : 1
+			}
 		}).addCallback(() => {
-			this.updateSession();
-			this.user = user;
-
-			delete this.userInfo;
-
-			notify(this.name, getMessage('message.changeAccount.done'), this.ICON);
+			notify(modelName, getMessage('message.changeAccount.done'), icon);
 		});
 	},
 
-	logout : function () {
-		return request(this.ORIGIN + '/logout');
+	getPasswords() {
+		return getPasswords(this.ORIGIN);
 	},
 
-	getAuthCookie : function () {
-		return getCookieString('.hatena.ne.jp', 'rk');
+	getCurrentUser() {
+		return this.getInfo().addCallback(info => info.name);
 	},
 
-	getToken : function () {
-		return this.getUserInfo().addCallback(json => json.rks);
+	getToken() {
+		return this.getInfo().addCallback(info => info.rks);
 	},
 
-	getCurrentUser : function () {
-		return this.getUserInfo().addCallback(json => json.name);
-	},
-
-	getUserInfo : function () {
-		return this.getSessionValue('userInfo', () => {
+	getInfo() {
+		return this.getSessionValue('info', () => {
 			return request(this.API_URL, {
 				responseType : 'json'
 			}).addCallback(({response : json}) => {
@@ -2611,8 +2597,21 @@ Models.register(update({
 		});
 	},
 
-	reprTags: function (tags) {
-		return (tags || []).map(tag => tag.wrap('[', ']')).join('');
+	reprTags(tags) {
+		return Array.wrap(tags).length ?
+			tags.map(tag => tag.wrap('[', ']')).join('') :
+			'';
+	},
+
+	// via http://developer.hatena.ne.jp/ja/documents/auth/misc/rkm
+	getRKM() {
+		let rk = this.getAuthCookie();
+
+		return rk ? rk.md5(true).replace(/=+$/, '') : '';
+	},
+
+	getAuthCookie() {
+		return getCookieValue('.hatena.ne.jp', 'rk');
 	}
 }, AbstractSessionService));
 
@@ -2626,7 +2625,7 @@ Models.register({
 	},
 
 	post : function (ps) {
-		return Hatena.getUserInfo().addCallback(json => {
+		return Hatena.getInfo().addCallback(json => {
 			return (ps.file ?
 				succeed(ps.file) :
 				// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
@@ -2792,7 +2791,7 @@ Models.register( {
 	post : function(ps){
 		var self = this;
 		
-		return Hatena.getUserInfo().addCallback(function(info){
+		return Hatena.getInfo().addCallback(function(info){
 			var title = ps.item || ps.page || '';
 			var endpoint = [self.POST_URL, info.name, ''].join('/');
 			return request(endpoint, {
