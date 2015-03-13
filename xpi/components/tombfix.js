@@ -341,26 +341,6 @@
       exposeProperties(GM_Tombloo, true);
       exposeProperties(GM_Tombfix, true);
 
-      // Greasemonkeyサンドボックスの拡張
-      {
-        let gmService = Cc['@greasemonkey.mozdev.org/greasemonkey-service;1'];
-
-        if (gmService) {
-          let gmGlobal = Cu.getGlobalForObject(
-            gmService.getService().wrappedJSObject
-          );
-
-          env.addAround(gmGlobal, 'createSandbox', (proceed, args) => {
-            var sandbox = proceed(args);
-
-            sandbox.GM_Tombloo = GM_Tombloo;
-            sandbox.GM_Tombfix = GM_Tombfix;
-
-            return sandbox;
-          });
-        }
-      }
-
       // Scriptishサンドボックスの拡張
       try {
         let scope = Cu.import('resource://scriptish/api.js', {});
