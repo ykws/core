@@ -124,6 +124,20 @@
   assert('テスト'.convertFromUnicode('Shift_JIS') === 'eXg');
   assert('テスト'.convertFromUnicode('EUC-JP') === '¥Æ¥¹¥È');
   assert('テスト'.convertFromUnicode('iso-2022-jp') === '$B%F%9%H');
+
+  assert(''.md5() === 'd41d8cd98f00b204e9800998ecf8427e');
+  assert(''.md5(true) === '1B2M2Y8AsgTpgAmY7PhCfg==');
+  assert('a'.md5() === '0cc175b9c0f1b6a831c399e269772661');
+  assert('a'.md5(void 0) === '0cc175b9c0f1b6a831c399e269772661');
+  assert('a'.md5(null) === '0cc175b9c0f1b6a831c399e269772661');
+  assert('a'.md5(false) === '0cc175b9c0f1b6a831c399e269772661');
+  assert('a'.md5(false, 'UTF-8') === '0cc175b9c0f1b6a831c399e269772661');
+  assert('a'.md5(true) === 'DMF1ucDxtqgxw5niaXcmYQ==');
+  assert('a'.md5(true, 'UTF-8') === 'DMF1ucDxtqgxw5niaXcmYQ==');
+  assert('テスト'.md5() === 'b0f1c5a480f416234a803b35d9932c57');
+  assert('テスト'.md5(false, 'utf8') === 'b0f1c5a480f416234a803b35d9932c57');
+  assert('テスト'.md5(false, 'Shift_JIS') === '3f0326f4e56c3f4b54feede9071cafbf');
+
   assert('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === ':@/#?=+&;,$"テスト');
   assert('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'.unEscapeURI() === decodeURIComponent('%3A%40%2F%23%3F%3D%2B%26%3B%2C%24%22%E3%83%86%E3%82%B9%E3%83%88'));
   assert('abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()'.unEscapeURI() === 'abcdefghijklmnopqrstuvwxyz0123456789-_.!~*\'()');
