@@ -1867,17 +1867,6 @@ Models.register({
 		}).addCallback(({response : json}) => json);
 	},
 
-	md5(str, charset) {
-		let crypto = new CryptoHash(CryptoHash.MD5),
-			data = new UnicodeConverter(charset).convertToByteArray(str, {});
-
-		crypto.update(data, data.length);
-
-		return crypto.finish(false).split('').map(char =>
-			('0' + char.charCodeAt().toString(16)).slice(-2)
-		).join('');
-	},
-
 	getCompose(url) {
 		return request(this.API_URL + 'posts/compose', {
 			responseType : 'json',
@@ -1917,7 +1906,7 @@ Models.register({
 	 * @return {Array}
 	 */
 	getPopularTags(url) {
-		return request(this.API_URL + 'posts/md5/' + this.md5(url), {
+		return request(this.API_URL + 'posts/md5/' + url.md5(), {
 			responseType : 'json'
 		}).addCallback(({response : json}) => {
 			let {pkg} = json;
