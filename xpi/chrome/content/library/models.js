@@ -2665,40 +2665,45 @@ Models.register({
 	ICON   : 'chrome://tombfix/skin/favicon/hatenabookmark.png',
 	ORIGIN : 'http://b.hatena.ne.jp',
 
-	check : function (ps) {
-		if (/^(?:photo|quote|link|conversation|video)$/.test(ps.type)) {
-			if (ps.file) {
-				return ps.itemUrl;
-			}
-
-			return true;
-		}
+	check(ps) {
+		return /^(?:photo|quote|link|conversation|video)$/.test(ps.type) &&
+			(!ps.file || ps.itemUrl);
 	},
 
-	post : function (ps) {
+	post(ps) {
 		return Hatena.getToken().addCallback(token => {
-			var description = joinText([ps.body, ps.description], ' ', true);
-
 			// alternate: http://b.hatena.ne.jp/{username}/add.edit
 			return request(this.ORIGIN + '/bookmarklet.edit', {
-				sendContent : {
+				responseType : 'document',
+				sendContent  : Object.assign({
 					rks     : token,
-					url     : ps.itemUrl.replace(/%[0-9a-f]{2}/g, str => str.toUpperCase()),
-					// タイトルは共有されているため送信しない
-					title   : null,
-					// http://b.hatena.ne.jp/help/tag
-					comment : Hatena.reprTags(ps.tags) + description.replace(/[\n\r]+/g, ' '),
-					private : ps.private ? 1 : null
-				}
+					url     : ps.itemUrl,
+					// タイトルはユーザー間で共有されるので送信しない
+					// title   : ps.item || '',
+					// via http://b.hatena.ne.jp/help/entry/tag
+					comment : Hatena.reprTags(ps.tags) + joinText([
+						(ps.body || '').trimTag(),
+						ps.description
+					], ' ').replace(/[\r\n]+/g, ' ')
+				}, ps.private == null ? {} : {
+					private        : ps.private ? 1 : 0,
+					with_status_op : 1
+				})
 			});
+		}).addCallback(({response : doc}) => {
+			let errormsg = doc.querySelector('.errormsg');
+
+			if (errormsg) {
+				throw new Error(errormsg.textContent.trim());
+			}
 		});
 	},
 
-	getEntry : function (url) {
+	getEntry(url) {
 		return request(this.ORIGIN + '/my.entry', {
 			responseType : 'json',
-			queryString  : { url : url }
-		}).addCallback(res => res.response);
+			queryString  : {url}
+		}).addCallback(({response : json}) => json);
 	},
 
 	/**
@@ -2706,57 +2711,59 @@ Models.register({
 	 *
 	 * @return {Array}
 	 */
-	getUserTags : function (user) {
-		return request(this.ORIGIN + '/' + user + '/tags.json', {
+	getUserTags(user) {
+		// "http://b.hatena.ne.jp/my/tags.json" is slow.
+		return request(`${this.ORIGIN}/${user}/tags.json`, {
 			responseType : 'json'
-		}).addCallback(res => {
-			var {tags} = res.response;
-
-			return Object.keys(tags).map(tag => ({
+		}).addCallback(({response : json}) =>
+			Object.entries(json.tags).map(([tag, tagData]) => ({
 				name      : tag,
-				frequency : tags[tag].count
-			}));
-		});
+				frequency : tagData.count
+			}))
+		).addErrback(() => []);
 	},
 
 	/**
-	 * タグ、おすすめタグ、キーワードを取得する
-	 * ページURLが空の場合、タグだけが返される。
+	 * ユーザーのタグ、おすすめのタグを取得する。
+	 * ブックマーク済みでも取得できる。
 	 *
 	 * @param {String} url 関連情報を取得する対象のページURL。
 	 * @return {Object}
 	 */
-	getSuggestions : function (url) {
-		return Hatena.getCurrentUser().addCallback(user => {
-			return new DeferredHash({
-				tags  : this.getUserTags(user),
-				entry : this.getEntry(url)
-			});
-		}).addCallback(ress => {
-			var entry = ress.entry[1],
-				suggestions = {
-					tags        : ress.tags[1],
-					recommended : entry.recommend_tags,
-					duplicated  : entry.bookmarked_data
-				};
+	getSuggestions(url) {
+		return Hatena.getCurrentUser().addCallback(user => new DeferredHash({
+			tags  : this.getUserTags(user),
+			entry : this.getEntry(url)
+		})).addCallback(ress => {
+			let suggestions = {
+				tags : ress.tags[1]
+			};
 
-			if (suggestions.duplicated) {
-				update(suggestions, {
-					form     : {
+			if (ress.entry[0]) {
+				let entry = ress.entry[1];
+
+				suggestions.recommended = entry.recommend_tags;
+
+				let data = entry.bookmarked_data;
+
+				suggestions.duplicated = Boolean(data);
+
+				if (suggestions.duplicated) {
+					suggestions.form = Object.assign({
 						item        : entry.title,
-						tags        : entry.bookmarked_data.tags,
-						description : entry.bookmarked_data.comment,
-						private     : entry.bookmarked_data.private
-					},
-					editPage : this.ORIGIN + '/add' + queryString({
-						mode : 'confirm',
-						url  : url
-					}, true)
-				});
+						tags        : data.tags,
+						description : data.comment
+					}, data.private == null ? {} : {
+						private : data.private === '1'
+					});
+					// via http://b.hatena.ne.jp/register
+					suggestions.editPage = this.ORIGIN + '/bookmarklet' +
+						queryString({url}, true);
+				}
 			}
 
 			return suggestions;
-		});
+		}).addErrback(() => ({}));
 	}
 });
 
