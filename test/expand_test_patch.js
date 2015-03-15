@@ -87,6 +87,23 @@
     assert(Array.wrap(['「', '」']).length === 2);
   }
 
+  assert(Array.isArray(Object.entries()));
+  assert(Object.entries().length === 0);
+  assert(Object.entries(void 0).length === 0);
+  assert(Array.isArray(Object.entries(null)));
+  assert(Object.entries(null).length === 0);
+  assert(Object.entries({}).length === 0);
+  assert(Array.isArray(Object.entries({hoge : 0})));
+  assert(Object.entries({hoge : 0}).length === 1);
+  assert(Array.isArray(Object.entries({hoge : 0})[0]));
+  assert(Object.entries({hoge : 0})[0].length === 2);
+  assert(Object.entries({hoge : 0})[0][0] === 'hoge');
+  assert(Object.entries({hoge : 0})[0][1] === 0);
+  assert(Object.entries({hoge : 0, fuga : 1}).length === 2);
+  assert(Object.entries({hoge : 0, fuga : 1, piyo : 2}).length === 3);
+  assert(Object.entries({hoge : 0, fuga : 1, piyo : 2}).map(([, val]) => val).reduce((curr, prev) => curr + prev) === 3);
+  assert(Object.entries('hoge').map(([, val]) => val).join('') === 'hoge');
+
   assert('a'.indent(2) === '  a');
   assert('a'.indent(2, '	') === '		a');
   assert('a\na'.indent(2) === '  a\n  a');

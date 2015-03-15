@@ -28,6 +28,14 @@
     }
   });
 
+  Object.expand(Object, {
+    entries(target) {
+      return target == null ? [] : (
+        Object.keys(target).map(propName => [propName, target[propName]])
+      );
+    }
+  });
+
   Object.expand(String.prototype, {
     indent(num, char) {
       return this.replace(/^/mg, (char || ' ').repeat(num));
