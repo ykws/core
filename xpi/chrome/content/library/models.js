@@ -2620,27 +2620,38 @@ Models.register({
 	name : 'HatenaFotolife',
 	ICON : 'http://f.hatena.ne.jp/favicon.ico',
 
-	check : function (ps) {
+	check(ps) {
 		return ps.type === 'photo';
 	},
 
-	post : function (ps) {
-		return Hatena.getInfo().addCallback(json => {
-			return (ps.file ?
-				succeed(ps.file) :
-				// 拡張子を指定しないとアップロードに失敗する(エラーは起きない)
-				download(ps.itemUrl, getTempFile(createURI(ps.itemUrl).fileExtension))
-			).addCallback(file => {
-				return request('http://f.hatena.ne.jp/' + json.name + '/up', {
-					sendContent : {
+	post(ps) {
+		return Hatena.getInfo().addCallback(info => {
+			return getFileFromPS(ps).addCallback(file => {
+				// can't upload from "http://f.hatena.ne.jp/my/up"
+				return request(`http://f.hatena.ne.jp/${info.name}/up`, {
+					responseType : 'document',
+					sendContent  : {
 						mode       : 'enter',
-						rkm        : json.rkm,
-						// image1 - image5
-						// fototitle1 - fototitle5 (optional)
+						rkm        : info.rkm,
+						// can set a specific folder
+						// folder     : '',
+						// can set "image{2-5}" & "fototitle{2-5}" too
 						image1     : file,
-						fototitle1 : ps.item || ps.page,
-						folder     : '',
+						// can contain tags
+						fototitle1 : ps.item || '',
 						taglist    : Hatena.reprTags(ps.tags)
+					}
+				}).addCallback(({response : doc}) => {
+					if (!(new URL(doc.URL)).pathname.endsWith('/edit')) {
+						let message = doc.querySelector(
+							'.option-message > strong'
+						);
+
+						if (message) {
+							throw new Error(message.textContent.trim());
+						}
+
+						throw new Error(getMessage('error.unknown'));
 					}
 				});
 			});
