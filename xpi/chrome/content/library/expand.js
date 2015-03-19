@@ -29,6 +29,11 @@
   });
 
   Object.expand(Object, {
+    values(target) {
+      return target == null ? [] : (
+        Object.keys(target).map(propName => target[propName])
+      );
+    },
     entries(target) {
       return target == null ? [] : (
         Object.keys(target).map(propName => [propName, target[propName]])

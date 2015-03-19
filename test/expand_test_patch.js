@@ -87,6 +87,20 @@
     assert(Array.wrap(['「', '」']).length === 2);
   }
 
+  assert(Array.isArray(Object.values()));
+  assert(Object.values().length === 0);
+  assert(Object.values(void 0).length === 0);
+  assert(Array.isArray(Object.values(null)));
+  assert(Object.values(null).length === 0);
+  assert(Object.values({}).length === 0);
+  assert(Array.isArray(Object.values({hoge : '0'})));
+  assert(Object.values({hoge : '0'}).length === 1);
+  assert(Object.values({hoge : '0'})[0] === '0');
+  assert(Object.values({hoge : '0', fuga : '1'}).length === 2);
+  assert(Object.values({hoge : '0', fuga : '1', piyo : '2'}).length === 3);
+  assert(Object.values({hoge : '0', fuga : '1', piyo : '2'}).reduce((curr, prev) => curr + prev) === '012');
+  assert(Object.values('hoge').join('') === 'hoge');
+
   assert(Array.isArray(Object.entries()));
   assert(Object.entries().length === 0);
   assert(Object.entries(void 0).length === 0);
