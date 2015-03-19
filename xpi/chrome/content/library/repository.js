@@ -56,9 +56,7 @@
       }, []);
     },
     get values() {
-      return Object.keys(this).reduce((list, defName) => {
-        let def = this[defName];
-
+      return Object.values(this).reduce((list, def) => {
         if (def.name) {
           list.push(def);
         }
