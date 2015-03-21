@@ -12,7 +12,9 @@
 
     <!-- Front End MetaData -->
     <em:name>Tombfix</em:name>
-    <em:description>Tombfix is Fork of Tombloo. The main purpose is the maintenance of Tombloo.</em:description>
+    <em:description>
+      Tombfix is Fork of Tombloo. The main purpose is the maintenance of Tombloo. This can easily post various contents to various services.
+    </em:description>
     <em:creator>syoichi</em:creator>
     <em:contributor>iyoupapa</em:contributor>
     <em:contributor>eru</em:contributor>
