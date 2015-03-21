@@ -31,6 +31,9 @@ pref('extensions.tombfix.thumbnailTemplate', '');
 pref('extensions.tombfix.disableAllScripts', false);
 pref('extensions.tombfix.dataDir', '{ProfD}/tombfix');
 
+// Localize
+pref('extensions.tombfix@tombfix.github.io.description', 'chrome://tombfix/locale/extensions.properties');
+
 // Others
 pref('extensions.tombfix.ignoreCanonical', '^https?://(?:twitter\\.com|www\\.youtube\\.com|weheartit\\.com|vimeo\\.com)/');
 pref('extensions.tombfix.model.evernote.clipFullPage', true);
