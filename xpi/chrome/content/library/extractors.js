@@ -1819,29 +1819,71 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
 			return doc.querySelector('#watch7-user-header > .yt-user-info > a');
 		}
 	},
-	
+
 	{
-		name : 'Video - Dailymotion',
-		ICON : 'http://www.dailymotion.com/favicon.ico',
-		check : function(ctx){
-			return ctx.host.match('dailymotion.com') && this.getTag();
+		name          : 'Video - Dailymotion',
+		ICON          : 'https://www.dailymotion.com/favicon.ico',
+		ORIGIN        : 'https://www.dailymotion.com',
+		// via https://developer.dailymotion.com/documentation#graph-api
+		API_URL       : 'https://api.dailymotion.com',
+		VIDEO_PAGE_RE : new RegExp(
+			'^https?://(?:www\\.)?dailymotion\\.com/video/([\\da-z]+)',
+			'i'
+		),
+		SHORT_RE      : /^https?:\/\/(?:www\.)?dai\.ly\/([\da-z]+)/i,
+		check(ctx) {
+			return !ctx.selection && !(ctx.onImage && !ctx.onLink) &&
+				this.getVideoID(ctx);
 		},
-		extract : function(ctx){
-			var tag = this.getTag();
-			ctx.href = tag.extract(/href="(.+?)"/);
-			
-			return {
-				type    : 'video',
-				item    : ctx.title.extract(/Dailymotion - (.*?) - /),
-				itemUrl : ctx.href,
-				body    : tag.extract(/(<object.+object>)/),
-			};
+		extract(ctx) {
+			let videoID = this.getVideoID(ctx);
+
+			return this.getInfo(videoID).addCallback(info => {
+				let {title} = info;
+
+				ctx.title = title + ' - Dailymotion';
+				ctx.href = `${this.ORIGIN}/video/${videoID}`;
+
+				return {
+					type      : 'video',
+					item      : title,
+					itemUrl   : ctx.href,
+					author    : info['owner.screenname'],
+					authorUrl : `${this.ORIGIN}/${info['owner.username']}`
+				};
+			});
 		},
-		getTag : function(){
-			return $x('id("video_player_embed_code_text")/@value');
+		getVideoID(ctx) {
+			let targetURL = ctx.onLink ? ctx.link.href : ctx.href;
+
+			if (targetURL) {
+				let {href} = new URL(targetURL);
+
+				return href.extract(this.VIDEO_PAGE_RE) ||
+					href.extract(this.SHORT_RE);
+			}
 		},
+		getInfo(videoID) {
+			return request(`${this.API_URL}/video/${videoID}`, {
+				responseType : 'json',
+				queryString  : {
+					// via https://developer.dailymotion.com/documentation#fields-selection
+					fields : 'title,owner.screenname,owner.username'
+				}
+			}).addErrback(res => {
+				throw new Error(res.message.response.error.message);
+			}).addCallback(({response : json}) => {
+				let {error} = json;
+
+				if (error) {
+					throw new Error(error.message);
+				}
+
+				return json;
+			});
+		}
 	},
-	
+
 	{
 		name : 'Video - Nicovideo',
 		ICON : 'http://www.nicovideo.jp/favicon.ico',
