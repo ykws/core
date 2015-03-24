@@ -87,6 +87,35 @@
     assert(Array.wrap(['「', '」']).length === 2);
   }
 
+  {
+    assert(Object.type() === 'Undefined');
+    assert(Object.type(void 0) === 'Undefined');
+    assert(Object.type(null) === 'Null');
+    assert(Object.type(false) === 'Boolean');
+    assert(Object.type(0) === 'Number');
+    assert(Object.type('') === 'String');
+    assert(Object.type(new String('')) === 'String');
+    assert(Object.type([]) === 'Array');
+    assert(Object.type({}) === 'Object');
+    assert(Object.type(/(?:)/) === 'RegExp');
+    assert(Object.type(function () {}) === 'Function');
+    assert(Object.type(new Date()) === 'Date');
+    assert(Object.type(new Error()) === 'Error');
+    assert(Object.type(true) === 'Boolean');
+    assert(Object.type(NaN) === 'Number');
+    assert(Object.type(Infinity) === 'Number');
+    assert(Object.type(undefined) === 'Undefined');
+    assert(Object.type(Object.create(null)) === 'Object');
+    assert(Object.type('hoge') === 'String');
+    assert(Object.type(new String('hoge')) === 'String');
+
+    let str = new String('test');
+
+    Object.setPrototypeOf(str, null);
+
+    assert(Object.type(str) === 'String');
+  }
+
   assert(Array.isArray(Object.values()));
   assert(Object.values().length === 0);
   assert(Object.values(void 0).length === 0);

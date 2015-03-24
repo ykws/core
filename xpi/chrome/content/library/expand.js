@@ -29,6 +29,9 @@
   });
 
   Object.expand(Object, {
+    type(target) {
+      return Object.prototype.toString.call(target).slice(8, -1);
+    },
     values(target) {
       return target == null ? [] : (
         Object.keys(target).map(propName => target[propName])
