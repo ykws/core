@@ -506,6 +506,152 @@ Models.register(Object.assign({
 
 
 Models.register({
+	name    : 'Pinterest',
+	ICON    : 'https://www.pinterest.com/favicon.ico',
+	ORIGIN  : 'https://www.pinterest.com',
+	boardID : null,
+
+	check(ps) {
+		return /^(?:photo|video)$/.test(ps.type);
+	},
+
+	post(ps) {
+		return this.getBoardID().addCallback(boardID =>
+			this.getImageURL(ps).addCallback(imageURL =>
+				this.getResource('PinResource/create/', {
+					board_id    : boardID,
+					image_url   : imageURL,
+					link        : ps.pageUrl,
+					description : joinText([
+						ps.item,
+						ps.description,
+						Array.hashtags(ps.tags).join(' ')
+					], ' ')
+				})
+			)
+		);
+	},
+
+	getBoardID() {
+		return this.boardID ?
+			succeed(this.boardID) :
+			this.getBoards().addCallback(boards => {
+				let recBoards = boards.boards_shortlist;
+
+				return (recBoards.length ? recBoards : boards.all_boards)[0].id;
+			});
+	},
+
+	getImageURL(ps) {
+		return ps.type === 'video' ? this.findPinImages(ps.itemUrl).addCallback(
+			items => items[0].url
+		) : (ps.file ? this.upload(ps.file) : succeed(ps.itemUrl));
+	},
+
+	getBoards() {
+		return this.getResource('BoardPickerBoardsResource/get/', null, () => {
+			throw new Error(getMessage('error.notLoggedin'));
+		}).addCallback(data => {
+			if (!data.all_boards.length) {
+				throw new Error(getMessage('message.model.pinterest.board'));
+			}
+
+			return data;
+		});
+	},
+
+	findPinImages(url) {
+		return this.getResource('FindPinImagesResource/get/', {
+			url : url
+		}).addCallback(({items}) => {
+			if (!items.length) {
+				throw new Error(getMessage('error.contentsNotFound'));
+			}
+
+			return items;
+		});
+	},
+
+	upload(file) {
+		return this.callMethod('/upload-image/', {
+			img : file
+		}).addCallback(json => {
+			if (!json.success) {
+				throw new Error(json.error);
+			}
+
+			return json.image_url;
+		});
+	},
+
+	getResource(path, options, errback) {
+		return this.callMethod('/resource/' + path, options ? {
+			data : JSON.stringify({options})
+		} : null).addErrback(err => {
+			if (errback) {
+				errback();
+			}
+
+			let json = err.message.response;
+
+			if (json && json.resource_response) {
+				return json;
+			}
+
+			throw err;
+		}).addCallback(json => {
+			let {data, error} = json.resource_response;
+
+			if (!data || error) {
+				if (error) {
+					let {message} = error;
+
+					if (message) {
+						throw new Error(message);
+					}
+				}
+
+				throw new Error(getMessage('error.unknown'));
+			}
+
+			return data;
+		});
+	},
+
+	callMethod(method, content) {
+		return request(this.ORIGIN + method, {
+			responseType : 'json',
+			referrer     : this.ORIGIN,
+			headers      : {
+				'X-Requested-With' : 'XMLHttpRequest',
+				'X-CSRFToken'      : getCookieValue(
+					'.pinterest.com',
+					'csrftoken'
+				)
+			},
+			sendContent  : content
+		}).addCallback(({response : json}) => json);
+	}
+});
+
+
+Models.Pinterest.getBoards().addCallback(boards => {
+	let allBoards = boards.all_boards;
+
+	if (allBoards.length < 2) {
+		return;
+	}
+
+	Models.register(allBoards.map(board =>
+		Object.assign({}, Pinterest, {
+			name    : 'Pinterest - ' + board.name,
+			boardID : board.id
+		})
+	), 'Pinterest', true);
+}).addErrback(() => {});
+
+
+Models.register({
 	name : 'FFFFOUND',
 	ICON : 'http://ffffound.com/favicon.ico',
 	URL  : 'http://FFFFOUND.com/',
