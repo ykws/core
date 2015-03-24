@@ -2613,7 +2613,7 @@ function getFileFromPS(ps) {
 function getQuoteFromPS(ps, option) {
 	let {body} = ps;
 
-	if (!(Object(body) instanceof String && String(body))) {
+	if (!String.usable(body)) {
 		return '';
 	}
 
