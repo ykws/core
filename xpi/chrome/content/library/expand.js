@@ -44,6 +44,21 @@
     }
   });
 
+  Object.expand(String, {
+    usable(target) {
+      if (typeof target === 'string') {
+        return Boolean(target);
+      }
+      if (
+        Object.type(target) === 'String' && Object(target) instanceof String
+      ) {
+        return Boolean(String(target));
+      }
+
+      return false;
+    }
+  });
+
   Object.expand(String.prototype, {
     indent(num, char) {
       return this.replace(/^/mg, (char || ' ').repeat(num));

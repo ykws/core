@@ -147,6 +147,28 @@
   assert(Object.entries({hoge : 0, fuga : 1, piyo : 2}).map(([, val]) => val).reduce((curr, prev) => curr + prev) === 3);
   assert(Object.entries('hoge').map(([, val]) => val).join('') === 'hoge');
 
+  {
+    assert(String.usable() === false);
+    assert(String.usable(void 0) === false);
+    assert(String.usable(null) === false);
+    assert(String.usable(false) === false);
+    assert(String.usable(0) === false);
+    assert(String.usable([]) === false);
+    assert(String.usable({}) === false);
+    assert(String.usable(/(?:)/) === false);
+    assert(String.usable(Object.create(null)) === false);
+    assert(String.usable('') === false);
+    assert(String.usable(new String('')) === false);
+    assert(String.usable('hoge') === true);
+    assert(String.usable(new String('hoge')) === true);
+
+    let str = new String('test');
+
+    Object.setPrototypeOf(str, null);
+
+    assert(String.usable(str) === false);
+  }
+
   assert('a'.indent(2) === '  a');
   assert('a'.indent(2, '	') === '		a');
   assert('a\na'.indent(2) === '  a\n  a');
