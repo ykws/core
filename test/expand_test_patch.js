@@ -87,6 +87,53 @@
     assert(Array.wrap(['「', '」']).length === 2);
   }
 
+  assert(Array.isArray(Array.hashtags()));
+  assert(Array.hashtags().length === 0);
+  assert(Array.hashtags(void 0).length === 0);
+  assert(Array.isArray(Array.hashtags(null)));
+  assert(Array.hashtags(null).length === 0);
+  assert(Array.isArray(Array.hashtags(0)));
+  assert(Array.hashtags(0).length === 0);
+  assert(Array.isArray(Array.hashtags(false)));
+  assert(Array.hashtags(false).length === 0);
+  assert(Array.isArray(Array.hashtags('')));
+  assert(Array.hashtags('').length === 0);
+  assert(Array.isArray(Array.hashtags(new String(''))));
+  assert(Array.hashtags(new String('')).length === 0);
+  assert(Array.isArray(Array.hashtags({})));
+  assert(Array.hashtags({}).length === 0);
+  assert(Array.isArray(Array.hashtags('hoge')));
+  assert(Array.hashtags('hoge').length === 0);
+  assert(Array.isArray(Array.hashtags([])));
+  assert(Array.hashtags([]).length === 0);
+  assert(Array.isArray(Array.hashtags([void 0])));
+  assert(Array.hashtags([void 0]).length === 0);
+  assert(Array.isArray(Array.hashtags([null])));
+  assert(Array.hashtags([null]).length === 0);
+  assert(Array.isArray(Array.hashtags([''])));
+  assert(Array.hashtags(['']).length === 0);
+  assert(Array.isArray(Array.hashtags([0])));
+  assert(Array.hashtags([0]).length === 0);
+  assert(Array.isArray(Array.hashtags([false])));
+  assert(Array.hashtags([false]).length === 0);
+  assert(Array.isArray(Array.hashtags([{}])));
+  assert(Array.hashtags([{}]).length === 0);
+  assert(Array.isArray(Array.hashtags([[]])));
+  assert(Array.hashtags([[]]).length === 0);
+  assert(Array.isArray(Array.hashtags(['hoge'])));
+  assert(Array.hashtags(['hoge']).length === 1);
+  assert(Array.hashtags(['hoge'])[0] === '#hoge');
+  assert(Array.hashtags([new String('hoge')]).length === 1);
+  assert(Array.hashtags([new String('hoge')])[0] === '#hoge');
+  assert(Array.hashtags(['hoge', 'fuga']).length === 2);
+  assert(Array.hashtags(['hoge', 'fuga'])[0] === '#hoge');
+  assert(Array.hashtags(['hoge', 'fuga'])[1] === '#fuga');
+  assert(Array.hashtags(['hoge', '']).length === 1);
+  assert(Array.hashtags(['hoge', ''])[0] === '#hoge');
+  assert(Array.hashtags(['hoge', '#fuga']).length === 2);
+  assert(Array.hashtags(['hoge', '#fuga'])[0] === '#hoge');
+  assert(Array.hashtags(['hoge', '#fuga'])[1] === '#fuga');
+
   {
     assert(Object.type() === 'Undefined');
     assert(Object.type(void 0) === 'Undefined');

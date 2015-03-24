@@ -25,6 +25,15 @@
   Object.expand(Array, {
     wrap(target) {
       return target == null ? [] : (Array.isArray(target) ? target : [target]);
+    },
+    hashtags(tags) {
+      return Array.isArray(tags) && tags.length ? tags.reduce((list, tag) => {
+        if (String.usable(tag)) {
+          list.push(tag.startsWith('#') ? tag : '#' + tag);
+        }
+
+        return list;
+      }, []) : [];
     }
   });
 
