@@ -47,22 +47,10 @@
       }
     },
     check(...args) {
-      return this.values.reduce((list, def) => {
-        if (def.check && def.check(...args)) {
-          list.push(def);
-        }
-
-        return list;
-      }, []);
+      return this.values.filter(def => def.check && def.check(...args));
     },
     get values() {
-      return Object.values(this).reduce((list, def) => {
-        if (def.name) {
-          list.push(def);
-        }
-
-        return list;
-      }, []);
+      return Object.values(this).filter(def => def.name);
     }
   });
 
