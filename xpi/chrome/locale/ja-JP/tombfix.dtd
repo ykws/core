@@ -6,6 +6,7 @@
 
 <!ENTITY label.amazonAffiliateId "AmazonアフィリエイトID">
 <!ENTITY label.thumbnailTemplate "Linkポストのサムネイルテンプレート">
+<!ENTITY label.model.tumblr.secondaryBlogs "ポスト先にサブブログを追加する">
 <!ENTITY label.model.tumblr.queue "Textポスト以外は予約投稿に追加する">
 <!ENTITY label.model.tumblr.trimReblogInfo "Reblog情報を除去する">
 <!ENTITY label.model.tumblr.appendContentSource "ソース情報を付加する">

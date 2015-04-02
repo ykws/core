@@ -16,6 +16,7 @@ pref('extensions.tombfix.tagAutoComplete', true);
 pref('extensions.tombfix.ignoreError', '');
 
 // "Services"
+pref('extensions.tombfix.model.tumblr.secondaryBlogs', false);
 pref('extensions.tombfix.model.tumblr.queue', false);
 pref('extensions.tombfix.model.tumblr.trimReblogInfo', false);
 pref('extensions.tombfix.model.tumblr.appendContentSource', true);

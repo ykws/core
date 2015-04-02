@@ -76,6 +76,7 @@ this.models = Models;
 var Tumblr = update({}, AbstractSessionService, {
 	name : 'Tumblr',
 	ICON : 'http://www.tumblr.com/images/favicon.gif',
+	ORIGIN : 'https://www.tumblr.com',
 	TUMBLR_URL : 'http://www.tumblr.com/',
 	SVC_URL : 'https://www.tumblr.com/svc/',
 	
@@ -380,6 +381,80 @@ var Tumblr = update({}, AbstractSessionService, {
 		});
 	},
 
+	getBlogs() {
+		return new DeferredHash({
+			primaryblogID       : this.getPrimaryBlogID(),
+			postFormBuilderData : this.getPostFormBuilderData()
+		}).addCallback(({primaryblogID, postFormBuilderData}) => {
+			if (!primaryblogID[0]) {
+				throw primaryblogID[1];
+			}
+			if (!postFormBuilderData[0]) {
+				throw postFormBuilderData[1];
+			}
+
+			let blogs = postFormBuilderData[1].channels;
+
+			if (blogs.length < 2) {
+				return blogs;
+			}
+
+			let blogID = primaryblogID[1];
+
+			return blogs.splice(blogs.findIndex(
+				blog => blog.name === blogID
+			), 1).concat(blogs);
+		});
+	},
+
+	getPrimaryBlogID() {
+		return request(this.ORIGIN + '/settings/blog/', {
+			responseType : 'text'
+		}).addCallback(res => {
+			let {pathname} = new URL(res.responseURL);
+
+			if (pathname === '/login') {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+
+			let blogID = pathname.extract(/^\/settings\/blog\/([^\/]+)/);
+
+			if (blogID) {
+				return blogID;
+			}
+
+			throw new Error(getMessage('error.unknown'));
+		});
+	},
+
+	getPostFormBuilderData() {
+		return request(this.SVC_URL + 'post/get_post_form_builder_data', {
+			responseType : 'json'
+		}).addCallback(res => {
+			if ((new URL(res.responseURL)).pathname === '/login') {
+				throw new Error(getMessage('error.notLoggedin'));
+			}
+
+			let json = res.response;
+
+			if (json && json.meta) {
+				let {msg} = json.meta;
+
+				if (msg === 'OK') {
+					let {response} = json;
+
+					if (response) {
+						return response;
+					}
+				} else if (msg) {
+					throw new Error(msg);
+				}
+			}
+
+			throw new Error(getMessage('error.unknown'));
+		});
+	},
+
 	getReblogPostInfo(reblogID, reblogKey, postType) {
 		return request(this.SVC_URL + 'post/fetch', {
 			responseType : 'json',
@@ -399,6 +474,10 @@ var Tumblr = update({}, AbstractSessionService, {
 
 			throw new Error(json.error || getMessage('error.contentsNotFound'));
 		});
+	},
+
+	isLoggedIn() {
+		return getCookieValue('.tumblr.com', 'logged_in') === '1';
 	}
 });
 
@@ -509,6 +588,30 @@ request = function(url, opts){
 	
 	return request_(url, opts);
 };
+
+
+if (getPref('model.tumblr.secondaryBlogs') && Tumblr.isLoggedIn()) {
+	Tumblr.getBlogs().addCallback(blogs => {
+		if (blogs.length < 2) {
+			return;
+		}
+
+		Models.register(blogs.slice(1).map(({name : blogID}) => {
+			let copyModel = Object.assign({}, Tumblr, {
+				name : 'Tumblr - ' + blogID
+			});
+
+			addBefore(copyModel, 'appendTags', form => {
+				form.channel_id = blogID;
+			});
+
+			// 「アカウントの切り替え」に表示されないように
+			delete copyModel.getPasswords;
+
+			return copyModel;
+		}), 'Tumblr', true);
+	}).addErrback(() => {});
+}
 
 
 Models.register(Object.assign({
