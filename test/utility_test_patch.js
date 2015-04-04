@@ -209,5 +209,14 @@
     assert(getQuoteFromPS({type : 'quote', body : 'hoge'}, {wrap : [1, 0]}), '1hoge0');
   }
 
+  assert(isFavorite({}, 'Tumblr'), false);
+  assert(isFavorite({favorite : {}}, 'Tumblr'), false);
+  assert(isFavorite({favorite : {name : ''}}, 'Tumblr'), false);
+  assert(isFavorite({favorite : {name : 'Tumblr'}}, 'Tumblr '), false);
+  assert(isFavorite({favorite : {name : 'Tumblr'}}, 'Flickr'), false);
+  assert(isFavorite({favorite : {name : 'Tumblr'}}, 'Tumblr'));
+  assert(isFavorite({favorite : {name : 'Tumblr'}}, 'Tumblr - tombfix'));
+  assert(isFavorite({favorite : {name : 'Pinterest'}}, 'Pinterest - hoge fuga'));
+
   console.log(`${createURI(Components.stack.filename).fileName}'s ${assert.count} tests is done.`);
 }
