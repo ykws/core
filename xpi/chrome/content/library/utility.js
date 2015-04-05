@@ -2618,26 +2618,25 @@ function getQuoteFromPS(ps, option) {
 	}
 
 	let opt = Object.assign({
-			quoteOnly : true,
-			trimTag   : false,
-			trimSpace : false,
-			wrap      : '"'
-		}, option),
-		fav = ps.favorite;
+		quoteOnly : true,
+		trimTag   : false,
+		trimSpace : false,
+		wrap      : '"'
+	}, option);
 
 	if (opt.quoteOnly) {
 		if (
 			ps.type !== 'quote' || (
-				fav && fav.name === 'Tumblr' &&
-					fav.form['post[type]'] !== 'quote'
+				isFavorite(ps, 'Tumblr') &&
+					ps.favorite.form['post[type]'] !== 'quote'
 			)
 		) {
 			return '';
 		}
 	} else if (
 		!/^(?:quote|conversation)$/.test(ps.type) || (
-			fav && fav.name === 'Tumblr' &&
-				!/^(?:quote|conversation)$/.test(fav.form['post[type]'])
+			isFavorite(ps, 'Tumblr') &&
+				!/^(?:quote|conversation)$/.test(ps.favorite.form['post[type]'])
 		)
 	) {
 		body = body.trimTag();
