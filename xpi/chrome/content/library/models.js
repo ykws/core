@@ -1,5 +1,76 @@
-var Models, models;
-this.Models = this.models = Models = models = new Repository();
+let Models = this.Models = Object.create(Object.expand(new Repository(), {
+	/**
+	 * ポストを受け取ることができるサービスのリストを取得する。
+	 *
+	 * @param {Object} ps ポスト情報。
+	 * @return {Array}
+	 */
+	check(ps) {
+		return this.values.filter(model =>
+			isFavorite(ps, model.name) || (model.check && model.check(ps))
+		);
+	},
+	/**
+	 * デフォルトのサービスのリストを取得する。
+	 * ユーザーの設定が適用される。
+	 *
+	 * @param {Object} ps ポスト情報。
+	 * @return {Array}
+	 */
+	getDefaults(ps) {
+		let modelsConfig = JSON.parse(getPref('postConfig'));
+
+		return this.check(ps).filter(model =>
+			this.getPostConfig(modelsConfig, model.name, ps) === 'default'
+		);
+	},
+	/**
+	 * 利用可能なサービスのリストを取得する。
+	 * ユーザーの設定が適用される。
+	 *
+	 * @param {Object} ps ポスト情報。
+	 * @return {Array}
+	 */
+	getEnables(ps) {
+		let modelsConfig = JSON.parse(getPref('postConfig'));
+
+		return this.check(ps).filter(model => {
+			model.config = model.config || {};
+
+			// クイックポストフォームにて、取得後にデフォルトなのか利用可能なのかを
+			// 判定する必要があったため、サービスに設定値を保存し返す
+			let val = model.config[ps.type] =
+				this.getPostConfig(modelsConfig, model.name, ps);
+
+			return !val || /^(?:default|enabled)$/.test(val);
+		});
+	},
+	/**
+	 * ポスト設定値を文字列で取得する。
+	 *
+	 * @param {Object} modelsConfig ポスト設定。
+	 * @param {String} modelName サービス名。
+	 * @param {Object} ps ポスト情報。
+	 * @return {String}
+	 */
+	getPostConfig(modelsConfig, modelName, ps) {
+		let modelConfig = modelsConfig[modelName];
+
+		if (modelConfig) {
+			let val = modelConfig[
+				isFavorite(ps, modelName) ? 'favorite' : ps.type
+			];
+
+			if (typeof val === 'string') {
+				return val;
+			}
+		}
+
+		return '';
+	}
+}));
+// for Patch Compatibility
+this.models = Models;
 
 
 var Tumblr = update({}, AbstractSessionService, {
@@ -3329,66 +3400,6 @@ Models.register(Object.assign({}, Models['bit.ly'], {
 
 // 全てのサービスをグローバルコンテキストに置く(後方互換)
 Object.assign(this, Models);
-
-
-/**
- * ポストを受け取ることができるサービスのリストを取得する。
- * 
- * @param {Object} ps ポスト情報。
- * @return {Array}
- */
-Models.check = function(ps){
-	return this.values.filter(function(m){
-		if((ps.favorite && ps.favorite.name==m.name) || (m.check && m.check(ps)))
-			return true;
-	});
-}
-
-/**
- * デフォルトのサービスのリストを取得する。
- * ユーザーの設定が適用される。
- *
- * @param {Object} ps ポスト情報。
- * @return {Array}
- */
-Models.getDefaults = function(ps){
-	var config = JSON.parse(getPref('postConfig'));
-	return this.check(ps).filter(function(m){
-		return Models.getPostConfig(config, m.name, ps) == 'default';
-	});
-}
-
-/**
- * 利用可能なサービスのリストを取得する。
- * ユーザーの設定が適用される。
- *
- * @param {Object} ps ポスト情報。
- * @return {Array}
- */
-Models.getEnables = function(ps){
-	var config = JSON.parse(getPref('postConfig'));
-	return this.check(ps).filter(function(m){
-		m.config = (m.config || {});
-		
-		// クイックポストフォームにて、取得後にデフォルトなのか利用可能なのかを
-		// 判定する必要があったため、サービスに設定値を保存し返す
-		var val = m.config[ps.type] = Models.getPostConfig(config, m.name, ps);
-		return val==null || (/(default|enable)/).test(val);
-	});
-}
-
-/**
- * ポスト設定値を文字列で取得する。
- * 
- * @param {Object} config ポスト設定。
- * @param {String} name サービス名。
- * @param {Object} ps ポスト情報。
- * @return {String}
- */
-Models.getPostConfig = function(config, name, ps){
-	var c = config[name] || {};
-	return (ps.favorite && ps.favorite.name==name)? c.favorite : c[ps.type];
-}
 
 
 function shortenUrls(text, model){

@@ -23,8 +23,8 @@
     assert(typeof models, 'object');
     assert(Models, models);
     assert(Models instanceof Repository);
-    // assert(Object.getPrototypeOf(Models) !== Repository.prototype);
-    // assert(Object.keys(Models).length, Models.values.length);
+    assert(Object.getPrototypeOf(Models) !== Repository.prototype);
+    assert(Object.keys(Models).length, Models.values.length);
 
 
     assert(Models.check !== Repository.prototype.check);
@@ -44,7 +44,7 @@
       name : 'Tumblr - test'
     }), 'Tumblr', true);
 
-    // assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
+    assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
 
     delete Models['Tumblr - test'];
 
@@ -74,8 +74,8 @@
     setPref('postConfig', '{"Tumblr - test":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"default"}}');
 
     assert(Models.getDefaults({type : 'photo'}).length, 0);
-    // assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
-    // assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+    assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
+    assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
 
     delete Models['Tumblr - test'];
     Preferences.reset('extensions.tombfix.postConfig');
@@ -96,7 +96,7 @@
 
     assert(Models['Tumblr - test'].config, void 0);
     assert(Models.getEnables({type : 'photo'}).length, enablesLen + 1);
-    // assert(Models['Tumblr - test'].config.photo, '');
+    assert(Models['Tumblr - test'].config.photo, '');
 
     delete Models['Tumblr - test'];
 
@@ -108,7 +108,7 @@
     }), 'Tumblr', true);
 
     assert(Models.getEnables({type : 'photo'}).length, enablesLen + 1);
-    // assert(Models['Tumblr - test'].config.photo, '');
+    assert(Models['Tumblr - test'].config.photo, '');
 
     delete Models['Tumblr - test'];
 
@@ -120,7 +120,7 @@
     }), 'Tumblr', true);
 
     assert(Models.getEnables({type : 'photo'}).length, enablesLen + 1);
-    // assert(Models['Tumblr - test'].config.photo, '');
+    assert(Models['Tumblr - test'].config.photo, '');
 
     delete Models['Tumblr - test'];
 
@@ -136,25 +136,25 @@
 
     assert(Models.getEnables({type : 'photo'}).length, Models.check({type : 'photo'}).length);
     assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length - 1);
-    // assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+    assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
 
     setPref('postConfig', '{"Tumblr - test":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"disabled"}}');
 
     assert(Models.getEnables({type : 'photo'}).length, Models.check({type : 'photo'}).length);
-    // assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length - 1);
-    // assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+    assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length - 1);
+    assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
 
     setPref('postConfig', '{"Tumblr":{"regular":"disabled","photo":"disabled","quote":"disabled","link":"disabled","video":"disabled","conversation":"disabled","favorite":"default"}}');
 
     assert(Models.getEnables({type : 'photo'}).length, Models.check({type : 'photo'}).length - 1);
     assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length);
-    // assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
+    assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
 
     setPref('postConfig', '{"Tumblr - test":{"regular":"disabled","photo":"disabled","quote":"disabled","link":"disabled","video":"disabled","conversation":"disabled","favorite":"default"}}');
 
     assert(Models.getEnables({type : 'photo'}).length, Models.check({type : 'photo'}).length - 1);
-    // assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length);
-    // assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
+    assert(Models.getEnables({type : 'photo', favorite : {name : 'Tumblr'}}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length);
+    assert(Models.getEnables({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
 
     delete Models['Tumblr - test'];
     Preferences.reset('extensions.tombfix.postConfig');
@@ -175,14 +175,14 @@
     assert(Models.getPostConfig(modelsConfig, 'HatenaBookmark', {type : 'photo', favorite : {name : 'Tumblr'}}), 'disabled');
     assert(Models.getPostConfig(modelsConfig, 'HatenaBookmark', {type : 'photo'}), modelsConfig.HatenaBookmark.photo);
     assert(Models.getPostConfig(modelsConfig, 'HatenaBookmark', {type : 'photo', favorite : {name : 'Tumblr'}}), modelsConfig.HatenaBookmark.photo);
-    // assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo'}), '');
-    // assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo', favorite : {name : 'Tumblr'}}), '');
-    // assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo'}) !== modelsConfig.GoogleCalendar.photo);
-    // assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo', favorite : {name : 'Tumblr'}}) !== modelsConfig.GoogleCalendar.photo);
-    // assert(Models.getPostConfig(modelsConfig, 'Test', {type : 'photo'}), '');
-    // assert(Models.getPostConfig(modelsConfig, 'Test', {type : 'photo', favorite : {name : 'Tumblr'}}), '');
-    // assert(Models.getPostConfig(modelsConfig, 'Tumblr', {type : 'reblog'}), '');
-    // assert(Models.getPostConfig({}, 'Tumblr', {type : 'photo'}), '');
+    assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo'}), '');
+    assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo', favorite : {name : 'Tumblr'}}), '');
+    assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo'}) !== modelsConfig.GoogleCalendar.photo);
+    assert(Models.getPostConfig(modelsConfig, 'GoogleCalendar', {type : 'photo', favorite : {name : 'Tumblr'}}) !== modelsConfig.GoogleCalendar.photo);
+    assert(Models.getPostConfig(modelsConfig, 'Test', {type : 'photo'}), '');
+    assert(Models.getPostConfig(modelsConfig, 'Test', {type : 'photo', favorite : {name : 'Tumblr'}}), '');
+    assert(Models.getPostConfig(modelsConfig, 'Tumblr', {type : 'reblog'}), '');
+    assert(Models.getPostConfig({}, 'Tumblr', {type : 'photo'}), '');
 
     modelsConfig.Tumblr.favorite = 'enabled';
 
@@ -201,7 +201,7 @@
     modelsConfig['Tumblr - test'].favorite = 'enabled';
 
     assert(Models.getPostConfig(modelsConfig, 'Tumblr - test', {type : 'photo'}), 'default');
-    // assert(Models.getPostConfig(modelsConfig, 'Tumblr - test', {type : 'photo', favorite : {name : 'Tumblr'}}), 'enabled');
+    assert(Models.getPostConfig(modelsConfig, 'Tumblr - test', {type : 'photo', favorite : {name : 'Tumblr'}}), 'enabled');
   }
 
   console.log([
