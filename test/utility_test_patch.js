@@ -1,14 +1,18 @@
 {
   let assert = function assert(...args) {
     if (assert.count == null) {
-        assert.count = 1;
-    } else {
-        assert.count += 1;
+      assert.count = assert.passed = assert.failed = 0;
     }
+
+    assert.count += 1;
 
     let [target, val] = args.concat(true);
 
-    if (target !== val) {
+    if (target === val) {
+      assert.passed += 1;
+    } else {
+      assert.failed += 1;
+
       console.log(target, val);
       console.trace();
     }
@@ -218,5 +222,9 @@
   assert(isFavorite({favorite : {name : 'Tumblr'}}, 'Tumblr - tombfix'));
   assert(isFavorite({favorite : {name : 'Pinterest'}}, 'Pinterest - hoge fuga'));
 
-  console.log(`${createURI(Components.stack.filename).fileName}'s ${assert.count} tests is done.`);
+  console.log([
+    `${createURI(Components.stack.filename).fileName}'s ${assert.count} tests:`,
+    `  * pass: ${assert.passed}`,
+    `  * fail: ${assert.failed}`
+  ].join('\n'));
 }
