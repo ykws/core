@@ -2652,12 +2652,12 @@ function getQuoteFromPS(ps, option) {
 	return body ? body.wrap(...Array.wrap(opt.wrap)) : '';
 }
 
-function isFavorite({favorite}, target) {
+function isFavorite({favorite}, modelName) {
 	if (favorite) {
 		let favName = favorite.name;
 
 		if (favName) {
-			return (new RegExp('^' + favName + '(?: - .+)?$')).test(target);
+			return (new RegExp('^' + favName + '(?: - .+)?$')).test(modelName);
 		}
 	}
 
