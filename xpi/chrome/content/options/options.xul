@@ -167,10 +167,10 @@
               <column/>
             </columns>
             <rows>
-              <row>
+              <row class="accesskey-share">
                 <label value="&label.accesskey.share;"/>
                 <hbox>
-                  <textbox preference="accesskey.share" size="3" maxlength="1"/>
+                  <textbox preference="accesskey.share" maxlength="1"/>
                 </hbox>
               </row>
               <row>
@@ -186,20 +186,24 @@
                 <label value="&label.shortcutkey.quickPost.regular;"/>
                 <hbox>
                   <textbox
-                    preference="shortcutkey.quickPost.regular"
-                    size="35"/>
+                    class="medium-size"
+                    preference="shortcutkey.quickPost.regular"/>
                 </hbox>
               </row>
               <row>
                 <label value="&label.shortcutkey.quickPost.link;"/>
                 <hbox>
-                  <textbox preference="shortcutkey.quickPost.link" size="35"/>
+                  <textbox
+                    class="medium-size"
+                    preference="shortcutkey.quickPost.link"/>
                 </hbox>
               </row>
               <row>
                 <label value="&label.shortcutkey.checkAndPost;"/>
                 <hbox>
-                  <textbox preference="shortcutkey.checkAndPost" size="35"/>
+                  <textbox
+                    class="medium-size"
+                    preference="shortcutkey.checkAndPost"/>
                 </hbox>
               </row>
               <row class="tag-provider">
@@ -269,8 +273,8 @@
                           value="&label.extractor.photo.flickr.limitSize;"/>
                         <hbox>
                           <textbox
-                            preference="extractor.photo.flickr.limitSize"
-                            size="10"/>
+                            class="small-size"
+                            preference="extractor.photo.flickr.limitSize"/>
                         </hbox>
                         <spacer/>
                         <textbox value="&label.example; 3000" readonly="true"/>
@@ -296,8 +300,8 @@
                       <label value="&label.model.twitter.template.prefix;"/>
                       <hbox>
                         <textbox
+                          class="small-size"
                           preference="model.twitter.template.prefix"
-                          size="10"
                           maxlength="140"/>
                       </hbox>
                       <spacer/>
@@ -332,7 +336,7 @@
               <vbox>
                 <label value="&label.amazonAffiliateId;"/>
                 <hbox>
-                  <textbox preference="amazonAffiliateId" size="35"/>
+                  <textbox class="medium-size" preference="amazonAffiliateId"/>
                 </hbox>
               </vbox>
               <vbox>

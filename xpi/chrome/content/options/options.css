@@ -49,6 +49,18 @@ textbox[readonly="true"] {
   -moz-box-align: center;
 }
 
+.accesskey-share textbox {
+  width: 62px;
+}
+
+textbox.small-size {
+  width: 142px;
+}
+
+textbox.medium-size {
+  width: 429px;
+}
+
 .unequal-sep {
   margin-top: 0.6em;
   margin-right: 0;
