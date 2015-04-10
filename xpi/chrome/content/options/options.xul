@@ -110,7 +110,7 @@
       <tabpanels>
         <!-- "Post Config" -->
         <tabpanel class="post-config">
-          <tree id="posters" hidecolumnpicker="true" seltype="single">
+          <tree hidecolumnpicker="true" seltype="single">
             <treecols>
               <treecol class="cycle-header">
                 <vbox>
@@ -372,5 +372,9 @@
   <hbox class="resize">
     <resizer dir="bottomright"/>
   </hbox>
+  <script
+    type="application/javascript"
+    src="chrome://tombfix/content/library/expand.js">
+  </script>
   <script type="application/javascript" src="options.js"></script>
 </prefwindow>

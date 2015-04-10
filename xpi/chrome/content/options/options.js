@@ -1,315 +1,355 @@
-var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
-env.extend(this, env, false);
+/* global Components, keyString, cancel, observeMouseShortcut, FilePicker */
+/* global getDataDir, getProfileDir, Models, $x, AbstractTreeView, getPref */
+/* global setPref, AtomService, getMessage, getPrefValue, reload */
 
-var prefpane = document.getElementsByTagName('prefpane')[0];
-function getField(name){
-  return document.getElementsByAttribute('preference', name)[0];
-}
+(function executeOptions(global, win, doc) {
+  'use strict';
 
-function keyStringField(name, meta){
-  var elm = getField(name);
-  elm.addEventListener('keydown', function(e){
-    var key = keyString(e);
-    switch(key) {
-    case 'TAB':
-    case 'SHIFT + TAB':
-      return;
-    }
+  let env = Components.classes[
+    '@tombfix.github.io/tombfix-service;1'
+  ].getService().wrappedJSObject;
 
-    cancel(e);
-    elm.value = (key=='ESCAPE')? '' :
-      (meta)? key : key.split(' + ').pop();
-    prefpane.userChangedValue(elm);
-  }, true);
-}
+  env.extend(global, env, false);
 
-function mouseStringField(name){
-  var elm = getField(name);
-  observeMouseShortcut(elm, function(e, key){
-    elm.value = key;
-    prefpane.userChangedValue(elm);
+  let main = doc.querySelector('.main');
 
-    // 全てのキーを処理しなかったことにしてイベントが停止するのを避ける
-    return true;
-  });
-  elm.addEventListener('keydown', function(e){
-    switch(keyString(e)) {
-    case 'TAB':
-    case 'SHIFT + TAB':
-      return;
-
-    case 'ESCAPE':
-      elm.value = '';
-      prefpane.userChangedValue(elm);
-    }
-
-    cancel(e);
-  }, false);
-  elm.addEventListener('contextmenu', cancel, true);
-}
-
-mouseStringField('shortcutkey.checkAndPost');
-keyStringField('shortcutkey.quickPost.link', true);
-keyStringField('shortcutkey.quickPost.regular', true);
-keyStringField('accesskey.share', false);
-
-
-var elmDataDir = getField('dataDir');
-elmDataDir.nextSibling.addEventListener('command', function(){
-  var fp = new FilePicker(window, getMessage('label.dataDir'), FilePicker.modeGetFolder);
-  fp.displayDirectory = getDataDir();
-  if(fp.show() == fp.returnOK){
-    elmDataDir.value = fp.file.path.replace(getProfileDir().path, '{ProfD}');
-    prefpane.userChangedValue(elmDataDir);
+  function getField(prefName) {
+    return doc.getElementsByAttribute('preference', prefName)[0];
   }
-}, true)
 
-
-var tagProvider = document.getElementsByAttribute('preference', 'tagProvider')[0];
-for(var name in Models){
-  if(Models[name].getSuggestions){
-    var elmRadio = tagProvider.appendItem(name, name);
-
-    // ロード後にアイコンを設定するために保持する
-    // (アイコンのロードに失敗すると設定画面が開かないため)
-    elmRadio.src = Models[name].ICON;
+  function changeValue(elm, value) {
+    elm.value = value;
+    main.userChangedValue(elm);
   }
-}
 
-window.addEventListener('load', function(){
-  // スクリプト実行時点でprefpaneのコンストラクターからvalueが先に与えられているため、
-  // 後から追加したradioのチェックをつけることはできない。
-  // またロード中はradiogroup._getRadioChildrenに反映されていないため、
-  // valueの変更でチェックをつけることもできない。
-  tagProvider.value = tagProvider.value;
+  function keyStringField(prefName, meta) {
+    let elm = getField(prefName);
 
-  // 準備していたアイコンを設定する
-  // (Firefox側で問題が修正された後はこのコードは不要)
-  forEach(tagProvider.getElementsByTagName('radio'), function(elmRadio){
-    elmRadio.setAttribute('src', elmRadio.src);
-  });
-}, true)
+    elm.addEventListener('keydown', evt => {
+      let key = keyString(evt);
 
+      switch (key) {
+      case 'TAB':
+      case 'SHIFT + TAB':
+        return;
+      }
 
-function PosterTree(elmTree){
-  this.load();
+      cancel(evt);
+      changeValue(
+        elm,
+        key === 'ESCAPE' ? '' : (meta ? key : key.split(' + ').pop())
+      );
+    }, true);
+  }
 
-  this.elmTree = elmTree;
+  function mouseStringField(prefName) {
+    let elm = getField(prefName);
 
-  elmTree.addEventListener('click', bind('onClick', this), true);
-  elmTree.addEventListener('mousedown', bind('onMouseDown', this), true);
-  elmTree.addEventListener('mouseup', bind('onMouseUp', this), true);
-  elmTree.addEventListener('mouseout', bind('onMouseOut', this), true);
-  elmTree.addEventListener('mousemove', bind('onMouseMove', this), true);
-  elmTree.view = this;
+    observeMouseShortcut(elm, (evt, key) => {
+      changeValue(elm, key);
 
+      // 全てのキーを処理しなかったことにしてイベントが停止するのを避ける
+      return true;
+    });
 
-  this.elmToggle = $x('.//xul:treecol', elmTree);
-  this.elmToggle.image = $x('.//xul:image', this.elmToggle);
-  this.elmToggle.label = $x('.//xul:label', this.elmToggle);
-  this.elmToggle.closed = false;
-  this.cycleHeader({index : 0});
-}
-
-PosterTree.prototype = extend(new AbstractTreeView(), {
-  TYPES : 'regular photo quote link video conversation favorite'.split(' '),
-
-  resetData : function(rows){
-    // ロード以前はboxが存在しない
-    this.box && this.box.rowCountChanged(0, -this.rows.length);
-    this.rows = rows;
-    this.box && this.box.rowCountChanged(0, this.rows.length);
-  },
-
-  load : function(){
-    var self = this;
-    var configs = JSON.parse(getPref('postConfig'));
-
-    self.all = [];
-
-    values(Models).forEach(function(model){
-      // インターフェースが実装されているポスト対象のサービスでない場合は処理しない
-      if(!model.check)
+    elm.addEventListener('keydown', evt => {
+      switch (keyString(evt)) {
+      case 'TAB':
+      case 'SHIFT + TAB':
         return;
 
-      var row = [model.name];
-      row.icon = model.ICON;
+      case 'ESCAPE':
+        changeValue(elm, '');
+      }
 
-      var config = configs[model.name] || {};
-      self.TYPES.forEach(function(type){
-        var postable = (type=='favorite')? !!model.favor : model.check({
-          type : type,
-          pageUrl : {
-            match : function(){return true}
-          },
+      cancel(evt);
+    });
+    elm.addEventListener('contextmenu', cancel, true);
+  }
+
+  keyStringField('accesskey.share', false);
+  keyStringField('shortcutkey.quickPost.regular', true);
+  keyStringField('shortcutkey.quickPost.link', true);
+  mouseStringField('shortcutkey.checkAndPost');
+
+
+  win.addEventListener('load', () => {
+    let elmTagProvider = getField('tagProvider');
+
+    // ロード前にアイコンを設定すると、
+    // アイコンのロードに失敗した時に設定画面が開かなかったり、
+    // 問題がなくても開くのに時間がかかるため、ロード後にradioを追加してアイコンを設定する
+    for (let model of Models.values) {
+      if (model.getSuggestions) {
+        let modelName = model.name;
+
+        elmTagProvider.appendItem(modelName, modelName).setAttribute(
+          'src',
+          model.ICON
+        );
+      }
+    }
+
+    // スクリプト実行時点でprefpaneのコンストラクターからvalueが先に与えられているため、
+    // 後から追加したradioのチェックをつけることはできない。
+    // またロード中はradiogroup._getRadioChildrenに反映されていないため、
+    // valueの変更でチェックをつけることもできない。
+    elmTagProvider.value = elmTagProvider.value;
+  }, true);
+
+
+  let elmDataDir = getField('dataDir');
+
+  elmDataDir.nextElementSibling.addEventListener('command', () => {
+    let fp = new FilePicker(win, null, FilePicker.modeGetFolder);
+
+    fp.displayDirectory = getDataDir();
+
+    if (fp.show() === FilePicker.returnOK) {
+      changeValue(
+        elmDataDir,
+        fp.file.path.replace(getProfileDir().path, '{ProfD}')
+      );
+    }
+  }, true);
+
+
+  function ModelsTree(elmTree) {
+    this.load();
+
+    this.elmTree = elmTree;
+
+    elmTree.addEventListener('click', this, true);
+    elmTree.addEventListener('mousedown', this, true);
+    elmTree.addEventListener('mouseup', this, true);
+    elmTree.addEventListener('mouseout', this, true);
+    elmTree.addEventListener('mousemove', this, true);
+
+    elmTree.view = this;
+
+    this.elmToggle = $x('.//xul:treecol', elmTree);
+    this.elmToggle.image = $x('.//xul:image', this.elmToggle);
+    this.elmToggle.label = $x('.//xul:label', this.elmToggle);
+    this.elmToggle.closed = false;
+
+    this.cycleHeader({
+      index : 0
+    });
+  }
+
+  ModelsTree.prototype = Object.expand(new AbstractTreeView(), {
+    constructor : ModelsTree,
+
+    TYPES : [
+      'regular', 'photo', 'quote', 'link', 'video', 'conversation', 'favorite'
+    ],
+
+    load() {
+      let modelsConfig = JSON.parse(getPref('postConfig'));
+
+      this.all = Models.values.reduce((all, model) => {
+        // インターフェースが実装されているポスト対象のサービスでない場合は処理しない
+        if (model.check) {
+          let modelName = model.name,
+              modelConfig = modelsConfig[modelName];
+
+          all.push([modelName].concat(
+            this.TYPES.map(type => modelConfig ? (modelConfig[type] || '') : (
+              type === 'favorite' ? Boolean(model.favor) : model.check({
+                type    : type,
+                pageUrl : {
+                  match : () => true
+                }
+              })
+            ) ? 'enabled' : '')
+          ));
+        }
+
+        return all;
+      }, []);
+      this.rows = this.all.slice();
+    },
+    save() {
+      setPref('postConfig', JSON.stringify(this.all.reduce((target, row) => {
+        let clone = row.slice(),
+            modelConfig = target[clone.shift()] = {};
+
+        clone.forEach((val, idx) => {
+          if (val) {
+            modelConfig[this.TYPES[idx]] = val;
+          }
         });
-        row.push(config[type] || (postable? 'enabled' : null));
-      });
 
-      self.all.push(row);
-    });
+        return target;
+      }, {})));
+    },
 
-    self.rows = [].concat(self.all);
-  },
+    handleEvent(evt) {
+      let pos = this.getCellAt(evt);
 
-  save : function(){
-    var configs = {};
-    var self = this;
-    this.all.forEach(function(row){
-      var config = configs[row[0]] = {};
-      for(var j=1 ; j<row.length ; j++){
-        if(!row[j])
-          continue;
-        config[self.TYPES[j-1]] = row[j];
+      switch (evt.type) {
+      // cycleCellはmousedownで発生してしまうため使わない
+      case 'click':
+        // ドラッグ後のマウスアップではないか?
+        if (
+          pos && this.downed &&
+            this.downed.row === pos.row && this.downed.col === pos.col
+        ) {
+          let val = this.rows[pos.row][pos.col];
+
+          this.setProp(pos, val === 'default' ? 'enabled' : (
+            val === 'enabled' ? 'disabled' : 'default'
+          ));
+        }
+
+        break;
+      case 'mousedown':
+        if (pos) {
+          this.source = this.rows[pos.row][pos.col];
+          this.downed = pos;
+        }
+
+        break;
+      case 'mouseup':
+        delete this.source;
+
+        this.changeCursor(pos ? 'pointer' : '');
+
+        break;
+      case 'mouseout':
+        delete this.source;
+
+        break;
+      case 'mousemove':
+        if (!this.source) {
+          this.changeCursor(pos ? 'pointer' : '');
+
+          break;
+        }
+
+        this.changeCursor(
+          'url("chrome://tombfix/skin/' + this.source + '.png"), pointer'
+        );
+        this.setProp(pos, this.source);
+
+        break;
       }
-    });
+    },
 
-    setPref('postConfig', JSON.stringify(configs));
-  },
+    // DOM
+    getCellAt(evt) {
+      let rowObj = {}, colObj = {};
 
-  // DOM
-  changeCursor : function(cursor){
-    if(this.elmTree.style.cursor == cursor)
-      return;
+      this.box.getCellAt(evt.clientX, evt.clientY, rowObj, colObj, {});
 
-    this.elmTree.style.cursor = cursor;
-  },
+      if (colObj.value) {
+        let pos = {
+          row : rowObj.value,
+          col : colObj.value.index
+        };
 
-  setProp :function(pos, prop){
-    if(!pos)
-      return;
+        if (pos.col > 0) {
+          let row = this.rows[pos.row];
 
-    this.rows[pos.row][pos.col] = prop;
-    this.box.invalidateCell(pos.row, this.box.columns.getColumnAt(pos.col));
-  },
-
-  getCellAt : function(e){
-    var row={}, col={}, obj={};
-    this.box.getCellAt(e.clientX, e.clientY, row, col, obj);
-
-    if(!col.value)
-      return;
-
-    var pos = {
-      row : row.value,
-      col : col.value.index,
-    };
-    if(pos.col>0 && this.rows[pos.row] && this.rows[pos.row][pos.col])
-      return pos;
-  },
-
-  // cycleCellはmousedownで発生してしまうため使わない
-  onClick : function(e){
-    // ドラッグ後のマウスアップではないか?
-    var pos = this.getCellAt(e);
-    if(!pos || !this.downed || (this.downed.row!=pos.row || this.downed.col!=pos.col))
-      return;
-
-    var val = this.rows[pos.row][pos.col];
-    this.setProp(pos,
-      (val=='default')? 'enabled' :
-      (val=='enabled')? 'disabled' : 'default'
-    );
-  },
-
-  onMouseDown : function(e){
-    var pos = this.getCellAt(e);
-    if(!pos)
-      return;
-
-    this.source = this.rows[pos.row][pos.col];
-    this.downed = pos;
-  },
-
-  onMouseUp : function(e){
-    delete this.source;
-    this.changeCursor(this.getCellAt(e)? 'pointer' : '')
-  },
-
-  onMouseOut : function(e){
-    delete this.source;
-  },
-
-  onMouseMove : function(e){
-    var pos = this.getCellAt(e);
-    if(!this.source){
-      this.changeCursor(pos? 'pointer' : '');
-      return;
-    }
-
-    this.changeCursor('url(chrome://tombfix/skin/' + this.source + '.png), pointer');
-    this.setProp(pos, this.source);
-  },
-
-
-  // nsITreeView
-  get rowCount() {
-    return this.rows.length;
-  },
-
-  setTree : function(box) {
-    this.box = box;
-  },
-
-  getCellProperties : function(row, {index : col}, props){
-    var val = this.rows[row][col];
-    if (col!=0 && val) {
-      if (props) {
-        props.AppendElement(AtomService.getAtom(val));
-      } else {
-        return AtomService.getAtom(val);
+          if (row && row[pos.col]) {
+            return pos;
+          }
+        }
       }
+    },
+    setProp(pos, prop) {
+      if (pos) {
+        this.rows[pos.row][pos.col] = prop;
+        this.box.invalidateCell(pos.row, this.box.columns.getColumnAt(pos.col));
+      }
+    },
+    changeCursor(cursor) {
+      let treeStyle = this.elmTree.style;
+
+      if (treeStyle.cursor !== cursor) {
+        treeStyle.cursor = cursor;
+      }
+    },
+    resetData(rows) {
+      // ロード以前はboxが存在しない
+      if (this.box) {
+        this.box.rowCountChanged(0, -this.rows.length);
+      }
+
+      this.rows = rows;
+
+      if (this.box) {
+        this.box.rowCountChanged(0, this.rows.length);
+      }
+    },
+
+    // http://mxr.mozilla.org/mozilla-central/source/layout/xul/tree/nsITreeView.idl
+    get rowCount() {
+      return this.rows.length;
+    },
+    setTree(box) {
+      this.box = box;
+    },
+    getCellProperties(row, {index : col}) {
+      if (col !== 0) {
+        let val = this.rows[row][col];
+
+        if (val) {
+          return AtomService.getAtom(val);
+        }
+      }
+    },
+    getCellText(row, {index : col}) {
+      return this.rows[row][col];
+    },
+    getImageSrc(row, {index : col}) {
+      if (col === 0) {
+        return Models[this.rows[row][0]].ICON;
+      }
+    },
+    cycleHeader({index : col}) {
+      if (col !== 0) {
+        return;
+      }
+
+      let {elmToggle} = this,
+          opened = !elmToggle.closed;
+
+      elmToggle.image.src = 'chrome://global/skin/tree/' + (
+        opened ? 'twisty-clsd.png' : 'twisty-open.png'
+      );
+      elmToggle.label.value = getMessage(
+        opened ? 'label.openServices' : 'label.collapseServices'
+      );
+
+      this.resetData(opened ? this.all.reduce((rows, row) => {
+        if (row.some(cell => /^(?:default|enabled)$/.test(cell))) {
+          rows.push(row);
+        }
+
+        return rows;
+      }, []) : this.all.slice());
+
+      elmToggle.closed = opened;
     }
-  },
+  });
 
-  getCellText : function(row, {index : col}){
-    return this.rows[row][col];
-  },
+  let tree = new ModelsTree(doc.querySelector('.post-config > tree'));
 
-  getImageSrc : function(row, {index : col}){
-    if(col==0)
-      return this.rows[row].icon;
-  },
+  win.addEventListener(
+    getPrefValue('browser.preferences.instantApply') ?
+      'unload' :
+      'beforeaccept',
+    () => {
+      tree.save();
+    },
+    true
+  );
 
-  cycleHeader : function({index : col}){
-    if(col!=0)
-      return;
-
-    var elmToggle = this.elmToggle;
-    var closed = elmToggle.closed;
-    var button = closed? {
-      image : 'twisty-open.png',
-      label : getMessage('label.collapseServices'),
-    } : {
-      image : 'twisty-clsd.png',
-      label : getMessage('label.openServices'),
-    };
-    elmToggle.image.src = 'chrome://global/skin/tree/' + button.image;
-    elmToggle.label.value = button.label;
-
-    this.resetData(closed? [].concat(this.all) : reduce(function(memo, row){
-      var used = row.some(function(cell){
-        return (/(default|enable)/).test(cell);
-      });
-      if(used)
-        memo.push(row);
-
-      return memo;
-    }, this.all, []));
-
-    elmToggle.closed = !closed;
-  },
-});
-
-// MacではOK/キャンセルが表示されないため無条件にunloadで保存する
-var tree = new PosterTree(document.getElementById('posters'));
-window.addEventListener(AppInfo.OS.indexOf('WIN') == 0? 'beforeaccept' : 'unload', function(){
-  tree.save()
-}, true);
-
-// beforeaccept時点ではpreferenceが更新されていないためunloadを使う
-window.addEventListener('unload', function(){
-  // ショートカットキーの変更を反映させる
-  // タグのキャッシュもクリアされる
-  reload();
-}, true);
+  // beforeaccept時点ではpreferenceが更新されていないためunloadを使う
+  win.addEventListener('unload', () => {
+    // ショートカットキーの変更を反映させる
+    // タグのキャッシュもクリアされる
+    reload();
+  }, true);
+}(this, window, document));
