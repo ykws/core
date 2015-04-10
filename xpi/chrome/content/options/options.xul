@@ -5,8 +5,8 @@
 <prefwindow
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   title="&label.tombfixOptions;">
-  <hbox flex="1" pack="end">
-    <resizer dir="bottomright" style="cursor: se-resize;"/>
+  <hbox class="resize" flex="1" pack="end">
+    <resizer dir="bottomright"/>
   </hbox>
   <prefpane flex="1">
     <preferences>
@@ -114,7 +114,7 @@
         <tabpanel>
           <tree id="posters" hidecolumnpicker="true" seltype="single">
             <treecols>
-              <treecol flex="1" style="cursor: pointer;">
+              <treecol class="cycle-header" flex="1">
                 <vbox>
                   <image/>
                 </vbox>
@@ -184,7 +184,7 @@
                 <label value="&label.contextMenu.disableMenuShare;"/>
                 <checkbox preference="contextMenu.disableMenuShare"/>
               </row>
-              <separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;"/>
+              <separator class="groove-thin unequal-sep" width="1"/>
               <row align="center">
                 <label value="&label.shortcutkey.quickPost.regular;"/>
                 <hbox>
@@ -205,20 +205,20 @@
                   <textbox preference="shortcutkey.checkAndPost" size="35"/>
                 </hbox>
               </row>
-              <row align="center" style="margin-top: 0.7em;">
+              <row class="tag-provider" align="center">
                 <label value="&label.tagProvider;"/>
                 <radiogroup preference="tagProvider"/>
               </row>
-              <row align="center" style="margin: 0.7em 0 0.5em 0;">
+              <row class="tag-auto-complete" align="center">
                 <label value="&label.tagAutoComplete;"/>
                 <checkbox preference="tagAutoComplete"/>
               </row>
-              <separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;"/>
+              <separator class="groove-thin unequal-sep" width="1"/>
               <row align="center">
                 <label value="&label.ignoreError;"/>
                 <textbox preference="ignoreError"/>
               </row>
-              <row align="center" style="margin-top: -0.3em;">
+              <row class="ignore-error-example" align="center">
                 <spacer/>
                 <textbox
                   value="&label.example; (ffffound: (?!auth)|already)"
@@ -346,7 +346,7 @@
                   value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;"
                   readonly="true"/>
               </vbox>
-              <separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;"/>
+              <separator class="groove-thin equal-sep" width="1"/>
               <vbox>
                 <checkbox
                   label="&label.disableAllScripts;"

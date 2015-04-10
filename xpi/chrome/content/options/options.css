@@ -12,7 +12,7 @@ tabpanel {
   padding-left: 0.7em;
 }
 
-checkbox, radio, button, tab {
+checkbox, radio, button, tab, .cycle-header {
   cursor: pointer;
 }
 
@@ -22,6 +22,39 @@ textbox[readonly="true"] {
   -moz-user-focus: ignore !important;
   border: none !important;
   background-color: transparent !important;
+}
+
+.resize > resizer {
+  cursor: se-resize;
+}
+
+.unequal-sep {
+  margin-top: 0.6em;
+  margin-right: 0;
+  margin-bottom: 1.5em;
+  margin-left: 0;
+}
+
+.equal-sep {
+  margin-top: 1em;
+  margin-right: 0;
+  margin-bottom: 1em;
+  margin-left: 0;
+}
+
+.tag-provider {
+  margin-top: 0.7em;
+}
+
+.tag-auto-complete {
+  margin-top: 0.7em;
+  margin-right: 0;
+  margin-bottom: 0.5em;
+  margin-left: 0;
+}
+
+.ignore-error-example {
+  margin-top: -0.3em;
 }
 
 #posters {
