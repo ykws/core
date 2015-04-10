@@ -18,7 +18,6 @@ textbox[readonly=true] {
 	background-color : transparent !important;
 }
 
-
 #posters {
 	width : 48em;
 }
@@ -27,7 +26,6 @@ textbox[readonly=true] {
 	-moz-box-align : center;
 	-moz-box-pack : center;
 	width : 3.5em;
-	
 	/* Macで列ヘッダーの高さが広がらない問題に対応 */
 	height : 3.5em;
 }
@@ -62,7 +60,6 @@ textbox[readonly=true] {
 #posters treechildren::-moz-tree-image(disabled) {
 	list-style-image : url('chrome://tombfix/skin/disabled.png');
 }
-
 
 /* 選択行のハイライトを無効に */
 #posters treechildren::-moz-tree-cell-text(selected) {

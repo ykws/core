@@ -6,11 +6,9 @@
 	xmlns:html="http://www.w3.org/1999/xhtml"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	title="&label.tombfixOptions;" >
-	
 	<hbox flex="1" pack="end">
 		<resizer dir="bottomright" style="cursor: se-resize;" />
 	</hbox>
-	
 	<prefpane flex="1" id="main">
 		<preferences>
 			<preference
@@ -102,7 +100,6 @@
 				name="extensions.tombfix.dataDir"
 				type="string"/>
 		</preferences>
-		
 		<tabbox flex="1">
 			<tabs>
 				<tab label="&label.postConfig;"/>
@@ -297,7 +294,6 @@
 				</tabpanel>
 			</tabpanels>
 		</tabbox>
-
 		<script type="application/javascript" src="options.js"></script>
 	</prefpane>
 </prefwindow>

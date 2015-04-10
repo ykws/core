@@ -15,7 +15,7 @@ function keyStringField(name, meta){
 		case 'SHIFT + TAB':
 			return;
 		}
-		
+
 		cancel(e);
 		elm.value = (key=='ESCAPE')? '' :
 			(meta)? key : key.split(' + ').pop();
@@ -28,7 +28,7 @@ function mouseStringField(name){
 	observeMouseShortcut(elm, function(e, key){
 		elm.value = key;
 		prefpane.userChangedValue(elm);
-		
+
 		// 全てのキーを処理しなかったことにしてイベントが停止するのを避ける
 		return true;
 	});
@@ -37,12 +37,12 @@ function mouseStringField(name){
 		case 'TAB':
 		case 'SHIFT + TAB':
 			return;
-		
+
 		case 'ESCAPE':
 			elm.value = '';
 			prefpane.userChangedValue(elm);
 		}
-		
+
 		cancel(e);
 	}, false);
 	elm.addEventListener('contextmenu', cancel, true);
@@ -69,7 +69,7 @@ var tagProvider = document.getElementsByAttribute('preference', 'tagProvider')[0
 for(var name in Models){
 	if(Models[name].getSuggestions){
 		var elmRadio = tagProvider.appendItem(name, name);
-		
+
 		// ロード後にアイコンを設定するために保持する
 		// (アイコンのロードに失敗すると設定画面が開かないため)
 		elmRadio.src = Models[name].ICON;
@@ -82,7 +82,7 @@ window.addEventListener('load', function(){
 	// またロード中はradiogroup._getRadioChildrenに反映されていないため、
 	// valueの変更でチェックをつけることもできない。
 	tagProvider.value = tagProvider.value;
-	
+
 	// 準備していたアイコンを設定する
 	// (Firefox側で問題が修正された後はこのコードは不要)
 	forEach(tagProvider.getElementsByTagName('radio'), function(elmRadio){
@@ -93,17 +93,17 @@ window.addEventListener('load', function(){
 
 function PosterTree(elmTree){
 	this.load();
-	
+
 	this.elmTree = elmTree;
-	
+
 	elmTree.addEventListener('click', bind('onClick', this), true);
 	elmTree.addEventListener('mousedown', bind('onMouseDown', this), true);
 	elmTree.addEventListener('mouseup', bind('onMouseUp', this), true);
 	elmTree.addEventListener('mouseout', bind('onMouseOut', this), true);
 	elmTree.addEventListener('mousemove', bind('onMouseMove', this), true);
 	elmTree.view = this;
-	
-	
+
+
 	this.elmToggle = $x('.//xul:treecol', elmTree);
 	this.elmToggle.image = $x('.//xul:image', this.elmToggle);
 	this.elmToggle.label = $x('.//xul:label', this.elmToggle);
@@ -113,28 +113,28 @@ function PosterTree(elmTree){
 
 PosterTree.prototype = extend(new AbstractTreeView(), {
 	TYPES : 'regular photo quote link video conversation favorite'.split(' '),
-	
+
 	resetData : function(rows){
 		// ロード以前はboxが存在しない
 		this.box && this.box.rowCountChanged(0, -this.rows.length);
 		this.rows = rows;
 		this.box && this.box.rowCountChanged(0, this.rows.length);
 	},
-	
+
 	load : function(){
 		var self = this;
 		var configs = JSON.parse(getPref('postConfig'));
-		
+
 		self.all = [];
-		
+
 		values(Models).forEach(function(model){
 			// インターフェースが実装されているポスト対象のサービスでない場合は処理しない
 			if(!model.check)
 				return;
-			
+
 			var row = [model.name];
 			row.icon = model.ICON;
-			
+
 			var config = configs[model.name] || {};
 			self.TYPES.forEach(function(type){
 				var postable = (type=='favorite')? !!model.favor : model.check({
@@ -145,13 +145,13 @@ PosterTree.prototype = extend(new AbstractTreeView(), {
 				});
 				row.push(config[type] || (postable? 'enabled' : null));
 			});
-			
+
 			self.all.push(row);
 		});
-		
+
 		self.rows = [].concat(self.all);
 	},
-	
+
 	save : function(){
 		var configs = {};
 		var self = this;
@@ -163,33 +163,33 @@ PosterTree.prototype = extend(new AbstractTreeView(), {
 				config[self.TYPES[j-1]] = row[j];
 			}
 		});
-		
+
 		setPref('postConfig', JSON.stringify(configs));
 	},
-	
+
 	// DOM
 	changeCursor : function(cursor){
 		if(this.elmTree.style.cursor == cursor)
 			return;
-		
+
 		this.elmTree.style.cursor = cursor;
 	},
-	
+
 	setProp :function(pos, prop){
 		if(!pos)
 			return;
-		
+
 		this.rows[pos.row][pos.col] = prop;
 		this.box.invalidateCell(pos.row, this.box.columns.getColumnAt(pos.col));
 	},
-	
+
 	getCellAt : function(e){
 		var row={}, col={}, obj={};
 		this.box.getCellAt(e.clientX, e.clientY, row, col, obj);
-		
+
 		if(!col.value)
 			return;
-		
+
 		var pos = {
 			row : row.value,
 			col : col.value.index,
@@ -197,60 +197,60 @@ PosterTree.prototype = extend(new AbstractTreeView(), {
 		if(pos.col>0 && this.rows[pos.row] && this.rows[pos.row][pos.col])
 			return pos;
 	},
-	
+
 	// cycleCellはmousedownで発生してしまうため使わない
 	onClick : function(e){
 		// ドラッグ後のマウスアップではないか?
 		var pos = this.getCellAt(e);
 		if(!pos || !this.downed || (this.downed.row!=pos.row || this.downed.col!=pos.col))
 			return;
-		
+
 		var val = this.rows[pos.row][pos.col];
 		this.setProp(pos,
 			(val=='default')? 'enabled' :
 			(val=='enabled')? 'disabled' : 'default'
 		);
 	},
-	
+
 	onMouseDown : function(e){
 		var pos = this.getCellAt(e);
 		if(!pos)
 			return;
-		
+
 		this.source = this.rows[pos.row][pos.col];
 		this.downed = pos;
 	},
-	
+
 	onMouseUp : function(e){
 		delete this.source;
 		this.changeCursor(this.getCellAt(e)? 'pointer' : '')
 	},
-	
+
 	onMouseOut : function(e){
 		delete this.source;
 	},
-	
+
 	onMouseMove : function(e){
 		var pos = this.getCellAt(e);
 		if(!this.source){
 			this.changeCursor(pos? 'pointer' : '');
 			return;
 		}
-		
+
 		this.changeCursor('url(chrome://tombfix/skin/' + this.source + '.png), pointer');
 		this.setProp(pos, this.source);
 	},
-	
-	
+
+
 	// nsITreeView
 	get rowCount() {
 		return this.rows.length;
 	},
-	
+
 	setTree : function(box) {
 		this.box = box;
 	},
-	
+
 	getCellProperties : function(row, {index : col}, props){
 		var val = this.rows[row][col];
 		if (col!=0 && val) {
@@ -261,20 +261,20 @@ PosterTree.prototype = extend(new AbstractTreeView(), {
 			}
 		}
 	},
-	
+
 	getCellText : function(row, {index : col}){
 		return this.rows[row][col];
 	},
-	
+
 	getImageSrc : function(row, {index : col}){
 		if(col==0)
 			return this.rows[row].icon;
 	},
-	
+
 	cycleHeader : function({index : col}){
 		if(col!=0)
 			return;
-		
+
 		var elmToggle = this.elmToggle;
 		var closed = elmToggle.closed;
 		var button = closed? {
@@ -286,17 +286,17 @@ PosterTree.prototype = extend(new AbstractTreeView(), {
 		};
 		elmToggle.image.src = 'chrome://global/skin/tree/' + button.image;
 		elmToggle.label.value = button.label;
-		
+
 		this.resetData(closed? [].concat(this.all) : reduce(function(memo, row){
 			var used = row.some(function(cell){
 				return (/(default|enable)/).test(cell);
 			});
 			if(used)
 				memo.push(row);
-			
+
 			return memo;
 		}, this.all, []));
-		
+
 		elmToggle.closed = !closed;
 	},
 });
