@@ -5,10 +5,10 @@
 <prefwindow
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   title="&label.tombfixOptions;">
-  <hbox class="resize" flex="1" pack="end">
+  <hbox class="resize">
     <resizer dir="bottomright"/>
   </hbox>
-  <prefpane flex="1">
+  <prefpane class="main">
     <preferences>
       <!-- "Post" -->
       <preference
@@ -102,19 +102,19 @@
         name="extensions.tombfix.dataDir"
         type="string"/>
     </preferences>
-    <tabbox flex="1">
+    <tabbox>
       <tabs>
         <tab label="&label.postConfig;"/>
         <tab label="&label.post;"/>
         <tab label="&label.services;"/>
         <tab label="&label.entry;"/>
       </tabs>
-      <tabpanels flex="1">
+      <tabpanels>
         <!-- "Post Config" -->
         <tabpanel>
           <tree id="posters" hidecolumnpicker="true" seltype="single">
             <treecols>
-              <treecol class="cycle-header" flex="1">
+              <treecol class="cycle-header">
                 <vbox>
                   <image/>
                 </vbox>
@@ -152,40 +152,40 @@
               </treecol>
               <treecol cycler="true">
                 <hbox>
-                  <vbox align="center">
+                  <vbox class="has-labels">
                     <label value="Reblog"/>
                     <label value="Favorite"/>
                   </vbox>
                 </hbox>
               </treecol>
             </treecols>
-            <treechildren flex="1"/>
+            <treechildren/>
           </tree>
         </tabpanel>
         <!-- "Post" -->
-        <tabpanel>
-          <grid flex="1">
+        <tabpanel class="post">
+          <grid>
             <columns>
-              <column pack="end" align="end"/>
-              <column flex="1"/>
+              <column/>
+              <column/>
             </columns>
             <rows>
-              <row align="center">
+              <row>
                 <label value="&label.accesskey.share;"/>
                 <hbox>
                   <textbox preference="accesskey.share" size="3" maxlength="1"/>
                 </hbox>
               </row>
-              <row align="center">
+              <row>
                 <label value="&label.contextMenu.top;"/>
                 <checkbox preference="contextMenu.top"/>
               </row>
-              <row align="center">
+              <row>
                 <label value="&label.contextMenu.disableMenuShare;"/>
                 <checkbox preference="contextMenu.disableMenuShare"/>
               </row>
               <separator class="groove-thin unequal-sep" width="1"/>
-              <row align="center">
+              <row>
                 <label value="&label.shortcutkey.quickPost.regular;"/>
                 <hbox>
                   <textbox
@@ -193,32 +193,32 @@
                     size="35"/>
                 </hbox>
               </row>
-              <row align="center">
+              <row>
                 <label value="&label.shortcutkey.quickPost.link;"/>
                 <hbox>
                   <textbox preference="shortcutkey.quickPost.link" size="35"/>
                 </hbox>
               </row>
-              <row align="center">
+              <row>
                 <label value="&label.shortcutkey.checkAndPost;"/>
                 <hbox>
                   <textbox preference="shortcutkey.checkAndPost" size="35"/>
                 </hbox>
               </row>
-              <row class="tag-provider" align="center">
+              <row class="tag-provider">
                 <label value="&label.tagProvider;"/>
                 <radiogroup preference="tagProvider"/>
               </row>
-              <row class="tag-auto-complete" align="center">
+              <row class="tag-auto-complete">
                 <label value="&label.tagAutoComplete;"/>
                 <checkbox preference="tagAutoComplete"/>
               </row>
               <separator class="groove-thin unequal-sep" width="1"/>
-              <row align="center">
+              <row>
                 <label value="&label.ignoreError;"/>
                 <textbox preference="ignoreError"/>
               </row>
-              <row class="ignore-error-example" align="center">
+              <row class="ignore-error-example">
                 <spacer/>
                 <textbox
                   value="&label.example; (ffffound: (?!auth)|already)"
@@ -229,18 +229,18 @@
         </tabpanel>
         <!-- "Services" -->
         <tabpanel>
-          <tabbox flex="1">
+          <tabbox>
             <tabs>
               <tab label="Tumblr"/>
               <tab label="Flickr"/>
               <tab label="Twitter"/>
             </tabs>
-            <tabpanels flex="1">
+            <tabpanels>
               <tabpanel>
-                <grid flex="1">
+                <grid>
                   <columns>
-                    <column pack="end" align="end" orient="horizontal"/>
-                    <column flex="1"/>
+                    <column/>
+                    <column/>
                   </columns>
                   <rows>
                     <checkbox
@@ -259,10 +259,10 @@
                 </grid>
               </tabpanel>
               <tabpanel>
-                <grid flex="1">
+                <grid>
                   <columns>
-                    <column pack="end" align="end" orient="horizontal"/>
-                    <column flex="1"/>
+                    <column/>
+                    <column/>
                   </columns>
                   <rows>
                     <groupbox>
@@ -283,10 +283,10 @@
                 </grid>
               </tabpanel>
               <tabpanel>
-                <grid flex="1">
+                <grid>
                   <columns>
-                    <column pack="end" align="end" orient="horizontal"/>
-                    <column flex="1"/>
+                    <column/>
+                    <column/>
                   </columns>
                   <rows>
                     <checkbox
@@ -326,10 +326,10 @@
         </tabpanel>
         <!-- "Entry Contents / etc." -->
         <tabpanel>
-          <grid flex="1">
+          <grid>
             <columns>
-              <column pack="end" align="end" orient="horizontal"/>
-              <column flex="1"/>
+              <column/>
+              <column/>
             </columns>
             <rows>
               <vbox>
@@ -352,8 +352,8 @@
                   label="&label.disableAllScripts;"
                   preference="disableAllScripts"/>
                 <label value="&label.dataDir;"/>
-                <hbox>
-                  <textbox preference="dataDir" flex="1"/>
+                <hbox class="data-dir">
+                  <textbox preference="dataDir"/>
                   <button label="&label.browse;"/>
                 </hbox>
                 <spacer/>

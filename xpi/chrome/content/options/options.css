@@ -24,8 +24,38 @@ textbox[readonly="true"] {
   background-color: transparent !important;
 }
 
+.resize {
+  -moz-box-flex: 1;
+  -moz-box-pack: end;
+}
+
 .resize > resizer {
   cursor: se-resize;
+}
+
+.main,
+.main tabbox,
+.main tabpanels,
+.cycle-header,
+#posters > treechildren,
+.main tabpanels > tabpanel > grid,
+.main tabpanels > tabpanel > grid > columns > column + column,
+.data-dir > textbox {
+  -moz-box-flex: 1;
+}
+
+.main tabpanels > tabpanel > grid > columns > column {
+  -moz-box-align: end;
+  -moz-box-pack: end;
+}
+
+.main tabpanels > tabpanel:not(.post) > grid > columns > column {
+  -moz-box-orient: horizontal;
+}
+
+.has-labels,
+.post > grid > rows > row {
+  -moz-box-align: center;
 }
 
 .unequal-sep {
