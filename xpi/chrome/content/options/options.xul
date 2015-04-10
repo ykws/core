@@ -4,7 +4,8 @@
 <!DOCTYPE prefwindow SYSTEM "chrome://tombfix/locale/tombfix.dtd">
 <prefwindow
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  title="&label.tombfixOptions;">
+  title="&label.tombfixOptions;"
+  id="options">
   <prefpane class="main">
     <preferences>
       <!-- "Post" -->
