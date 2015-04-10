@@ -181,7 +181,7 @@
                 <label value="&label.contextMenu.disableMenuShare;"/>
                 <checkbox preference="contextMenu.disableMenuShare"/>
               </row>
-              <separator class="groove-thin unequal-sep" width="1"/>
+              <separator class="groove-thin unequal-sep"/>
               <row>
                 <label value="&label.shortcutkey.quickPost.regular;"/>
                 <hbox>
@@ -214,7 +214,7 @@
                 <label value="&label.tagAutoComplete;"/>
                 <checkbox preference="tagAutoComplete"/>
               </row>
-              <separator class="groove-thin unequal-sep" width="1"/>
+              <separator class="groove-thin unequal-sep"/>
               <row>
                 <label value="&label.ignoreError;"/>
                 <textbox preference="ignoreError"/>
@@ -347,7 +347,7 @@
                   value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;"
                   readonly="true"/>
               </vbox>
-              <separator class="groove-thin equal-sep" width="1"/>
+              <separator class="groove-thin equal-sep"/>
               <vbox>
                 <checkbox
                   label="&label.disableAllScripts;"
