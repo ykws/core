@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css" ?>
-<?xml-stylesheet href="chrome://tombfix/content/prefs.css" type="text/css" ?>
+<?xml-stylesheet href="chrome://tombfix/content/options/options.css" type="text/css" ?>
 <!DOCTYPE prefwindow SYSTEM "chrome://tombfix/locale/tombfix.dtd" >
 <prefwindow
 	xmlns:html="http://www.w3.org/1999/xhtml"
@@ -299,7 +299,7 @@
 		</tabbox>
 
 		<script><![CDATA[
-		// chrome://tombfix/content/prefs.xul
+		// chrome://tombfix/content/options/options.xul
 		var env = Components.classes['@tombfix.github.io/tombfix-service;1'].getService().wrappedJSObject;
 		env.extend(this, env, false);
 

@@ -100,7 +100,7 @@
       name : getMessage('label.action.tombfixOptions'),
       execute : function execute() {
         openDialog(
-          'chrome://tombfix/content/prefs.xul',
+          'chrome://tombfix/content/options/options.xul',
           'resizable,centerscreen'
         );
       }

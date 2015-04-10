@@ -187,7 +187,7 @@ Tombfix.Service = {
 	 * @param {String} type ポストタイプ。
 	 */
 	alertPreference : function(type){
-		var win = openDialog('chrome://tombfix/content/prefs.xul', 'resizable,centerscreen');
+		var win = openDialog('chrome://tombfix/content/options/options.xul', 'resizable,centerscreen');
 		win.addEventListener('load', function(){
 			// load時は、まだダイアログが表示されていない
 			setTimeout(function(){
