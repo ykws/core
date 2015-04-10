@@ -69,8 +69,8 @@ textbox[readonly="true"] {
   height: 3.5em;
 }
 
-.radio-icon,
-#posters > treechildren::-moz-tree-image {
+#posters > treechildren::-moz-tree-image,
+.tag-provider > radiogroup .radio-icon {
   height: 16px;
   width: 16px;
 }
