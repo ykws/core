@@ -3,297 +3,297 @@
 <?xml-stylesheet href="chrome://tombfix/content/options/options.css" type="text/css" ?>
 <!DOCTYPE prefwindow SYSTEM "chrome://tombfix/locale/tombfix.dtd" >
 <prefwindow
-	xmlns:html="http://www.w3.org/1999/xhtml"
-	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	title="&label.tombfixOptions;" >
-	<hbox flex="1" pack="end">
-		<resizer dir="bottomright" style="cursor: se-resize;" />
-	</hbox>
-	<prefpane flex="1" id="main">
-		<preferences>
-			<preference
-				id="model.tumblr.secondaryBlogs"
-				name="extensions.tombfix.model.tumblr.secondaryBlogs"
-				type="bool"/>
-			<preference
-				id="model.tumblr.queue"
-				name="extensions.tombfix.model.tumblr.queue"
-				type="bool"/>
-			<preference
-				id="model.tumblr.trimReblogInfo"
-				name="extensions.tombfix.model.tumblr.trimReblogInfo"
-				type="bool"/>
-			<preference
-				id="model.tumblr.appendContentSource"
-				name="extensions.tombfix.model.tumblr.appendContentSource"
-				type="bool"/>
-			<preference
-				id="extractor.photo.flickr.limitSize"
-				name="extensions.tombfix.extractor.photo.flickr.limitSize"
-				type="string"/>
-			<preference
-				id="model.twitter.showTweetLength"
-				name="extensions.tombfix.model.twitter.showTweetLength"
-				type="bool"/>
-			<preference
-				id="model.twitter.truncateStatus"
-				name="extensions.tombfix.model.twitter.truncateStatus"
-				type="bool"/>
-			<preference
-				id="model.twitter.template.prefix"
-				name="extensions.tombfix.model.twitter.template.prefix"
-				type="string"/>
-			<preference
-				id="model.twitter.template"
-				name="extensions.tombfix.model.twitter.template"
-				type="string"/>
-			<preference
-				id="amazonAffiliateId"
-				name="extensions.tombfix.amazonAffiliateId"
-				type="string"/>
-			<preference
-				id="thumbnailTemplate"
-				name="extensions.tombfix.thumbnailTemplate"
-				type="string"/>
-			<preference
-				id="ignoreError"
-				name="extensions.tombfix.ignoreError"
-				type="string"/>
-			<preference
-				id="accesskey.share"
-				name="extensions.tombfix.accesskey.share"
-				type="string"/>
-			<preference
-				id="contextMenu.top"
-				name="extensions.tombfix.contextMenu.top"
-				type="bool"/>
-			<preference
-				id="contextMenu.disableMenuShare"
-				name="extensions.tombfix.contextMenu.disableMenuShare"
-				type="bool"/>
-			<preference
-				id="shortcutkey.quickPost.link"
-				name="extensions.tombfix.shortcutkey.quickPost.link"
-				type="string"/>
-			<preference
-				id="shortcutkey.quickPost.regular"
-				name="extensions.tombfix.shortcutkey.quickPost.regular"
-				type="string"/>
-			<preference
-				id="shortcutkey.checkAndPost"
-				name="extensions.tombfix.shortcutkey.checkAndPost"
-				type="string"/>
-			<preference
-				id="tagProvider"
-				name="extensions.tombfix.tagProvider"
-				type="string"/>
-			<preference
-				id="tagAutoComplete"
-				name="extensions.tombfix.tagAutoComplete"
-				type="bool"/>
-			<preference
-				id="disableAllScripts"
-				name="extensions.tombfix.disableAllScripts"
-				type="bool"/>
-			<preference
-				id="dataDir"
-				name="extensions.tombfix.dataDir"
-				type="string"/>
-		</preferences>
-		<tabbox flex="1">
-			<tabs>
-				<tab label="&label.postConfig;"/>
-				<tab label="&label.post;"/>
-				<tab label="&label.services;"/>
-				<tab label="&label.entry;"/>
-			</tabs>
-			<tabpanels flex="1">
-				<tabpanel>
-					<tree id="posters" hidecolumnpicker="true" seltype="single" >
-						<treecols>
-							<treecol flex="1" style="cursor : pointer">
-								<vbox><image/></vbox><label/>
-							</treecol>
-							<treecol cycler="true"><hbox><label value="Text"/></hbox></treecol>
-							<treecol cycler="true"><hbox><label value="Photo"/></hbox></treecol>
-							<treecol cycler="true"><hbox><label value="Quote"/></hbox></treecol>
-							<treecol cycler="true"><hbox><label value="Link"/></hbox></treecol>
-							<treecol cycler="true"><hbox><label value="Video"/></hbox></treecol>
-							<treecol cycler="true"><hbox><label value="Chat"/></hbox></treecol>
-							<treecol cycler="true"><hbox><vbox align="center">
-								<label value="Reblog"/>
-								<label value="Favorite"/>
-							</vbox></hbox></treecol>
-						</treecols>
-						<treechildren flex="1" />
-					</tree>
-				</tabpanel>
-				<tabpanel>
-					<grid flex="1">
-						<columns>
-							<column pack="end" align="end"/>
-							<column flex="1"/>
-						</columns>
-						<rows>
-							<row align="center">
-								<label value="&label.accesskey.share;"/>
-								<hbox>
-									<textbox preference="accesskey.share" maxlength="1" size="3" />
-								</hbox>
-							</row>
-							<row align="center">
-								<label value="&label.contextMenu.top;" />
-								<checkbox preference="contextMenu.top" />
-							</row>
-							<row align="center">
-								<label value="&label.contextMenu.disableMenuShare;" />
-								<checkbox preference="contextMenu.disableMenuShare" />
-							</row>
-							<separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;" />
-							<row align="center">
-								<label value="&label.shortcutkey.quickPost.regular;" />
-								<hbox>
-									<textbox preference="shortcutkey.quickPost.regular" size="35"/>
-								</hbox>
-							</row>
-							<row align="center">
-								<label value="&label.shortcutkey.quickPost.link;" />
-								<hbox>
-									<textbox preference="shortcutkey.quickPost.link" size="35"/>
-								</hbox>
-							</row>
-							<row align="center">
-								<label value="&label.shortcutkey.checkAndPost;" />
-								<hbox>
-									<textbox preference="shortcutkey.checkAndPost" size="35"/>
-								</hbox>
-							</row>
-							<row align="center" style="margin-top: 0.7em;">
-								<label value="&label.tagProvider;" />
-								<radiogroup preference="tagProvider" />
-							</row>
-							<row align="center" style="margin: 0.7em 0 0.5em 0;">
-								<label value="&label.tagAutoComplete;" />
-								<checkbox preference="tagAutoComplete" />
-							</row>
-							<separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;" />
-							<row align="center">
-								<label value="&label.ignoreError;"/>
-								<textbox preference="ignoreError" />
-							</row>
-							<row align="center" style="margin-top: -0.3em;">
-								<spacer />
-								<textbox readonly="true" value="&label.example; (ffffound: (?!auth)|already)" />
-							</row>
-						</rows>
-					</grid>
-				</tabpanel>
-				<tabpanel>
-					<tabbox flex="1">
-						<tabs>
-							<tab label="Tumblr"/>
-							<tab label="Flickr"/>
-							<tab label="Twitter"/>
-						</tabs>
-						<tabpanels flex="1">
-							<tabpanel>
-								<grid flex="1">
-									<columns>
-										<column pack="end" align="end" orient="horizontal"/>
-										<column flex="1"/>
-									</columns>
-									<rows>
-										<checkbox label="&label.model.tumblr.secondaryBlogs;" preference="model.tumblr.secondaryBlogs" />
-										<checkbox label="&label.model.tumblr.queue;" preference="model.tumblr.queue" />
-										<checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
-										<checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
-									</rows>
-								</grid>
-							</tabpanel>
-							<tabpanel>
-								<grid flex="1">
-									<columns>
-										<column pack="end" align="end" orient="horizontal"/>
-										<column flex="1"/>
-									</columns>
-									<rows>
-										<groupbox>
-											<caption label="&quot;Photo - Flickr&quot; Extractor"/>
-											<vbox>
-												<label value="&label.extractor.photo.flickr.limitSize;"/>
-												<hbox>
-													<textbox preference="extractor.photo.flickr.limitSize" size="10"/>
-												</hbox>
-												<spacer/>
-												<textbox readonly="true" value="&label.example; 3000"/>
-											</vbox>
-										</groupbox>
-									</rows>
-								</grid>
-							</tabpanel>
-							<tabpanel>
-								<grid flex="1">
-									<columns>
-										<column pack="end" align="end" orient="horizontal"/>
-										<column flex="1"/>
-									</columns>
-									<rows>
-										<checkbox label="&label.model.twitter.showTweetLength;" preference="model.twitter.showTweetLength" />
-										<checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
-										<vbox>
-											<label value="&label.model.twitter.template.prefix;"/>
-											<hbox>
-												<textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
-											</hbox>
-											<spacer />
-											<textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
-										</vbox>
-										<vbox>
-											<label value="&label.model.twitter.template;"/>
-											<textbox preference="model.twitter.template" maxlength="140" />
-											<spacer />
-											<textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
-										</vbox>
-									</rows>
-								</grid>
-							</tabpanel>
-						</tabpanels>
-					</tabbox>
-				</tabpanel>
-				<tabpanel>
-					<grid flex="1">
-						<columns>
-							<column pack="end" align="end" orient="horizontal"/>
-							<column flex="1"/>
-						</columns>
-						<rows>
-							<vbox>
-								<label value="&label.amazonAffiliateId;"/>
-								<hbox>
-									<textbox preference="amazonAffiliateId" size="35" />
-								</hbox>
-							</vbox>
-							<vbox>
-								<label value="&label.thumbnailTemplate;"/>
-								<textbox preference="thumbnailTemplate" />
-								<spacer />
-								<textbox readonly="true" value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;" />
-							</vbox>
-							<separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
-							<vbox>
-								<checkbox label="&label.disableAllScripts;" preference="disableAllScripts" />
-								<label value="&label.dataDir;"/>
-								<hbox>
-									<textbox preference="dataDir" flex="1"/><button label="&label.browse;"/>
-								</hbox>
-								<spacer />
-								<textbox readonly="true" value="&label.example; {ProfD}/tombfix" />
-							</vbox>
-						</rows>
-					</grid>
-				</tabpanel>
-			</tabpanels>
-		</tabbox>
-		<script type="application/javascript" src="options.js"></script>
-	</prefpane>
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  title="&label.tombfixOptions;" >
+  <hbox flex="1" pack="end">
+    <resizer dir="bottomright" style="cursor: se-resize;" />
+  </hbox>
+  <prefpane flex="1" id="main">
+    <preferences>
+      <preference
+        id="model.tumblr.secondaryBlogs"
+        name="extensions.tombfix.model.tumblr.secondaryBlogs"
+        type="bool"/>
+      <preference
+        id="model.tumblr.queue"
+        name="extensions.tombfix.model.tumblr.queue"
+        type="bool"/>
+      <preference
+        id="model.tumblr.trimReblogInfo"
+        name="extensions.tombfix.model.tumblr.trimReblogInfo"
+        type="bool"/>
+      <preference
+        id="model.tumblr.appendContentSource"
+        name="extensions.tombfix.model.tumblr.appendContentSource"
+        type="bool"/>
+      <preference
+        id="extractor.photo.flickr.limitSize"
+        name="extensions.tombfix.extractor.photo.flickr.limitSize"
+        type="string"/>
+      <preference
+        id="model.twitter.showTweetLength"
+        name="extensions.tombfix.model.twitter.showTweetLength"
+        type="bool"/>
+      <preference
+        id="model.twitter.truncateStatus"
+        name="extensions.tombfix.model.twitter.truncateStatus"
+        type="bool"/>
+      <preference
+        id="model.twitter.template.prefix"
+        name="extensions.tombfix.model.twitter.template.prefix"
+        type="string"/>
+      <preference
+        id="model.twitter.template"
+        name="extensions.tombfix.model.twitter.template"
+        type="string"/>
+      <preference
+        id="amazonAffiliateId"
+        name="extensions.tombfix.amazonAffiliateId"
+        type="string"/>
+      <preference
+        id="thumbnailTemplate"
+        name="extensions.tombfix.thumbnailTemplate"
+        type="string"/>
+      <preference
+        id="ignoreError"
+        name="extensions.tombfix.ignoreError"
+        type="string"/>
+      <preference
+        id="accesskey.share"
+        name="extensions.tombfix.accesskey.share"
+        type="string"/>
+      <preference
+        id="contextMenu.top"
+        name="extensions.tombfix.contextMenu.top"
+        type="bool"/>
+      <preference
+        id="contextMenu.disableMenuShare"
+        name="extensions.tombfix.contextMenu.disableMenuShare"
+        type="bool"/>
+      <preference
+        id="shortcutkey.quickPost.link"
+        name="extensions.tombfix.shortcutkey.quickPost.link"
+        type="string"/>
+      <preference
+        id="shortcutkey.quickPost.regular"
+        name="extensions.tombfix.shortcutkey.quickPost.regular"
+        type="string"/>
+      <preference
+        id="shortcutkey.checkAndPost"
+        name="extensions.tombfix.shortcutkey.checkAndPost"
+        type="string"/>
+      <preference
+        id="tagProvider"
+        name="extensions.tombfix.tagProvider"
+        type="string"/>
+      <preference
+        id="tagAutoComplete"
+        name="extensions.tombfix.tagAutoComplete"
+        type="bool"/>
+      <preference
+        id="disableAllScripts"
+        name="extensions.tombfix.disableAllScripts"
+        type="bool"/>
+      <preference
+        id="dataDir"
+        name="extensions.tombfix.dataDir"
+        type="string"/>
+    </preferences>
+    <tabbox flex="1">
+      <tabs>
+        <tab label="&label.postConfig;"/>
+        <tab label="&label.post;"/>
+        <tab label="&label.services;"/>
+        <tab label="&label.entry;"/>
+      </tabs>
+      <tabpanels flex="1">
+        <tabpanel>
+          <tree id="posters" hidecolumnpicker="true" seltype="single" >
+            <treecols>
+              <treecol flex="1" style="cursor : pointer">
+                <vbox><image/></vbox><label/>
+              </treecol>
+              <treecol cycler="true"><hbox><label value="Text"/></hbox></treecol>
+              <treecol cycler="true"><hbox><label value="Photo"/></hbox></treecol>
+              <treecol cycler="true"><hbox><label value="Quote"/></hbox></treecol>
+              <treecol cycler="true"><hbox><label value="Link"/></hbox></treecol>
+              <treecol cycler="true"><hbox><label value="Video"/></hbox></treecol>
+              <treecol cycler="true"><hbox><label value="Chat"/></hbox></treecol>
+              <treecol cycler="true"><hbox><vbox align="center">
+                <label value="Reblog"/>
+                <label value="Favorite"/>
+              </vbox></hbox></treecol>
+            </treecols>
+            <treechildren flex="1" />
+          </tree>
+        </tabpanel>
+        <tabpanel>
+          <grid flex="1">
+            <columns>
+              <column pack="end" align="end"/>
+              <column flex="1"/>
+            </columns>
+            <rows>
+              <row align="center">
+                <label value="&label.accesskey.share;"/>
+                <hbox>
+                  <textbox preference="accesskey.share" maxlength="1" size="3" />
+                </hbox>
+              </row>
+              <row align="center">
+                <label value="&label.contextMenu.top;" />
+                <checkbox preference="contextMenu.top" />
+              </row>
+              <row align="center">
+                <label value="&label.contextMenu.disableMenuShare;" />
+                <checkbox preference="contextMenu.disableMenuShare" />
+              </row>
+              <separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;" />
+              <row align="center">
+                <label value="&label.shortcutkey.quickPost.regular;" />
+                <hbox>
+                  <textbox preference="shortcutkey.quickPost.regular" size="35"/>
+                </hbox>
+              </row>
+              <row align="center">
+                <label value="&label.shortcutkey.quickPost.link;" />
+                <hbox>
+                  <textbox preference="shortcutkey.quickPost.link" size="35"/>
+                </hbox>
+              </row>
+              <row align="center">
+                <label value="&label.shortcutkey.checkAndPost;" />
+                <hbox>
+                  <textbox preference="shortcutkey.checkAndPost" size="35"/>
+                </hbox>
+              </row>
+              <row align="center" style="margin-top: 0.7em;">
+                <label value="&label.tagProvider;" />
+                <radiogroup preference="tagProvider" />
+              </row>
+              <row align="center" style="margin: 0.7em 0 0.5em 0;">
+                <label value="&label.tagAutoComplete;" />
+                <checkbox preference="tagAutoComplete" />
+              </row>
+              <separator class="groove-thin" width="1" style="margin: 0.6em 0 1.5em 0;" />
+              <row align="center">
+                <label value="&label.ignoreError;"/>
+                <textbox preference="ignoreError" />
+              </row>
+              <row align="center" style="margin-top: -0.3em;">
+                <spacer />
+                <textbox readonly="true" value="&label.example; (ffffound: (?!auth)|already)" />
+              </row>
+            </rows>
+          </grid>
+        </tabpanel>
+        <tabpanel>
+          <tabbox flex="1">
+            <tabs>
+              <tab label="Tumblr"/>
+              <tab label="Flickr"/>
+              <tab label="Twitter"/>
+            </tabs>
+            <tabpanels flex="1">
+              <tabpanel>
+                <grid flex="1">
+                  <columns>
+                    <column pack="end" align="end" orient="horizontal"/>
+                    <column flex="1"/>
+                  </columns>
+                  <rows>
+                    <checkbox label="&label.model.tumblr.secondaryBlogs;" preference="model.tumblr.secondaryBlogs" />
+                    <checkbox label="&label.model.tumblr.queue;" preference="model.tumblr.queue" />
+                    <checkbox label="&label.model.tumblr.trimReblogInfo;" preference="model.tumblr.trimReblogInfo" />
+                    <checkbox label="&label.model.tumblr.appendContentSource;" preference="model.tumblr.appendContentSource" />
+                  </rows>
+                </grid>
+              </tabpanel>
+              <tabpanel>
+                <grid flex="1">
+                  <columns>
+                    <column pack="end" align="end" orient="horizontal"/>
+                    <column flex="1"/>
+                  </columns>
+                  <rows>
+                    <groupbox>
+                      <caption label="&quot;Photo - Flickr&quot; Extractor"/>
+                      <vbox>
+                        <label value="&label.extractor.photo.flickr.limitSize;"/>
+                        <hbox>
+                          <textbox preference="extractor.photo.flickr.limitSize" size="10"/>
+                        </hbox>
+                        <spacer/>
+                        <textbox readonly="true" value="&label.example; 3000"/>
+                      </vbox>
+                    </groupbox>
+                  </rows>
+                </grid>
+              </tabpanel>
+              <tabpanel>
+                <grid flex="1">
+                  <columns>
+                    <column pack="end" align="end" orient="horizontal"/>
+                    <column flex="1"/>
+                  </columns>
+                  <rows>
+                    <checkbox label="&label.model.twitter.showTweetLength;" preference="model.twitter.showTweetLength" />
+                    <checkbox label="&label.model.twitter.truncateStatus;" preference="model.twitter.truncateStatus" />
+                    <vbox>
+                      <label value="&label.model.twitter.template.prefix;"/>
+                      <hbox>
+                        <textbox preference="model.twitter.template.prefix" size="10" maxlength="140" />
+                      </hbox>
+                      <spacer />
+                      <textbox readonly="true" value="&label.example; &label.model.twitter.example.template.prefix;" />
+                    </vbox>
+                    <vbox>
+                      <label value="&label.model.twitter.template;"/>
+                      <textbox preference="model.twitter.template" maxlength="140" />
+                      <spacer />
+                      <textbox readonly="true" value="&label.example; %desc% %quote% %title% %url%%br%%tags% [via Template]" />
+                    </vbox>
+                  </rows>
+                </grid>
+              </tabpanel>
+            </tabpanels>
+          </tabbox>
+        </tabpanel>
+        <tabpanel>
+          <grid flex="1">
+            <columns>
+              <column pack="end" align="end" orient="horizontal"/>
+              <column flex="1"/>
+            </columns>
+            <rows>
+              <vbox>
+                <label value="&label.amazonAffiliateId;"/>
+                <hbox>
+                  <textbox preference="amazonAffiliateId" size="35" />
+                </hbox>
+              </vbox>
+              <vbox>
+                <label value="&label.thumbnailTemplate;"/>
+                <textbox preference="thumbnailTemplate" />
+                <spacer />
+                <textbox readonly="true" value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;" />
+              </vbox>
+              <separator class="groove-thin" width="1" style="margin: 1em 0 1em 0;" />
+              <vbox>
+                <checkbox label="&label.disableAllScripts;" preference="disableAllScripts" />
+                <label value="&label.dataDir;"/>
+                <hbox>
+                  <textbox preference="dataDir" flex="1"/><button label="&label.browse;"/>
+                </hbox>
+                <spacer />
+                <textbox readonly="true" value="&label.example; {ProfD}/tombfix" />
+              </vbox>
+            </rows>
+          </grid>
+        </tabpanel>
+      </tabpanels>
+    </tabbox>
+    <script type="application/javascript" src="options.js"></script>
+  </prefpane>
 </prefwindow>
