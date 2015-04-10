@@ -111,7 +111,7 @@
       </tabs>
       <tabpanels>
         <!-- "Post Config" -->
-        <tabpanel>
+        <tabpanel class="post-config">
           <tree id="posters" hidecolumnpicker="true" seltype="single">
             <treecols>
               <treecol class="cycle-header">
