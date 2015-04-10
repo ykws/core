@@ -5,9 +5,6 @@
 <prefwindow
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   title="&label.tombfixOptions;">
-  <hbox class="resize">
-    <resizer dir="bottomright"/>
-  </hbox>
   <prefpane class="main">
     <preferences>
       <!-- "Post" -->
@@ -366,6 +363,9 @@
         </tabpanel>
       </tabpanels>
     </tabbox>
-    <script type="application/javascript" src="options.js"></script>
   </prefpane>
+  <hbox class="resize">
+    <resizer dir="bottomright"/>
+  </hbox>
+  <script type="application/javascript" src="options.js"></script>
 </prefwindow>

@@ -12,7 +12,7 @@ tabpanel {
   padding-left: 0.7em;
 }
 
-checkbox, radio, button, tab, .cycle-header {
+tab, .cycle-header, checkbox, radio, button {
   cursor: pointer;
 }
 
@@ -22,15 +22,6 @@ textbox[readonly="true"] {
   -moz-user-focus: ignore !important;
   border: none !important;
   background-color: transparent !important;
-}
-
-.resize {
-  -moz-box-flex: 1;
-  -moz-box-pack: end;
-}
-
-.resize > resizer {
-  cursor: se-resize;
 }
 
 .main,
@@ -87,6 +78,15 @@ textbox[readonly="true"] {
   margin-top: -0.3em;
 }
 
+.resize {
+  -moz-box-flex: 1;
+  -moz-box-pack: end;
+}
+
+.resize > resizer {
+  cursor: se-resize;
+}
+
 .post-config > tree {
   width: 48em;
 }
@@ -101,8 +101,8 @@ textbox[readonly="true"] {
 
 .post-config > tree > treechildren::-moz-tree-image,
 .tag-provider > radiogroup .radio-icon {
-  height: 16px;
   width: 16px;
+  height: 16px;
 }
 
 .post-config > tree > treechildren::-moz-tree-image,
