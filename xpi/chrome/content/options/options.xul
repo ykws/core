@@ -344,7 +344,7 @@
                 <textbox preference="thumbnailTemplate"/>
                 <spacer/>
                 <textbox
-                  value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot; /&gt;"
+                  value="&label.example; &lt;img src=&quot;http://mozshot.nemui.org/shot?{url}&quot;/&gt;"
                   readonly="true"/>
               </vbox>
               <separator class="groove-thin equal-sep"/>
