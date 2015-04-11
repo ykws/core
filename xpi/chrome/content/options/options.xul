@@ -82,11 +82,11 @@
         id="model.twitter.template"
         name="extensions.tombfix.model.twitter.template"
         type="string"/>
-      <!-- "Entry Contents / etc." -->
       <preference
         id="amazonAffiliateId"
         name="extensions.tombfix.amazonAffiliateId"
         type="string"/>
+      <!-- "Entry Contents / etc." -->
       <preference
         id="thumbnailTemplate"
         name="extensions.tombfix.thumbnailTemplate"
@@ -236,6 +236,7 @@
               <tab label="Tumblr"/>
               <tab label="Flickr"/>
               <tab label="Twitter"/>
+              <tab label="Amazon"/>
             </tabs>
             <tabpanels>
               <tabpanel>
@@ -323,6 +324,27 @@
                   </rows>
                 </grid>
               </tabpanel>
+              <tabpanel>
+                <grid>
+                  <columns>
+                    <column/>
+                    <column/>
+                  </columns>
+                  <rows>
+                    <groupbox>
+                      <caption label="Amazon Extractor"/>
+                      <vbox>
+                        <label value="&label.amazonAffiliateId;"/>
+                        <hbox>
+                          <textbox
+                            class="medium-size"
+                            preference="amazonAffiliateId"/>
+                        </hbox>
+                      </vbox>
+                    </groupbox>
+                  </rows>
+                </grid>
+              </tabpanel>
             </tabpanels>
           </tabbox>
         </tabpanel>
@@ -334,12 +356,6 @@
               <column/>
             </columns>
             <rows>
-              <vbox>
-                <label value="&label.amazonAffiliateId;"/>
-                <hbox>
-                  <textbox class="medium-size" preference="amazonAffiliateId"/>
-                </hbox>
-              </vbox>
               <vbox>
                 <label value="&label.thumbnailTemplate;"/>
                 <textbox preference="thumbnailTemplate"/>

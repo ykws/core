@@ -25,9 +25,9 @@ pref('extensions.tombfix.model.twitter.showTweetLength', false);
 pref('extensions.tombfix.model.twitter.truncateStatus', false);
 pref('extensions.tombfix.model.twitter.template.prefix', '');
 pref('extensions.tombfix.model.twitter.template', '');
+pref('extensions.tombfix.amazonAffiliateId', '');
 
 // "Entry Contents / etc."
-pref('extensions.tombfix.amazonAffiliateId', '');
 pref('extensions.tombfix.thumbnailTemplate', '');
 pref('extensions.tombfix.disableAllScripts', false);
 pref('extensions.tombfix.dataDir', '{ProfD}/tombfix');

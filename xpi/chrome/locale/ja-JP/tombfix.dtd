@@ -4,7 +4,6 @@
 <!ENTITY label.services "サービス関連">
 <!ENTITY label.entry "エントリ内容/他">
 
-<!ENTITY label.amazonAffiliateId "AmazonアフィリエイトID">
 <!ENTITY label.thumbnailTemplate "Linkポストのサムネイルテンプレート">
 <!ENTITY label.model.tumblr.secondaryBlogs "ポスト先にサブブログを追加する">
 <!ENTITY label.model.tumblr.queue "Textポスト以外は予約投稿に追加する">
@@ -16,6 +15,7 @@
 <!ENTITY label.model.twitter.template.prefix "プレフィックス(コメント入力時に省略)">
 <!ENTITY label.model.twitter.template "テンプレート">
 <!ENTITY label.model.twitter.example.template.prefix "見てる:">
+<!ENTITY label.amazonAffiliateId "AmazonアフィリエイトID">
 <!ENTITY label.tagProvider "クイックポストで使うタグの取得元">
 <!ENTITY label.tagAutoComplete "タグの自動決定">
 <!ENTITY label.shortcutkey.quickPost.link "ショートカット - Linkクイックポスト">
