@@ -39,7 +39,7 @@
         elm,
         key === 'ESCAPE' ? '' : (meta ? key : key.split(' + ').pop())
       );
-    }, true);
+    });
   }
 
   function mouseStringField(prefName) {
@@ -64,7 +64,7 @@
 
       cancel(evt);
     });
-    elm.addEventListener('contextmenu', cancel, true);
+    elm.addEventListener('contextmenu', cancel);
   }
 
   keyStringField('accesskey.share', false);
@@ -95,7 +95,7 @@
     // またロード中はradiogroup._getRadioChildrenに反映されていないため、
     // valueの変更でチェックをつけることもできない。
     elmTagProvider.value = elmTagProvider.value;
-  }, true);
+  });
 
 
   let elmDataDir = getField('dataDir');
@@ -111,7 +111,7 @@
         fp.file.path.replace(getProfileDir().path, '{ProfD}')
       );
     }
-  }, true);
+  });
 
 
   function ModelsTree(elmTree) {
@@ -119,11 +119,11 @@
 
     this.elmTree = elmTree;
 
-    elmTree.addEventListener('click', this, true);
-    elmTree.addEventListener('mousedown', this, true);
-    elmTree.addEventListener('mouseup', this, true);
-    elmTree.addEventListener('mouseout', this, true);
-    elmTree.addEventListener('mousemove', this, true);
+    elmTree.addEventListener('click', this);
+    elmTree.addEventListener('mousedown', this);
+    elmTree.addEventListener('mouseup', this);
+    elmTree.addEventListener('mouseout', this);
+    elmTree.addEventListener('mousemove', this);
 
     elmTree.view = this;
 
@@ -342,8 +342,7 @@
       'beforeaccept',
     () => {
       tree.save();
-    },
-    true
+    }
   );
 
   // beforeaccept時点ではpreferenceが更新されていないためunloadを使う
@@ -351,5 +350,5 @@
     // ショートカットキーの変更を反映させる
     // タグのキャッシュもクリアされる
     reload();
-  }, true);
+  });
 }(this, window, document));
