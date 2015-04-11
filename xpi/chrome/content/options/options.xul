@@ -207,6 +207,7 @@
                     preference="shortcutkey.checkAndPost"/>
                 </hbox>
               </row>
+              <separator class="groove-thin unequal-sep"/>
               <row class="tag-provider">
                 <label value="&label.tagProvider;"/>
                 <menulist preference="tagProvider">
