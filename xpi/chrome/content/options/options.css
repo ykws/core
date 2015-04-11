@@ -12,7 +12,7 @@ tabpanel {
   padding-left: 0.7em;
 }
 
-tab, .cycle-header, checkbox, radio, button {
+tab, .cycle-header, checkbox, menulist, button {
   cursor: pointer;
 }
 
@@ -112,7 +112,7 @@ textbox.medium-size {
 }
 
 .post-config > tree > treechildren::-moz-tree-image,
-.tag-provider > radiogroup .radio-icon {
+.tag-provider > menulist .menulist-icon {
   width: 16px;
   height: 16px;
 }

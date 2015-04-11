@@ -74,27 +74,25 @@
 
 
   win.addEventListener('load', () => {
-    let elmTagProvider = getField('tagProvider');
+    let elmTagProvider = getField('tagProvider'),
+        tagProviderName = elmTagProvider.value;
 
     // ロード前にアイコンを設定すると、
     // アイコンのロードに失敗した時に設定画面が開かなかったり、
-    // 問題がなくても開くのに時間がかかるため、ロード後にradioを追加してアイコンを設定する
+    // 問題がなくても開くのに時間がかかるため、ロード後にmenuitemを追加してアイコンを設定する
     for (let model of Models.values) {
       if (model.getSuggestions) {
-        let modelName = model.name;
+        let modelName = model.name,
+            menuitem = elmTagProvider.appendItem(modelName, modelName);
 
-        elmTagProvider.appendItem(modelName, modelName).setAttribute(
-          'src',
-          model.ICON
-        );
+        menuitem.classList.add('menuitem-iconic');
+        menuitem.image = model.ICON;
+
+        if (tagProviderName === modelName) {
+          elmTagProvider.selectedItem = menuitem;
+        }
       }
     }
-
-    // スクリプト実行時点でprefpaneのコンストラクターからvalueが先に与えられているため、
-    // 後から追加したradioのチェックをつけることはできない。
-    // またロード中はradiogroup._getRadioChildrenに反映されていないため、
-    // valueの変更でチェックをつけることもできない。
-    elmTagProvider.value = elmTagProvider.value;
   });
 
 

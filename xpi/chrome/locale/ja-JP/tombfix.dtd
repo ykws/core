@@ -28,6 +28,7 @@
 <!ENTITY label.disableAllScripts "全てのパッチを無効にする">
 <!ENTITY label.dataDir "データ/スクリプトディレクトリ">
 <!ENTITY label.example "例:">
+<!ENTITY label.select "選択...">
 <!ENTITY label.browse "参照...">
 
 <!ENTITY label.action.changeAccount "アカウントの切り替え">

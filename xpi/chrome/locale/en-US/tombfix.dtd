@@ -28,6 +28,7 @@
 <!ENTITY label.disableAllScripts "Disable all scripts">
 <!ENTITY label.dataDir "Data/Scripts Directory">
 <!ENTITY label.example "e.g.">
+<!ENTITY label.select "Select...">
 <!ENTITY label.browse "Browse...">
 
 <!ENTITY label.action.changeAccount "Change Account">

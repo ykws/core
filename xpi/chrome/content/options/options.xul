@@ -209,7 +209,15 @@
               </row>
               <row class="tag-provider">
                 <label value="&label.tagProvider;"/>
-                <radiogroup preference="tagProvider"/>
+                <menulist preference="tagProvider">
+                  <menupopup>
+                    <menuitem
+                      class="menuitem-iconic"
+                      label="&label.select;"
+                      value=""
+                      selected="true"/>
+                  </menupopup>
+                </menulist>
               </row>
               <row class="tag-auto-complete">
                 <label value="&label.tagAutoComplete;"/>
