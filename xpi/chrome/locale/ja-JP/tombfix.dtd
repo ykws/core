@@ -15,7 +15,7 @@
 <!ENTITY label.model.twitter.template.prefix "プレフィックス(コメント入力時に省略)">
 <!ENTITY label.model.twitter.template "テンプレート">
 <!ENTITY label.model.twitter.example.template.prefix "見てる:">
-<!ENTITY label.amazonAffiliateId "AmazonアフィリエイトID">
+<!ENTITY label.amazonAffiliateId "アソシエイトID">
 <!ENTITY label.tagProvider "クイックポストで使うタグの取得元">
 <!ENTITY label.tagAutoComplete "タグの自動決定">
 <!ENTITY label.shortcutkey.quickPost.link "ショートカット - Linkクイックポスト">
