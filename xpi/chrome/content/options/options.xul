@@ -229,7 +229,7 @@
                 <label value="&label.ignoreError;"/>
                 <textbox preference="ignoreError"/>
               </row>
-              <row class="ignore-error-example">
+              <row>
                 <spacer/>
                 <textbox
                   value="&label.example; (ffffound: (?!auth)|already)"

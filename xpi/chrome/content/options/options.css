@@ -82,10 +82,6 @@ textbox.medium-size {
   margin-left: 0;
 }
 
-.ignore-error-example {
-  margin-top: -0.3em;
-}
-
 .resize {
   -moz-box-flex: 1;
   -moz-box-pack: end;
