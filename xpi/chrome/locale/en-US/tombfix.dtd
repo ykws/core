@@ -1,10 +1,24 @@
+<!-- Options -->
 <!ENTITY label.tombfixOptions "Tombfix Options">
 <!ENTITY label.postConfig "Post Config">
 <!ENTITY label.post "Post">
 <!ENTITY label.services "Services">
 <!ENTITY label.entry "Entry Contents / etc.">
 
-<!ENTITY label.thumbnailTemplate "Link thumbnail template">
+<!-- "Post" -->
+<!ENTITY label.accesskey.share "Access Key - Share">
+<!ENTITY label.contextMenu.top "Display at the top of context menu">
+<!ENTITY label.contextMenu.disableMenuShare "Don't show &quot;Share - XXX&quot;">
+<!ENTITY label.shortcutkey.quickPost.regular "Shortcutkey - Text Quick Post">
+<!ENTITY label.shortcutkey.quickPost.link "Shortcutkey - Link Quick Post">
+<!ENTITY label.shortcutkey.checkAndPost "Mouse Shortcut - Suitable Type for Executed Point">
+<!ENTITY label.tagProvider "Tag Provider">
+<!ENTITY label.select "Select...">
+<!ENTITY label.tagAutoComplete "Tag Auto Complete">
+<!ENTITY label.ignoreError "Ignore Errors(RegExp)">
+<!ENTITY label.example "e.g.">
+
+<!--"Services" -->
 <!ENTITY label.model.tumblr.secondaryBlogs "Add Secondary Blogs to Post Config">
 <!ENTITY label.model.tumblr.queue "Add to queue except Text Post">
 <!ENTITY label.model.tumblr.trimReblogInfo "Trim reblog info">
@@ -13,22 +27,15 @@
 <!ENTITY label.model.twitter.showTweetLength "Show character length as tweet in Quick Post Form">
 <!ENTITY label.model.twitter.truncateStatus "Remove strings exceeded character limit except Text Post">
 <!ENTITY label.model.twitter.template.prefix "Prefix(it's omitted this if input Description)">
-<!ENTITY label.model.twitter.template "Template">
 <!ENTITY label.model.twitter.example.template.prefix "Now browsing:">
+<!ENTITY label.model.twitter.template "Template">
 <!ENTITY label.amazonAffiliateId "Associate ID">
-<!ENTITY label.tagProvider "Tag Provider">
-<!ENTITY label.tagAutoComplete "Tag Auto Complete">
-<!ENTITY label.shortcutkey.quickPost.link "Shortcutkey - Link Quick Post">
-<!ENTITY label.shortcutkey.quickPost.regular "Shortcutkey - Text Quick Post">
-<!ENTITY label.shortcutkey.checkAndPost "Mouse Shortcut - Suitable Type for Executed Point">
-<!ENTITY label.accesskey.share "Access Key - Share">
-<!ENTITY label.contextMenu.top "Display at the top of context menu">
-<!ENTITY label.contextMenu.disableMenuShare "Don't show &quot;Share - XXX&quot;">
-<!ENTITY label.ignoreError "Ignore Errors(RegExp)">
+
+<!--"Entry Contents / etc." -->
+<!ENTITY label.thumbnailTemplate "Link thumbnail template">
 <!ENTITY label.disableAllScripts "Disable all scripts">
 <!ENTITY label.dataDir "Data/Scripts Directory">
-<!ENTITY label.example "e.g.">
-<!ENTITY label.select "Select...">
 <!ENTITY label.browse "Browse...">
 
+<!-- Change Account -->
 <!ENTITY label.action.changeAccount "Change Account">

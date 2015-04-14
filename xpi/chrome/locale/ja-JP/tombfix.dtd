@@ -1,10 +1,24 @@
+<!-- Options -->
 <!ENTITY label.tombfixOptions "Tombfixの設定">
 <!ENTITY label.postConfig "デフォルトのポスト先">
 <!ENTITY label.post "ポスト関連">
 <!ENTITY label.services "サービス関連">
 <!ENTITY label.entry "エントリ内容/他">
 
-<!ENTITY label.thumbnailTemplate "Linkポストのサムネイルテンプレート">
+<!-- "Post" -->
+<!ENTITY label.accesskey.share "アクセスキー - Share">
+<!ENTITY label.contextMenu.top "コンテキストメニューの最上部に表示する">
+<!ENTITY label.contextMenu.disableMenuShare "「Share - XXX」を表示しない">
+<!ENTITY label.shortcutkey.quickPost.regular "ショートカット - Textクイックポスト">
+<!ENTITY label.shortcutkey.quickPost.link "ショートカット - Linkクイックポスト">
+<!ENTITY label.shortcutkey.checkAndPost "ショートカット(マウス) - 実行場所に適したタイプ">
+<!ENTITY label.tagProvider "クイックポストで使うタグの取得元">
+<!ENTITY label.select "選択...">
+<!ENTITY label.tagAutoComplete "タグの自動決定">
+<!ENTITY label.ignoreError "無視するエラー(正規表現)">
+<!ENTITY label.example "例:">
+
+<!--"Services" -->
 <!ENTITY label.model.tumblr.secondaryBlogs "ポスト先にサブブログを追加する">
 <!ENTITY label.model.tumblr.queue "Textポスト以外は予約投稿に追加する">
 <!ENTITY label.model.tumblr.trimReblogInfo "Reblog情報を除去する">
@@ -13,22 +27,15 @@
 <!ENTITY label.model.twitter.showTweetLength "クイックポストにツイートとしての文字数を表示する">
 <!ENTITY label.model.twitter.truncateStatus "Textポスト以外で文字数制限を超えた文字は削除する">
 <!ENTITY label.model.twitter.template.prefix "プレフィックス(コメント入力時に省略)">
-<!ENTITY label.model.twitter.template "テンプレート">
 <!ENTITY label.model.twitter.example.template.prefix "見てる:">
+<!ENTITY label.model.twitter.template "テンプレート">
 <!ENTITY label.amazonAffiliateId "アソシエイトID">
-<!ENTITY label.tagProvider "クイックポストで使うタグの取得元">
-<!ENTITY label.tagAutoComplete "タグの自動決定">
-<!ENTITY label.shortcutkey.quickPost.link "ショートカット - Linkクイックポスト">
-<!ENTITY label.shortcutkey.quickPost.regular "ショートカット - Textクイックポスト">
-<!ENTITY label.shortcutkey.checkAndPost "ショートカット(マウス) - 実行場所に適したタイプ">
-<!ENTITY label.accesskey.share "アクセスキー - Share">
-<!ENTITY label.contextMenu.top "コンテキストメニューの最上部に表示する">
-<!ENTITY label.contextMenu.disableMenuShare "「Share - XXX」を表示しない">
-<!ENTITY label.ignoreError "無視するエラー(正規表現)">
+
+<!--"Entry Contents / etc." -->
+<!ENTITY label.thumbnailTemplate "Linkポストのサムネイルテンプレート">
 <!ENTITY label.disableAllScripts "全てのパッチを無効にする">
 <!ENTITY label.dataDir "データ/スクリプトディレクトリ">
-<!ENTITY label.example "例:">
-<!ENTITY label.select "選択...">
 <!ENTITY label.browse "参照...">
 
+<!-- Change Account -->
 <!ENTITY label.action.changeAccount "アカウントの切り替え">
