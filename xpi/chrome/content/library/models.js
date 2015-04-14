@@ -3438,21 +3438,3 @@ Models.register(Object.assign({}, Models['bit.ly'], {
 
 // 全てのサービスをグローバルコンテキストに置く(後方互換)
 Object.assign(this, Models);
-
-
-function shortenUrls(text, model){
-  var reUrl = /https?[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#\^]+/g;
-  if(!reUrl.test(text))
-    return text;
-
-  var urls = text.match(reUrl);
-  return gatherResults(urls.map(function(url){
-    return model.shorten(url);
-  })).addCallback(function(ress){
-    zip(urls, ress).forEach(function([url, res]){
-      text = text.replace(url, res);
-    });
-
-    return text;
-  });
-}

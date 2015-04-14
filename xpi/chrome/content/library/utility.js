@@ -2663,3 +2663,20 @@ function isFavorite({favorite}, modelName) {
 
   return false;
 }
+
+function shortenUrls(text, model){
+  var reUrl = /https?[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#\^]+/g;
+  if(!reUrl.test(text))
+    return text;
+
+  var urls = text.match(reUrl);
+  return gatherResults(urls.map(function(url){
+    return model.shorten(url);
+  })).addCallback(function(ress){
+    zip(urls, ress).forEach(function([url, res]){
+      text = text.replace(url, res);
+    });
+
+    return text;
+  });
+}
