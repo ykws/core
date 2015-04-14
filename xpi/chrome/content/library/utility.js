@@ -2,22 +2,22 @@
 function createMock(sample, proto){
   var non = function(){};
   sample = typeof(sample)=='object'? sample : Cc[sample].createInstance();
-  
+
   var ifcs = getInterfaces(sample);
   var Mock = function(){};
-  
+
   for(var key in sample){
     try{
       if(sample.__lookupGetter__(key))
         continue;
-      
+
       var val = sample[key];
       switch (typeof(val)){
       case 'number':
       case 'string':
         Mock.prototype[key] = val;
         continue;
-      
+
       case 'function':
         Mock.prototype[key] = non;
         continue;
@@ -26,13 +26,13 @@ function createMock(sample, proto){
       // コンポーネント実装により発生するプロパティ取得エラーを無視する
     }
   }
-  
+
   Mock.prototype.QueryInterface = createQueryInterface(ifcs);
-  
+
   // FIXME: extendに変える(アクセサをコピーできない)
   update(Mock.prototype, proto);
   update(Mock, Mock.prototype);
-  
+
   return Mock;
 }
 
@@ -40,14 +40,14 @@ function createQueryInterface(ifcNames){
   var ifcs = ['nsISupports'].concat(ifcNames).map(function(ifcName){
     return Ci[''+ifcName];
   });
-  
+
   return function(iid){
     if(ifcs.some(function(ifc){
       return iid.equals(ifc);
     })){
       return this;
     }
-    
+
     throw Cr.NS_NOINTERFACE;
   }
 }
@@ -60,7 +60,7 @@ function createQueryInterface(ifcNames){
  */
 function getInterfaces(obj){
   var result = [];
-  
+
   for(var i=0,len=INTERFACES.length ; i<len ; i++){
     var ifc = INTERFACES[i];
     try {
@@ -69,7 +69,7 @@ function getInterfaces(obj){
       }
     } catch(e) { }
   }
-  
+
   return result;
 }
 
@@ -97,7 +97,7 @@ function broad(obj, ifcs){
  */
 function till(cond){
   let thread = ThreadManager.mainThread;
-  
+
   do{
     thread.processNextEvent(true);
   }while(cond && !cond());
@@ -127,16 +127,16 @@ notify.ICON_INFO = 'chrome://global/skin/icons/information-64.png';
 function createURI(path){
   if(!path)
     return;
-  
+
   if (path instanceof IURI) {
     return path;
   }
-  
+
   try{
     var path = (path instanceof IFile) ? path : new LocalFile(path);
     return broad(IOService.newFileURI(path));
   }catch(e){}
-  
+
   try {
     var uri = IOService.newFileURI(path, null, null);
     uri instanceof Ci.nsIURL;
@@ -158,18 +158,18 @@ function createURI(path){
 function getLocalFile(uri){
   if(uri instanceof ILocalFile)
     return uri;
-  
+
   uri = createURI(uri);
-  
+
   if(uri.scheme == 'chrome')
     uri = ChromeRegistry.convertChromeURL(uri);
-  
+
   if(uri.scheme == 'jar')
     uri = createURI(uri.spec.replace(/(^jar:|!\/$)/g, ''));
-  
+
   if(uri.scheme != 'file')
     return;
-  
+
   return IOService.getProtocolHandler('file').
     QueryInterface(Ci.nsIFileProtocolHandler).
     getFileFromURLSpec(uri.spec).
@@ -180,7 +180,7 @@ function getLocalFile(uri){
  * 拡張のインストールされているディレクトリを取得する。
  *
  * @param {String} id 拡張ID。
- * @return {String} 
+ * @return {String}
  *         拡張のリソースディレクトリ。
  *         展開しない拡張はjarファイルが返る。
  *         拡張が見つからない場合はnullが返る。
@@ -194,11 +194,11 @@ var getExtensionDir = (() => {
     AddonManager.getAddonByID(id, function(addon){
       dir = (!addon)? null : getLocalFile(addon.getResourceURI('/'));
     });
-    
+
     till(function(){
       return dir !== false;
     });
-    
+
     return dir;
   };
 })();
@@ -221,7 +221,7 @@ function getDownloadDir(){
     if(dir.exists())
       return dir
   } catch(e) {}
-  
+
   return DirectoryService.get('DfltDwnld', IFile);
 }
 
@@ -286,7 +286,7 @@ updatePatchChromeManifest();
 
 function updatePatchChromeManifest(){
   var DELIMITER = '# GENERATED';
-  
+
   var dataDir = createURI(getDataDir()).spec;
   var line = 'content tombfix-patch ' + dataDir;
   var manifest = getChromeManifestFile();
@@ -295,7 +295,7 @@ function updatePatchChromeManifest(){
     contents.split(DELIMITER).shift() +
     DELIMITER + '\n' +
     line + '\n';
-  
+
   if(contents != updated){
     putContents(manifest, updated);
     ChromeRegistry.checkForNewChrome();
@@ -319,9 +319,9 @@ function reload(){
  * JavaScriptコードを評価する。
  *
  * @param {String} js JavaScriptコード。
- * @param {String ||  nsIXPCComponents_utils_Sandbox} url 
+ * @param {String ||  nsIXPCComponents_utils_Sandbox} url
  *        同一生成元チェックのベースになるURI、またはサンドボックスオブジェクト。
- * @return {Object} 
+ * @return {Object}
  *         評価結果。値がundefinedの場合、評価コンテキスト(サンドボックス)が返る。
  *         'var obj = {};'のようなAPI返り値を処理しやすくする。
  */
@@ -411,11 +411,11 @@ function getMessage(key){
 function input(form, title){
   if(typeof(form)=='string')
     return PromptService.confirm(null, title, form);
-  
+
   function m(key){
     return getMessage(key) || key || '';
   }
-  
+
   // リストボックス形式のフォームか?
   var pair;
   if(some(form, function(p){
@@ -426,14 +426,14 @@ function input(form, title){
     var [msg, list] = pair;
     if(!PromptService.select(null, m(title), m(msg), list.length, list, selected))
       return;
-    
+
     return list[selected.value];
   }
-  
+
   var args = [null, m(title)];
   for(var msg in form){
     args.push(m(msg));
-    
+
     // メッセージではないか？
     if(form[msg] != null){
       // 値を一時的にオブジェクトに変換する
@@ -442,38 +442,38 @@ function input(form, title){
       args.push(val);
     }
   }
-  
+
   var vals = values(form);
   var method = (vals[0] == null && typeof(vals[1].value) == 'boolean')? 'confirmCheck' : 'prompt';
-  
+
   // テキストボックスのみか？(チェックボックス不要の場合)
   if(method=='prompt' && args.length==4)
     args = args.concat([null, {}]);
-  
+
   if(!PromptService[method].apply(PromptService, args))
     return;
-  
+
   // 返り値を取り出す
   for(var msg in form)
     form[msg] = form[msg] && form[msg].value;
-  
+
   return form;
 }
 
 function download(sourceURL, targetFile){
   var d = new Deferred();
   var sourceURI = createURI(sourceURL);
-  
+
   if(!targetFile)
     targetFile = getDownloadDir();
-  
+
   if(targetFile.exists() && targetFile.isDirectory())
     targetFile.append(validateFileName(sourceURI.fileName));
-  
+
   var targetURI = IOService.newFileURI(targetFile);
-  
+
   var p = WebBrowserPersist();
-  
+
   p.progressListener = {
     onLocationChange : function(){},
     onProgressChange : function(){},
@@ -482,26 +482,26 @@ function download(sourceURL, targetFile){
     onStateChange    : function(progress, req, state, status){
       if(state & IWebProgressListener.STATE_STOP){
         broad(req);
-        
+
         var res = {
           channel      : req,
           status       : req.responseStatus,
           statusText   : req.responseStatusText,
         };
-        
+
         if(!res.status || res.status < 400){
           d.callback(targetFile, res);
         }else{
           error(res);
           targetFile.remove(false);
-          
+
           res.message = getMessage('error.http.' + res.status);
           d.errback(res);
         }
       }
     },
   }
-  
+
   p.persistFlags =
     p.PERSIST_FLAGS_FROM_CACHE |
     p.PERSIST_FLAGS_REPLACE_EXISTING_FILES |
@@ -515,26 +515,26 @@ function download(sourceURL, targetFile){
 function createDir(dir, basePath){
   if(basePath){
     basePath = (basePath instanceof IFile)? basePath.path : basePath;
-    
+
     if(basePath.slice(-1) != PATH_DELIMITER)
       basePath += PATH_DELIMITER;
   } else {
     basePath = '';
   }
-  
+
   dir = basePath + ((dir instanceof IFile)? dir.path : dir);
   dir = dir.replace(/[\/\\]/g, PATH_DELIMITER);
-  
+
   // 複数階層を一度に作成するため新しくインスタンスを生成する
   dir = new LocalFile(dir);
-  
+
   if(dir.exists()){
     if(dir.isDirectory())
       dir.permissions = 0774;
   } else {
     dir.create(dir.DIRECTORY_TYPE, 0774);
   }
-  
+
   return dir;
 }
 
@@ -556,7 +556,7 @@ function clearCollision(file){
 function getPatchDir(){
   var dir = getDataDir();
   dir.append('script');
-  
+
   return createDir(dir);
 }
 
@@ -564,7 +564,7 @@ function getDataDir(name){
   var path = 'file:///' + getPref('dataDir').replace(/\{(.*?)\}/g, function(all, name){
     return DirectoryService.get(name, IFile).path;
   }).replace(/\\/g, '/')
-  
+
   var dir = createDir(getLocalFile(path));
   name && dir.append(name);
   return dir;
@@ -576,21 +576,21 @@ function getDataDir(name){
 function getTempDir(name){
   var dir = DirectoryService.get('TmpD', IFile);
   name && dir.append(name);
-  
+
   return dir;
 }
 
 function getTempFile(ext){
   var file = getTempDir();
   file.append(joinText(['tombfix_' + Date.now(), ext], '.'));
-  
+
   return file;
 }
 
 function getChromeManifestFile(){
   var manifest = getExtensionDir(EXTENSION_ID);
   manifest.append('chrome.manifest');
-  
+
   return manifest;
 }
 
@@ -622,13 +622,13 @@ function addTab(url, background){
   var browser = tab.linkedBrowser;
   if(!background)
     tabbrowser.selectedTab = tab;
-  
+
   browser.addEventListener('DOMContentLoaded', function callee(event){
     browser.removeEventListener('DOMContentLoaded', callee, true);
-  
+
     d.callback(wrappedObject(event.originalTarget.defaultView));
   }, true);
-  
+
   return d;
 }
 
@@ -636,7 +636,7 @@ function getContents(file, charset){
   file = getLocalFile(file);
   if(!file.exists())
     return '';
-  
+
   try{
     return withStream(new FileInputStream(file, -1, 0, false), function(fis){
       return withStream(new ConverterInputStream(fis, charset, fis.available()), function(cis){
@@ -665,13 +665,13 @@ function putContents(file, text, charset){
 function openInEditor(path){
   if(path instanceof IFile)
     path = path.path;
-  
+
   var app =
     getLocalFile(getPrefValue('greasemonkey.editor')) ||
     getLocalFile(getPrefValue('view_source.editor.path'));
   if(!app || !app.exists())
     return;
-  
+
   if(AppInfo.OS == 'Darwin'){
     var args = ['-a', app.path, path];
     app = new LocalFile('/usr/bin/open');
@@ -679,7 +679,7 @@ function openInEditor(path){
   } else {
     var args = [path];
   }
-  
+
   new Process(app).run(false, args, args.length);
 }
 
@@ -694,9 +694,9 @@ function setCookie(channel){
     // デフォルトのクッキー付加処理を利用する
     return channel;
   }
-  
+
   channel.setRequestHeader('Cookie', getCookieString(channel.originalURI.host), true);
-  
+
   return channel;
 }
 
@@ -722,29 +722,29 @@ function request(url, opts){
   if (opts && opts.responseType) {
     return simpleRequest(url, opts);
   }
-  
+
   var d = new Deferred();
-  
+
   opts = opts || {};
-  
+
   var uri = createURI(joinText([url, queryString(opts.queryString)], '?'));
-  
+
   // requestMethodを変更するため要求するインタフェースは必要最小限に留める
   let channel = broad(IOService.newChannelFromURI(uri), [Ci.nsIUploadChannel, IHttpChannel]);
-  
+
   if(opts.referrer)
     channel.referrer = createURI(opts.referrer);
-  
+
   if(opts.headers)
     items(opts.headers).forEach(function([key, value]){
       channel.setRequestHeader(key, value, true);
     });
-  
+
   setCookie(channel);
-  
+
   if(opts.sendContent){
     var contents = opts.sendContent;
-    
+
     // マルチパートチェック/パラメーター準備
     var multipart;
     for(var name in contents){
@@ -752,11 +752,11 @@ function request(url, opts){
       var value = contents[name];
       if(value instanceof IInputStream || value instanceof IFile)
         value = contents[name] = {file : value};
-      
+
       if(value && value.file)
         multipart = true;
     }
-    
+
     if(!multipart){
       contents = queryString(contents);
       channel.setUploadStream(
@@ -765,12 +765,12 @@ function request(url, opts){
     } else {
       var boundary = '---------------------------' + Date.now();
       var streams = [];
-      
+
       for(var name in contents){
         var value = contents[name];
         if(value==null)
           continue;
-        
+
         if(!value.file){
           streams.push([
             '--' + boundary,
@@ -784,7 +784,7 @@ function request(url, opts){
             value.fileName = value.file.leafName;
             value.file = IOService.newChannelFromURI(createURI(value.file)).open();
           }
-          
+
           streams.push([
             '--' + boundary,
             'Content-Disposition: form-data; name="' + name + '"; filename="' + (value.fileName || '_') + '"',
@@ -796,13 +796,13 @@ function request(url, opts){
         }
       }
       streams.push('--' + boundary + '--');
-      
+
       var mimeStream = new MIMEInputStream(new MultiplexInputStream(streams));
       mimeStream.addHeader('Content-Type', 'multipart/form-data; boundary=' + boundary);
       channel.setUploadStream(mimeStream, null, -1);
     }
   }
-  
+
   var redirectionCount = 0;
   var listener = {
     QueryInterface : createQueryInterface([
@@ -811,7 +811,7 @@ function request(url, opts){
       'nsIHttpEventSink',
       'nsIInterfaceRequestor',
       'nsIChannelEventSink']),
-    
+
     isAppOfType : function(val){
       // http://hg.mozilla.org/mozilla-central/file/FIREFOX_3_1b2_RELEASE/docshell/base/nsILoadContext.idl#l78
       //
@@ -825,11 +825,11 @@ function request(url, opts){
       //   APP_TYPE_EDITOR  2
       return (val == 0);
     },
-    
+
     // nsIProgressEventSink
     onProgress : function(req, ctx, progress, progressMax){},
     onStatus : function(req, ctx, status, statusArg){},
-    
+
     // nsIInterfaceRequestor
     getInterface : function(iid){
       try{
@@ -838,27 +838,27 @@ function request(url, opts){
         throw Cr.NS_NOINTERFACE;
       }
     },
-    
+
     // nsIHttpEventSink
     onRedirect : function(oldChannel, newChannel){},
-    
+
     // nsIChannelEventSink
     onRedirectResult: function(){},
-    
+
     asyncOnChannelRedirect : function(oldChannel, newChannel, flags, redirectCallback) {
       this.onChannelRedirect(oldChannel, newChannel, flags);
       redirectCallback.onRedirectVerifyCallback(0);
     },
-    
+
     // Firefox 4で廃止(asyncOnChannelRedirectへ移行)
     onChannelRedirect : function(oldChannel, newChannel, flags){
       // channel.redirectionLimitを使うとリダイレクト後のアドレスが取得できない
       redirectionCount++;
-      
+
       if(opts.redirectionLimit!=null && redirectionCount>opts.redirectionLimit){
         // NS_ERROR_REDIRECT_LOOP
         newChannel.cancel(2152398879);
-        
+
         var res = {
           channel : newChannel,
           responseText : '',
@@ -866,41 +866,41 @@ function request(url, opts){
           statusText : oldChannel.responseStatusText,
         };
         d.callback(res);
-        
+
         return;
       }
-      
+
       // HEADメソッドを引き継ぐ(GETに変わり遅くならないように)
       broad(oldChannel);
       if(oldChannel.requestMethod == 'HEAD'){
         broad(newChannel);
         newChannel.requestMethod = 'HEAD';
       }
-      
+
       setCookie(newChannel);
     },
-    
+
     // nsIStreamListener
     onStartRequest: function(req, ctx){
       this.data = [];
     },
-    
+
     onDataAvailable: function(req, ctx, stream, sourceOffset, length){
       this.data.push(new InputStream(stream).read(length));
     },
-    
+
     onStopRequest: function (req, ctx, status){
       // Firefox 3ではcancelするとonStopRequestは呼ばれない
       if(opts.redirectionLimit!=null && redirectionCount>opts.redirectionLimit)
         return;
-      
+
       broad(req);
-      
+
       var text = this.data.join('');
       try{
         var charset = opts.charset || req.contentCharset || text.extract(/content=["'].*charset=(.+?)[;"']/i);
         text = charset? text.convertToUnicode(charset) : text;
-        
+
         var res = {
           channel      : req,
           responseText : text,
@@ -916,32 +916,32 @@ function request(url, opts){
           statusText   : null,
         };
       }
-      
+
       if(Components.isSuccessCode(status) && res.status < 400){
         d.callback(res);
       }else{
         error(res);
-        
+
         res.message = getMessage('error.http.' + res.status);
         d.errback(res);
       }
     },
   };
-  
+
   // setUploadStream後にPUTになっているのを補正する
   channel.requestMethod =
     (opts.method)? opts.method :
     (opts.sendContent)? 'POST' : 'GET';
   channel.notificationCallbacks = listener;
   channel.asyncOpen(listener, null);
-  
+
   // requestMethod決定後にインターフェースを拡張する
   broad(channel);
-  
+
   // 確実にガベージコレクトされるように解放する
   listener = null;
   channel = null;
-  
+
   return d;
 }
 
@@ -1116,7 +1116,7 @@ MochiKit.Base.update(MochiKit.Signal._specialKeys, {
 function formContents(elm){
   if(typeof(elm)=='string')
     elm = convertToHTMLDocument(elm);
-  
+
   return reduce(function(p, a){
     p[a[0]]=a[1];
     return p;
@@ -1190,7 +1190,7 @@ registerIteratorFactory(
       next: function(){
         if(!it.hasMoreElements())
           throw StopIteration;
-        
+
         var res = it.getNext();
         if(!ifcs)
           ifcs = getInterfaces(res);
@@ -1210,7 +1210,7 @@ registerIteratorFactory(
         var elm;
         if(!(elm = it.nextNode()))
           throw StopIteration;
-        
+
         return elm;
       }
     };
@@ -1228,7 +1228,7 @@ registerIteratorFactory(
       next: function(){
         if(i >= len)
           throw StopIteration;
-        
+
         return it.snapshotItem(i++);
       }
     };
@@ -1248,7 +1248,7 @@ registerIteratorFactory(
       next: function(){
         if(i >= len)
           throw StopIteration;
-        
+
         return it[i++];
       }
     };
@@ -1267,7 +1267,7 @@ if(NavHistoryService){
         next: function(){
           if(i >= len)
             throw StopIteration;
-          
+
           return it.getChild(i++);
         }
       };
@@ -1289,7 +1289,7 @@ registerIteratorFactory(
         var prop = props.shift();
         if(!prop)
           throw StopIteration;
-        
+
         return [prop, it[prop]];
       }
     };
@@ -1326,17 +1326,17 @@ function deferredForEach(it, func){
   d.addErrback(function(err){
     if(err.message==StopIteration)
       return;
-    
+
     throw err;
   });
   d.callback();
-  
+
   return d;
 }
 
 function DeferredHash(ds){
   var props = keys(ds);
-  
+
   return new DeferredList(values(ds)).addCallback(function(results){
     var res = {};
     for (var i = 0; i < results.length; i++)
@@ -1348,7 +1348,7 @@ function DeferredHash(ds){
 function getViewDimensions(){
   var d = new Dimensions();
   var doc = currentDocument();
-  
+
   if(doc.compatMode == 'CSS1Compat'){
     d.h = doc.documentElement.clientHeight;
     d.w = doc.documentElement.clientWidth;
@@ -1356,14 +1356,14 @@ function getViewDimensions(){
     d.h = doc.body.clientHeight;
     d.w = doc.body.clientWidth;
   }
-  
+
   return d;
 }
 
 function getPageDimensions(){
   var d = new Dimensions();
   var doc = currentDocument();
-  
+
   if(doc.compatMode == 'CSS1Compat'){
     d.h = doc.documentElement.scrollHeight;
     d.w = doc.documentElement.scrollWidth;
@@ -1371,7 +1371,7 @@ function getPageDimensions(){
     d.h = doc.body.scrollHeight;
     d.w = doc.body.scrollWidth;
   }
-  
+
   return d;
 }
 
@@ -1392,7 +1392,7 @@ function roundPosition(p){
 function debug(msg){
   if(!getPref('debug'))
     return msg;
-  
+
   return log(msg);
 }
 
@@ -1410,26 +1410,26 @@ function error(err) {
     console.log(err);
     Cu.reportError(err);
   }
-  
+
   return err;
 }
 
 function firebug(method, args){
   if(!getPref('useFirebug'))
     return false;
-  
+
   var win = getMostRecentWindow();
   if(win.FirebugConsole && win.FirebugContext) {
     var console = new win.FirebugConsole(win.FirebugContext, win.content);
     console[method].apply(console, args);
     return true;
   }
-  
+
   // Firebug 1.2~
   if( win.Firebug && win.Firebug.Console ){
     try {
       win.Firebug.Console.logFormatted.call(win.Firebug.Console, Array.slice(args), win.FirebugContext, method);
-    
+
       return true;
     } catch(e) {
       // Firebug 1.4.5でコンソールが開かれていないときに発生するエラーを抑止する
@@ -1483,20 +1483,20 @@ function random(max){
  */
 function extend(target, source, overwrite){
   overwrite = overwrite==null? true : overwrite;
-  
+
   for(var p in source){
     var getter = source.__lookupGetter__(p);
     if(getter)
       target.__defineGetter__(p, getter);
-    
+
     var setter = source.__lookupSetter__(p);
     if(setter)
       target.__defineSetter__(p, setter);
-    
+
     if(!getter && !setter && (overwrite || !(p in target)))
       target[p] = source[p];
   }
-  
+
   return target;
 }
 
@@ -1531,11 +1531,11 @@ function addBefore(target, name, before) {
  */
 function addAround(target, methodNames, advice){
   methodNames = [].concat(methodNames);
-  
+
   // ワイルドカードの展開
   for(var i=0 ; i<methodNames.length ; i++){
     if(methodNames[i].indexOf('*')==-1) continue;
-    
+
     var hint = methodNames.splice(i, 1)[0];
     hint = new RegExp('^' + hint.replace(/\*/g, '.*'));
     for(var prop in target) {
@@ -1543,7 +1543,7 @@ function addAround(target, methodNames, advice){
         methodNames.push(prop);
     }
   }
-  
+
   methodNames.forEach(function(methodName){
     var method = target[methodName];
     target[methodName] = function() {
@@ -1572,7 +1572,7 @@ function addAround(target, methodNames, advice){
 function joinText(txts, delm, trimTag){
   if(!txts)
     return '';
-  
+
   if(delm==null)
     delm = ',';
   txts = flattenArray([].concat(txts).filter(function(txt){
@@ -1594,7 +1594,7 @@ function validateFileName(fileName){
   else if (navigator.appVersion.indexOf("Macintosh") != -1){
     return fileName.replace(/[\:\/]+/g, "_");
   }
-  
+
   return fileName.replace(/[\/]+/g, "_");
 }
 
@@ -1610,13 +1610,13 @@ function validateFileName(fileName){
 function runWSH(func, args, blocking){
   args = (args==null)? [] : [].concat(args);
   args.unshift(func);
-  
+
   var d = new Deferred();
-  
+
   var bat = getTempFile('bat');
   var script = getTempFile();
   var out = new LocalFile(script.path + '.out');
-  
+
   // リダイレクト結果を取得するためバッチ経由で実行する
   putContents(bat, [
     'cscript //E:JScript //Nologo',
@@ -1634,14 +1634,14 @@ function runWSH(func, args, blocking){
         WScript.echo('throw ' + JSON.stringify(e) + ';');
       }
     }) + '();');
-  
+
   var end = function(){
     var res = getContents(out, 'Shift-JIS').replace(/\s+$/, '');
-    
+
     out.remove(false);
     bat.remove(false);
     script.remove(false);
-    
+
     try{
       res = eval(res);
       d.callback(res);
@@ -1649,7 +1649,7 @@ function runWSH(func, args, blocking){
       d.errback(e);
     }
   };
-  
+
   var process = new Process(bat);
   if(!process.runAsync || blocking){
     process.run(true, [], 0);
@@ -1659,7 +1659,7 @@ function runWSH(func, args, blocking){
       observe : end,
     });
   }
-  
+
   return d;
 }
 
@@ -1681,7 +1681,7 @@ var State = {
       stateSet = stateSetName;
       stateSetName = void(0);
     }
-    
+
     var p = cls.prototype;
     var K = this.K;
     forEach(this.gatherProperties(stateSet), function(prop){
@@ -1691,9 +1691,9 @@ var State = {
           state[prop] = K;
       }
     });
-    
+
     update(p, stateSet[defaultStateName]);
-    
+
     if(stateSetName){
       update(p, this._multiProto);
       if(!p.state){
@@ -1708,38 +1708,38 @@ var State = {
       p.stateSet = stateSet;
     }
   },
-  
+
   gatherProperties : function(stateSet){
     var props = {};
     for(var i in stateSet)
       for(var prop in stateSet[i])
         props[prop] = true;
-    
+
     return keys(props);
   },
-  
+
   K : function(arg){
     return arg;
   },
-  
+
   _singleProto: {
     changeState : function(stateName){
       update(this, this.stateSet[stateName]);
       this.state = stateName;
-      
+
       if(this.onChangeState)
         this.onChangeState();
     }
   },
-  
+
   _multiProto: {
     changeState : function(stateSetName, stateName){
       update(this, this.stateSet[stateSetName][stateName]);
-      
+
       // 各オブジェクト個別の状態を持つためにクローンを行い変更する
       this.state = update({}, this.state);
       this.state[stateSetName] = stateName;
-      
+
       if(this.onChangeState)
         this.onChangeState();
     }
@@ -1756,30 +1756,30 @@ function dynamicBind(func, self){
 function E(){
   var tag = Array.prototype.shift.call(arguments);
   var elm = currentDocument().createElement(tag);
-  
+
   var text = [];
   function processChild(arr){
     Array.prototype.forEach.call(arr, function(value){
       if(!value)
         return;
-      
+
       if(value && value.nodeType){
         elm.appendChild(value);
         return;
       }
-      
+
       switch (typeof(value)) {
         case 'string':
         case 'number':
           elm.appendChild(currentDocument().createTextNode(value))
           break;
-        
+
         default:
           if(value.forEach){
             processChild(value)
             break;
           }
-          
+
           for(var key in value){
             var attr = value[key];
             switch(key){
@@ -1793,7 +1793,7 @@ function E(){
     });
   }
   processChild(arguments);
-  
+
   return elm;
 }
 
@@ -1815,7 +1815,7 @@ function tagName(elm){
 
 function $x(exp, context, multi) {
   context = context || currentDocument();
-  
+
   var doc = context.ownerDocument || context;
   var exp = doc.createExpression(exp, {
     lookupNamespaceURI : function(prefix){
@@ -1830,11 +1830,11 @@ function $x(exp, context, multi) {
       }
     },
   });
-  
+
   var value = function(node){
     if(!node)
       return;
-    
+
     switch (node.nodeType) {
     case Node.ELEMENT_NODE:
       return node;
@@ -1844,7 +1844,7 @@ function $x(exp, context, multi) {
       return node.textContent;
     }
   }
-  
+
   var result = exp.evaluate(context, XPathResult.ANY_TYPE, null);
   switch (result.resultType) {
     case XPathResult.STRING_TYPE : return result.stringValue;
@@ -1853,7 +1853,7 @@ function $x(exp, context, multi) {
     case XPathResult.UNORDERED_NODE_ITERATOR_TYPE: {
       if(!multi)
         return value(result.iterateNext());
-      
+
       result = exp.evaluate(context, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
       var ret = [];
       for (var i = 0, len = result.snapshotLength; i < len ; i++) {
@@ -1867,24 +1867,24 @@ function $x(exp, context, multi) {
 
 function convertToHTMLDocument(html, doc) {
   html = html.replace(/<!DOCTYPE.*?>/, '').replace(/<html.*?>/, '').replace(/<\/html>.*/, '');
-  
+
   doc = doc || currentDocument() || document;
   var xsl = (new DOMParser()).parseFromString(
     '<?xml version="1.0"?>\
       <stylesheet version="1.0" xmlns="http://www.w3.org/1999/XSL/Transform">\
       <output method="html"/>\
     </stylesheet>', 'text/xml');
-  
+
   var xsltp = new XSLTProcessor();
   xsltp.importStylesheet(xsl);
-  
+
   doc = xsltp.transformToDocument(doc.implementation.createDocument('', '', null));
   doc.appendChild(doc.createElement('html'));
-  
+
   var range = doc.createRange();
   range.selectNodeContents(doc.documentElement);
   doc.documentElement.appendChild(range.createContextualFragment(html));
-  
+
   return doc
 }
 
@@ -1901,16 +1901,16 @@ function convertToHTMLDocument(html, doc) {
  */
 function convertToHTMLString(src, safe){
   var me = convertToHTMLString;
-  
+
   // 選択範囲の適切な外側まで含めてHTML文字列へ変換する(pre内選択なども正常処理される)
   var doc = src.ownerDocument || src.focusNode.ownerDocument;
   var encoder = new HTMLCopyEncoder(doc, 'text/unicode', HTMLCopyEncoder.OutputRaw);
   encoder[src.nodeType? 'setNode' : 'setSelection'](src);
-  
+
   var html = encoder.encodeToString();
   if(!safe)
     return html;
-  
+
   // DOMツリーに戻し不要な要素を除去する
   var root;
   if(src.getRangeAt){
@@ -1918,7 +1918,7 @@ function convertToHTMLString(src, safe){
     root = (src.anchorNode == ancestor)?
       doc.createElement('div') :
       ancestor.cloneNode(false);
-    
+
     // 親にtableを持たない要素にtrを追加すると消える
     if(tagName(root)=='tbody')
       doc.createElement('table').appendChild(root);
@@ -1926,14 +1926,14 @@ function convertToHTMLString(src, safe){
     root = doc.createElement('div');
   }
   root.innerHTML = html;
-  
+
   forEach($x('.//*[contains(",' + me.UNSAFE_ELEMENTS + ',", concat(",", local-name(.), ","))]', root, true), removeElement);
   forEach(doc.evaluate('.//@*[not(contains(",' + me.SAFE_ATTRIBUTES + ',", concat(",", local-name(.), ",")))]', root, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE, null), function(attr){
     attr.ownerElement.removeAttribute(attr.name);
   });
-  
+
   src = appendChildNodes(doc.createDocumentFragment(), root.childNodes);
-  
+
   // 再度HTML文字列へ変換する
   return me(src);
 }
@@ -1954,15 +1954,15 @@ function convertToPlainText(src){
   // DOM要素または選択範囲か?
   if(typeof(src)!='string')
     src = convertToHTMLString(src);
-  
+
   // DocumentEncoder(text/plan)を用いるとpre要素内の選択で改行が欠落した
   // クリップボードへのコピー処理と同一のフレーバー作成の方法を使う
   var res = {};
   var converter = new HTMLFormatConverter();
-  
+
   // 2倍のバッファサイズはnsCopySupport.cppの実装より(HTMLの2倍の文字列になることはないという仮定と思われる)
   converter.convert('text/html', new SupportsString(src), src.length * 2, 'text/unicode', res, {})
-  
+
   return broad(res.value).data.replace(/\r/g, '').trim();
 }
 
@@ -1995,15 +1995,15 @@ function appendMenuItem(menu, label, image, hasChildren){
   var doc = menu.ownerDocument;
   if((/^----/).test(label))
     return menu.appendChild(doc.createElement('menuseparator'));
-  
+
   var item = menu.appendChild(doc.createElement(hasChildren? 'menu' : 'menuitem'));
   item.setAttribute('label', label);
-  
+
   if(image){
     item.setAttribute('class', hasChildren? 'menu-iconic' : 'menuitem-iconic');
     item.setAttribute('image', image);
   }
-  
+
   return item;
 }
 
@@ -2013,7 +2013,7 @@ function keyString(e){
   for(var name in KeyEvent)
     if(name.indexOf('DOM_VK_')==0)
       table[KeyEvent[name]] = name.substring(7);
-  
+
   return (keyString = function(e){
     var code = e.keyCode;
     var res = [];
@@ -2024,7 +2024,7 @@ function keyString(e){
 
     if((code < KeyEvent.DOM_VK_SHIFT || KeyEvent.DOM_VK_ALT < code) && code != KeyEvent.DOM_VK_META)
       res.push(table[code]);
-    
+
     return res.join(' + ');
   })(e);
 }
@@ -2036,28 +2036,28 @@ function cancel(e){
 
 function capture(src, pos, dim, scale){
   pos = pos || {x:0, y:0};
-  
+
   // デフォルトではAppShellService.hiddenDOMWindowが使われる
   var canvas = document.createElementNS(HTML_NS, 'canvas');
   var ctx = canvas.getContext('2d');
   canvas.width = dim.w;
   canvas.height = dim.h;
-  
+
   if(scale){
     scale = scale.w? scale.w/dim.w :
       scale.h? scale.h/dim.h : scale;
-    
+
     canvas.width = dim.w * scale;
     canvas.height = dim.h * scale;
     ctx.scale(scale, scale);
   }
-  
+
   if(src instanceof Ci.nsIDOMHTMLImageElement){
     ctx.drawImage(src, pos.x, pos.y);
   } else {
     ctx.drawWindow(src, pos.x, pos.y, dim.w, dim.h, '#FFF');
   }
-  
+
   return canvas.toDataURL('image/png', '');
 }
 
@@ -2065,12 +2065,12 @@ function convertToDataURL(src){
   return loadImage(src).addCallback(function(img){
     var canvas = document.createElementNS(HTML_NS, 'canvas');
     var ctx = canvas.getContext('2d');
-    
+
     canvas.width = img.width;
     canvas.height = img.height;
-    
+
     ctx.drawImage(img, 0, 0);
-    
+
     return canvas.toDataURL('image/png', '');
   });
 }
@@ -2079,32 +2079,32 @@ function toGrayScale(src){
   return loadImage(src).addCallback(function(img){
     var canvas = document.createElementNS(HTML_NS, 'canvas');
     var ctx = canvas.getContext('2d');
-    
+
     canvas.width = img.width;
     canvas.height = img.height;
-    
+
     ctx.drawImage(img, 0, 0);
-    
+
     var image = ctx.getImageData(0, 0, img.width, img.height);
     for(var i=0, d=image.data, len=d.length ; i<len ; i+=4)
       d[i] = d[i+1] = d[i+2] = (d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114);
-    
+
     ctx.putImageData(image, 0, 0);
-    
+
     return canvas.toDataURL();
   });
 }
 
 function loadImage(src){
   var d = new Deferred();
-  
+
   if(src instanceof Ci.nsIDOMHTMLImageElement){
     var img = src;
   } else {
     var img = document.createElementNS(HTML_NS, 'img');
     img.src = src;
   }
-  
+
   img.addEventListener('load', function(){
     try{
       d.callback(img);
@@ -2112,18 +2112,18 @@ function loadImage(src){
       // ロードが複数回呼び出されて発生するエラーを抑止する
     }
   }, false);
-  
+
   img.addEventListener('error', function(){
     d.errback(img);
   }, false);
-  
+
   return d;
 }
 
 function getSelectionContents(sel){
   if(!sel)
     return;
-  
+
   sel = (sel.getSelection)? sel.getSelection() : sel;
   if(sel.rangeCount && !sel.isCollapsed)
     return sel.getRangeAt(0).cloneContents();
@@ -2151,16 +2151,16 @@ function observeMouseShortcut(target, check){
       target.addEventListener('keydown', onKeyDown, true);
       target.addEventListener('keypress', cancelEvent, true);
       executed = false;
-      
+
       // Firefox 2において後でclientXなどが取得できなくなるためクローンする
       event = update({}, e);
     }
-    
+
     downed[BUTTONS[e.button]] = true;
-    
+
     checkKey(e, [keyString(e), keys(downed)])
   }, true);
-  
+
   target.addEventListener('mouseup', function(e){
     delete downed[BUTTONS[e.button]];
     if(isEmpty(downed)){
@@ -2169,35 +2169,35 @@ function observeMouseShortcut(target, check){
       event = null;
     }
   }, true);
-  
+
   target.addEventListener('contextmenu', cancelEvent, true);
   target.addEventListener('click', cancelEvent, true);
-  
+
   function cancelEvent(e){
     // クリックによる遷移やコンテキストメニュー、ショートカットキーなどを抑制する
     if(executed)
       cancel(e)
   }
-  
+
   function onKeyDown(e){
     var code = e.keyCode;
     if(KeyEvent.DOM_VK_SHIFT <= code && code <= KeyEvent.DOM_VK_ALT)
       return;
-    
+
     if(executed){
       cancel(e)
       return;
     }
-    
+
     if(checkKey(e, [keys(downed), keyString(e)]))
       cancel(e);
   }
-  
+
   function checkKey(e, keys){
     var hit = !check(event, joinText(keys, (' + ')));
     if(hit)
       executed = true;
-    
+
     return hit;
   }
 }
@@ -2205,7 +2205,7 @@ function observeMouseShortcut(target, check){
 function selectElement(doc){
   var deferred = new Deferred();
   doc = doc || currentDocument();
-  
+
   var target;
   function onMouseOver(e){
     target = e.target;
@@ -2217,13 +2217,13 @@ function selectElement(doc){
   }
   function onClick(e){
     cancel(e);
-    
+
     finalize();
     deferred.callback(target);
   }
   function onKeyDown(e){
     cancel(e);
-    
+
     switch(keyString(e)){
     case 'ESCAPE':
       finalize();
@@ -2242,15 +2242,15 @@ function selectElement(doc){
     doc.removeEventListener('mouseout', onMouseOut, true);
     doc.removeEventListener('click', onClick, true);
     doc.removeEventListener('keydown', onKeyDown, true);
-    
+
     unpoint(target);
   }
-  
+
   doc.addEventListener('mouseover', onMouseOver, true);
   doc.addEventListener('mouseout', onMouseOut, true);
   doc.addEventListener('click', onClick, true);
   doc.addEventListener('keydown', onKeyDown, true);
-  
+
   return deferred;
 }
 selectElement.TARGET_BACKGROUND = '#888';
@@ -2258,11 +2258,11 @@ selectElement.TARGET_BACKGROUND = '#888';
 function selectRegion(doc){
   var deferred = new Deferred();
   doc = doc || currentDocument();
-  
+
   var win = doc.defaultView;
-  
+
   doc.documentElement.style.cursor = 'crosshair';
-  
+
   var style = doc.createElement('style');
   style.innerHTML = commentToText(function(){/*
     * {
@@ -2271,7 +2271,7 @@ function selectRegion(doc){
     }
   */});
   doc.body.appendChild(style);
-  
+
   var region, p, d, moving, square;
   function mouse(e){
     return {
@@ -2279,10 +2279,10 @@ function selectRegion(doc){
       y: e.clientY
     };
   }
-  
+
   function onMouseMove(e){
     var to = mouse(e);
-    
+
     if(moving){
       p = {
         x: Math.max(to.x - d.w, 0),
@@ -2290,7 +2290,7 @@ function selectRegion(doc){
       };
       setElementPosition(region, p);
     }
-    
+
     d = {
       w: to.x - p.x,
       h: to.y - p.y
@@ -2301,10 +2301,10 @@ function selectRegion(doc){
     }
     setElementDimensions(region, d);
   }
-  
+
   function onMouseDown(e){
     cancel(e);
-    
+
     p = mouse(e);
     region = doc.createElement('div');
     region.setAttribute('style', [
@@ -2316,16 +2316,16 @@ function selectRegion(doc){
       'left       : ' + p.x + 'px;'
     ].join('\n'));
     doc.body.appendChild(region);
-    
+
     doc.addEventListener('mousemove', onMouseMove, true);
     doc.addEventListener('mouseup', onMouseUp, true);
     win.addEventListener('keydown', onKeyDown, true);
     win.addEventListener('keyup', onKeyUp, true);
   }
-  
+
   function onKeyDown(e){
     cancel(e);
-    
+
     switch(keyString(e)){
     case 'SHIFT': square = true; return;
     case 'SPACE': moving = true; return;
@@ -2335,59 +2335,59 @@ function selectRegion(doc){
       return;
     }
   }
-  
+
   function onKeyUp(e){
     cancel(e);
-    
+
     switch(keyString(e)){
     case 'SHIFT': square = false; return;
     case 'SPACE': moving = false; return;
     }
   }
-  
+
   function onMouseUp(e){
     cancel(e);
-    
+
     p = getElementPosition(region);
     finalize();
-    
+
     // FIXME: 暫定/左上方向への選択不可/クリックとのダブルインターフェース未実装
     if(!d || d.w<0 || d.h<0){
       deferred.cancel();
       return;
     }
-    
+
     deferred.callback({
       position: p,
       dimensions: d,
     });
   }
-  
+
   function onClick(e){
     // リンククリックによる遷移を抑止する
     cancel(e);
-    
+
     // mouseupよりも後にイベントが発生するため、ここで取り除く
     doc.removeEventListener('click', onClick, true);
   }
-  
+
   function finalize(){
     doc.removeEventListener('mousedown', onMouseDown, true);
     doc.removeEventListener('mousemove', onMouseMove, true);
     doc.removeEventListener('mouseup', onMouseUp, true);
     win.removeEventListener('keydown', onKeyDown, true);
     win.removeEventListener('keyup', onKeyUp, true);
-    
+
     doc.documentElement.style.cursor = '';
-    
+
     removeElement(region);
     removeElement(style);
   }
-  
+
   doc.addEventListener('mousedown', onMouseDown, true);
   doc.addEventListener('click', onClick, true);
   doc.defaultView.focus();
-  
+
   return deferred;
 }
 
@@ -2411,7 +2411,7 @@ function flashView(doc){
       d.callback();
     },
   });
-  
+
   return d;
 }
 
@@ -2426,8 +2426,8 @@ AbstractSessionService = {
    * セッションの同一性を確認する。
    * セッションが変わっていたら以前のアカウントデータは消去される。
    * セッションの同一性は、サブクラスのgetAuthCookieの返り値で判定される。
-   * 
-   * @return {String} 
+   *
+   * @return {String}
    *         セッションが以前と同一ならsame、
    *         変わっていたらchanged、
    *         存在しない場合はnoneが、それぞれ返る。
@@ -2436,27 +2436,27 @@ AbstractSessionService = {
     var cookie = this.getAuthCookie();
     if(cookie && this.cookie == cookie)
       return 'same';
-    
+
     delete this.cookie;
     delete this.user;
     delete this.token;
     delete this.password;
-    
+
     if(!cookie)
       return 'none';
-    
+
     this.cookie = cookie;
-    
+
     return 'changed';
   },
-  
+
   /**
    * セッションに関連するトークンやユーザー名などの情報を取得する。
    *
-   * @param {String} key 
+   * @param {String} key
    *        取得対象プロパティ名。
    *        user/token/passwordのいずれかを想定。
-   * @param {Function} func 
+   * @param {Function} func
    *        セッション値取得関数。
    *        新規取得時またはセッション変更時に呼び出される。
    *        Deferred経由で値を返すこと。
@@ -2466,11 +2466,11 @@ AbstractSessionService = {
     switch (this.updateSession()){
     case 'none':
       return fail(new Error(getMessage('error.notLoggedin')));
-    
+
     case 'same':
       if(self[key])
         return succeed(self[key]);
-    
+
     case 'changed':
       return func.apply(self).addCallback(function(value){
         return self[key] = value;

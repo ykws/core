@@ -43,7 +43,7 @@ button,
 window {
   font-size: 90%;
   background-color: transparent;
-  
+
   width: 22em;
 }
 
@@ -119,7 +119,7 @@ resizer[dir="bottomright"] {
 #toggleDetail{
   list-style-image: url(chrome://tombfix/skin/arrow-down.png);
   margin-left : 5px;
-  
+
   /* 押しやすいように少し拡げる */
   border: transparent solid;
   border-width: 3px 5px;
@@ -136,7 +136,7 @@ resizer[dir="bottomright"] {
 
 #close{
   list-style-image: url(chrome://tombfix/skin/mac/close.png);
-  
+
   /* 押しやすいように左下へ拡げる */
   border: transparent solid;
   border-width: 0 0 4px 4px;
@@ -190,12 +190,12 @@ resizer[dir="bottomright"] {
 
 #tags description label{
   cursor: pointer !important;
-  
+
   color: #AAA;
-  
+
   border-color: #E8E8E8;
   border-style: solid;
-  
+
   padding: 2px 3px;
   border-width: 0 5px;
   border-radius: 6px;
@@ -213,7 +213,7 @@ resizer[dir="bottomright"] {
 #tags description label:hover{
   background: #CCC;
   color: white;
-  
+
   padding: 4px 5px;
   border-width: 0 3px;
   border-radius: 4px;
@@ -223,7 +223,7 @@ resizer[dir="bottomright"] {
 
 #tags description label:hover:active{
   background: #AAA;
-  
+
   /* 押したリアクションを追加するとガタつく */
 }
 
@@ -271,7 +271,7 @@ div{
   width: 16px;
   height: 16px;
   box-sizing: content-box;
-  
+
   /*
   横方向の調整にborderを使いマウスオーバーしない時間を減らす。
   (横にスライドしながら選択できるようにする)
@@ -286,7 +286,7 @@ div{
 #posters image.poster:hover{
   width: 24px;
   height: 24px;
-  
+
   border-width: 0 4px;
   margin: 0;
 }
@@ -294,7 +294,7 @@ div{
 #posters image.poster:hover:active{
   width: 22px;
   height: 22px;
-  
+
   border-width: 0 5px;
 }
 
@@ -308,12 +308,12 @@ div{
   background: #777;
   color: white;
   font-size: 70%;
-  
+
   margin: 6px 0 6px 24px;
   border: transparent solid;
   border-width: 3px 4px;
   border-radius: 1px;
-  
+
   vertical-align: top;
 }
 
@@ -324,7 +324,7 @@ div{
 #posters .label-button:hover:active{
   /* ちょっと押し込んだみたいに */
   border-width: 2px 3px 3px 4px;
-  
+
   color: #DDD;
   background: #666;
 }
@@ -334,10 +334,10 @@ div{
   border-radius: 2px;
   display : none;
   color: #333;
-  
+
   padding: 0.7em;
   margin: 0.8em 2px 0 2px;
-  
+
   background: #FFFF99;
   border: 1px solid #F0D67C;
 }

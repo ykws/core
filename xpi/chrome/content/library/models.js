@@ -79,7 +79,7 @@ var Tumblr = update({}, AbstractSessionService, {
   ORIGIN : 'https://www.tumblr.com',
   TUMBLR_URL : 'http://www.tumblr.com/',
   SVC_URL : 'https://www.tumblr.com/svc/',
-  
+
   /**
    * reblog情報を取り除く。
    *
@@ -89,7 +89,7 @@ var Tumblr = update({}, AbstractSessionService, {
   trimReblogInfo : function(form){
     if(!getPref('model.tumblr.trimReblogInfo'))
      return;
-     
+
     function trimQuote(entry){
       entry = entry.replace(/<p><\/p>/g, '').replace(/<p><a[^<]+<\/a>:<\/p>/g, '');
       entry = (function callee(all, contents){
@@ -97,7 +97,7 @@ var Tumblr = update({}, AbstractSessionService, {
       })(null, entry);
       return entry.trim();
     }
-    
+
     switch(form['post[type]']){
     case 'link':
       form['post[three]'] = trimQuote(form['post[three]']);
@@ -111,10 +111,10 @@ var Tumblr = update({}, AbstractSessionService, {
       form['post[two]'] = form['post[two]'].replace(/ \(via <a.*?<\/a>\)/g, '').trim();
       break;
     }
-    
+
     return form;
   },
-  
+
   /**
    * ポスト可能かをチェックする。
    *
@@ -124,7 +124,7 @@ var Tumblr = update({}, AbstractSessionService, {
   check : function(ps){
     return (/(regular|photo|quote|link|conversation|video)/).test(ps.type);
   },
-  
+
   /**
    * 新規エントリーをポストする。
    *
@@ -137,14 +137,14 @@ var Tumblr = update({}, AbstractSessionService, {
     return this.postForm(function(){
       return self.getForm(endpoint).addCallback(function(form){
         update(form, Tumblr[ps.type.capitalize()].convertToForm(ps));
-        
+
         self.appendTags(form, ps);
-        
+
         return request(endpoint, {sendContent : form});
       });
     });
   },
-  
+
   /**
    * ポストフォームを取得する。
    * reblogおよび新規エントリーのどちらでも利用できる。
@@ -184,7 +184,7 @@ var Tumblr = update({}, AbstractSessionService, {
     }).addCallback(function(form){
       if(form.reblog_post_id){
         self.trimReblogInfo(form);
-        
+
         // Tumblrから他サービスへポストするため画像URLを取得しておく
         if (form['post[type]'] === 'photo') {
           form.image = $x('id("edit_post")//img[contains(@src, "media.tumblr.com/") or contains(@src, "data.tumblr.com/")]/@src', doc);
@@ -214,11 +214,11 @@ var Tumblr = update({}, AbstractSessionService, {
           }
         }
       }
-      
+
       return form;
     });
   },
-  
+
   /**
    * フォームへタグとプライベートを追加する。
    *
@@ -228,11 +228,11 @@ var Tumblr = update({}, AbstractSessionService, {
   appendTags : function(form, ps){
     if(ps.private!=null)
       form['post[state]'] = (ps.private)? 'private' : 0;
-    
+
     if (ps.type !== 'regular' && getPref('model.tumblr.queue')) {
       form['post[state]'] = 2;
     }
-    
+
     if (getPref('model.tumblr.appendContentSource')) {
       if (!ps.favorite || !ps.favorite.name || ps.favorite.name !== 'Tumblr') {
         // not reblog post
@@ -244,12 +244,12 @@ var Tumblr = update({}, AbstractSessionService, {
         }
       }
     }
-    
+
     return update(form, {
       'post[tags]' : (ps.tags && ps.tags.length)? joinText(ps.tags, ',') : '',
     });
   },
-  
+
   /**
    * reblogする。
    * Extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
@@ -265,17 +265,17 @@ var Tumblr = update({}, AbstractSessionService, {
     })).forEach(function([name, value]){
       if(!value)
         return;
-      
+
       form[name] += '\n\n' + value;
     });
-    
+
     this.appendTags(form, ps);
-    
+
     return this.postForm(function(){
       return request(ps.favorite.endpoint, {sendContent : form})
     });
   },
-  
+
   /**
    * フォームをポストする。
    * 新規エントリーとreblogのエラー処理をまとめる。
@@ -292,27 +292,27 @@ var Tumblr = update({}, AbstractSessionService, {
       switch(true){
       case /dashboard/.test(url):
         return;
-      
+
       case /login/.test(url):
         throw new Error(getMessage('error.notLoggedin'));
-      
+
       default:
         // このチェックをするためリダイレクトを追う必要がある
         // You've used 100% of your daily photo uploads. You can upload more tomorrow.
         if(res.responseText.match('more tomorrow'))
           throw new Error("You've exceeded your daily post limit.");
-        
+
         var doc = convertToHTMLDocument(res.responseText);
         throw new Error(convertToPlainText(doc.getElementById('errors') || doc.querySelector('.errors')));
       }
     });
     return d;
   },
-  
+
   getPasswords : function(){
     return getPasswords('https://www.tumblr.com');
   },
-  
+
   login : function(user, password){
     var LOGIN_FORM_URL = 'https://www.tumblr.com/login';
     var self = this;
@@ -335,15 +335,15 @@ var Tumblr = update({}, AbstractSessionService, {
       });
     });
   },
-  
+
   logout : function(){
     return request(Tumblr.TUMBLR_URL+'logout');
   },
-  
+
   getAuthCookie : function(){
     return getCookieString('www.tumblr.com');
   },
-  
+
   /**
    * ログイン中のユーザーを取得する。
    * 結果はキャッシュされ、再ログインまで再取得は行われない。
@@ -355,11 +355,11 @@ var Tumblr = update({}, AbstractSessionService, {
     switch (this.updateSession()){
     case 'none':
       return succeed('');
-      
+
     case 'same':
       if(this.user)
         return succeed(this.user);
-      
+
     case 'changed':
       var self = this;
       return request(Tumblr.TUMBLR_URL+'preferences').addCallback(function(res){
@@ -368,7 +368,7 @@ var Tumblr = update({}, AbstractSessionService, {
       });
     }
   },
-  
+
   getTumblelogs : function(){
     return request(Tumblr.TUMBLR_URL+'new/text').addCallback(function(res){
       var doc = convertToHTMLDocument(res.responseText);
@@ -499,12 +499,12 @@ Tumblr.Photo = {
       't'           : ps.item,
       'u'           : ps.pageUrl,
       'post[two]'   : joinText([
-        (ps.item? ps.item.link(ps.pageUrl) : '') + (ps.author? ' (via ' + ps.author.link(ps.authorUrl) + ')' : ''), 
+        (ps.item? ps.item.link(ps.pageUrl) : '') + (ps.author? ' (via ' + ps.author.link(ps.authorUrl) + ')' : ''),
         ps.description], '\n\n'),
       'post[three]' : ps.pageUrl,
     };
     ps.file? (form['images[o1]'] = ps.file) : (form['photo_src'] = ps.itemUrl);
-    
+
     return form;
   },
 }
@@ -515,7 +515,7 @@ Tumblr.Video = {
       'post[type]' : ps.type,
       'post[one]'  : getFlavor(ps.body, 'html') || ps.itemUrl,
       'post[two]'  : joinText([
-        (ps.item? ps.item.link(ps.pageUrl) : '') + (ps.author? ' (via ' + ps.author.link(ps.authorUrl) + ')' : ''), 
+        (ps.item? ps.item.link(ps.pageUrl) : '') + (ps.author? ' (via ' + ps.author.link(ps.authorUrl) + ')' : ''),
         ps.description], '\n\n'),
     };
   },
@@ -585,7 +585,7 @@ request = function(url, opts){
       CookieManager.remove('www.tumblr.com', 'disable_mobile_layout', '/', false);
     }
   }
-  
+
   return request_(url, opts);
 };
 
@@ -764,17 +764,17 @@ Models.register({
   name : 'FFFFOUND',
   ICON : 'http://ffffound.com/favicon.ico',
   URL  : 'http://FFFFOUND.com/',
-  
+
   getToken : function(){
     return request(FFFFOUND.URL + 'bookmarklet.js').addCallback(function(res){
       return res.responseText.match(/token ?= ?'(.*?)'/)[1];
     });
   },
-  
+
   check : function(ps){
     return ps.type == 'photo' && !ps.file;
   },
-  
+
   post : function(ps){
     return this.getToken().addCallback(function(token){
       return request(FFFFOUND.URL + 'add_asset', {
@@ -788,17 +788,17 @@ Models.register({
       }).addCallback(function(res){
         if(res.responseText.match('(FAILED:|ERROR:) +(.*?)</span>'))
           throw new Error(RegExp.$2.trim());
-        
+
         if(res.responseText.match('login'))
           throw new Error(getMessage('error.notLoggedin'));
       });
     });
   },
-  
+
   favor : function(ps){
     return this.iLoveThis(ps.favorite.id)
   },
-  
+
   remove : function(id){
     return request(FFFFOUND.URL + 'gateway/in/api/remove_asset', {
       referrer : FFFFOUND.URL,
@@ -807,7 +807,7 @@ Models.register({
       },
     });
   },
-  
+
   iLoveThis : function(id){
     return request(FFFFOUND.URL + 'gateway/in/api/add_asset', {
       referrer : FFFFOUND.URL,
@@ -819,7 +819,7 @@ Models.register({
       var error = res.responseText.extract(/"error":"(.*?)"/);
       if(error == 'AUTH_FAILED')
         throw new Error(getMessage('error.notLoggedin'));
-      
+
       // NOT_FOUND / EXISTS / TOO_BIG
       if(error)
         throw new Error(RegExp.$1.trim());
@@ -1047,11 +1047,11 @@ Models.register({
 Models.register({
   name : 'Local',
   ICON : 'chrome://tombfix/skin/local.ico',
-  
+
   check : function(ps){
     return (/(regular|photo|quote|link)/).test(ps.type);
   },
-  
+
   post : function(ps){
     if(ps.type=='photo'){
       return this.Photo.post(ps);
@@ -1059,21 +1059,21 @@ Models.register({
       return Local.append(getDataDir(ps.type + '.txt'), ps);
     }
   },
-  
+
   append : function(file, ps){
     putContents(file, joinText([
-      joinText([joinText(ps.tags, ' '), ps.item, ps.itemUrl, ps.body, ps.description], '\n\n', true), 
+      joinText([joinText(ps.tags, ' '), ps.item, ps.itemUrl, ps.body, ps.description], '\n\n', true),
       getContents(file)
     ], '\n\n\n'));
-    
+
     return succeed();
   },
-  
+
   Photo : {
     post : function(ps){
       var file = getDataDir('photo');
       createDir(file);
-      
+
       if(ps.file){
         file.append(ps.file.leafName);
       } else {
@@ -1082,7 +1082,7 @@ Models.register({
         file.append(fileName);
       }
       clearCollision(file);
-      
+
       return succeed().addCallback(function(){
         if(ps.file){
           ps.file.copyTo(file.parent, file.leafName);
@@ -1093,13 +1093,13 @@ Models.register({
       }).addCallback(function(file){
         if(AppInfo.OS == 'Darwin'){
           var script = getTempDir('setcomment.scpt');
-          
+
           putContents(script, [
             'set aFile to POSIX file ("' + file.path + '" as Unicode text)',
             'set cmtStr to ("' + ps.pageUrl + '" as Unicode text)',
             'tell application "Finder" to set comment of (file aFile) to cmtStr'
           ].join('\n'), 'UTF-16');
-          
+
           var process = new Process(new LocalFile('/usr/bin/osascript'));
           process.run(false, [script.path], 1);
         }
@@ -1449,18 +1449,18 @@ Models.register(update({
 Models.register(update({
   name : 'Plurk',
   ICON : 'http://www.plurk.com/static/favicon.png',
-  
+
   check : function(ps){
     return (/(regular|photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
   },
-  
+
   post : function(ps){
     return Plurk.addPlurk(
       ':',
       joinText([ps.item, ps.itemUrl, ps.body, ps.description], ' ', true)
     );
   },
-  
+
   addPlurk : function(qualifier, content){
     return Plurk.getToken().addCallback(function(token){
       return request('http://www.plurk.com/TimeLine/addPlurk', {
@@ -1472,21 +1472,21 @@ Models.register(update({
       });
     });
   },
-  
+
   getAuthCookie : function(){
     return getCookieString('plurk.com', 'plurkcookiea').extract(/user_id=(.+)/);
   },
-  
+
   getToken : function(){
     var status = this.updateSession();
     switch (status){
     case 'none':
       throw new Error(getMessage('error.notLoggedin'));
-      
+
     case 'same':
       if(this.token)
         return succeed(this.token);
-      
+
     case 'changed':
       var self = this;
       return request('http://www.plurk.com/').addCallback(function(res){
@@ -1514,11 +1514,11 @@ Models.register({
   name : 'GoogleBookmarks',
   ICON : Models.Google.ICON,
   POST_URL : 'https://www.google.com/bookmarks/mark',
-  
+
   check : function(ps){
     return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
   },
-  
+
   post : function(ps){
     return request(this.POST_URL, {
       queryString : {
@@ -1529,7 +1529,7 @@ Models.register({
       var doc = convertToHTMLDocument(res.responseText);
       if(doc.getElementById('gaia_loginform'))
         throw new Error(getMessage('error.notLoggedin'));
-      
+
       return request('https://www.google.com' + $x('//form[@name="add_bkmk_form"]/@action', doc), {
         redirectionLimit : 0,
         sendContent : update(formContents(doc), {
@@ -1541,7 +1541,7 @@ Models.register({
       });
     });
   },
-  
+
   getEntry : function(url){
     return request(this.POST_URL, {
       queryString : {
@@ -1560,7 +1560,7 @@ Models.register({
       };
     });
   },
-  
+
   getUserTags : function(){
     return request('https://www.google.com/bookmarks/mark', {
       queryString : {
@@ -1577,7 +1577,7 @@ Models.register({
       });
     });
   },
-  
+
   getSuggestions : function(url){
     var self = this;
     return new DeferredHash({
@@ -1848,17 +1848,17 @@ Models.register({
   name     : 'Evernote',
   ICON     : 'chrome://tombfix/skin/favicon/evernote.ico',
   POST_URL : 'https://www.evernote.com/clip.action',
-   
+
   check : function(ps){
     return (/(regular|quote|link|conversation|video)/).test(ps.type) && !ps.file;
   },
-  
+
   post : function(ps){
     var self = this;
     ps = update({}, ps);
     if(!this.getAuthCookie())
       throw new Error(getMessage('error.notLoggedin'));
-    
+
     var d = succeed();
     if(ps.type=='link' && !ps.body && getPref('model.evernote.clipFullPage')){
       d = request(ps.itemUrl).addCallback(function(res){
@@ -1866,7 +1866,7 @@ Models.register({
         ps.body = convertToHTMLString(doc.documentElement, true);
       });
     }
-    
+
     return d.addCallback(function(){
       return self.getToken();
     }).addCallback(function(token){
@@ -1875,7 +1875,7 @@ Models.register({
         sendContent : update(token, {
           saveQuicknote : 'save',
           format        : 'microclip',
-          
+
           url      : ps.itemUrl,
           title    : ps.item || 'no title',
           comment  : ps.description,
@@ -1890,15 +1890,15 @@ Models.register({
         throw new Error('An error might occur.');
     });
   },
-  
+
   getAuthCookie : function(){
     return getCookieString('evernote.com', 'auth');
   },
-  
+
   getToken : function(){
     return request(this.POST_URL, {
       sendContent: {
-        format    : 'microclip', 
+        format    : 'microclip',
         quicknote : 'true'
       }
     }).addCallback(function(res){
@@ -1916,24 +1916,24 @@ Models.register({
 Models.register(update({
   name : 'Pinboard',
   ICON : 'http://pinboard.in/favicon.ico',
-  
+
   check : function(ps){
     return (/(photo|quote|link|conversation|video)/).test(ps.type) && !ps.file;
   },
-  
+
   getCurrentUser : function(){
     var cookie = getCookies('pinboard.in', 'login')[0];
     if(!cookie)
       throw new Error(getMessage('error.notLoggedin'));
-    
+
     return cookie.value;
   },
-  
+
   post : function(ps){
     var self = this;
     return succeed().addCallback(function(){
       self.getCurrentUser();
-      
+
       return request('https://pinboard.in/add', {
         queryString : {
           title : ps.item,
@@ -1943,30 +1943,30 @@ Models.register(update({
     }).addCallback(function(res){
       var doc = convertToHTMLDocument(res.responseText);
       var form = formContents($x('//form[contains(@action, "add")]', doc));
-      
+
       return request('https://pinboard.in/add', {
         sendContent : update(form, {
           title       : ps.item,
           url         : ps.itemUrl,
           description : joinText([ps.body, ps.description], ' ', true),
           tags        : joinText(ps.tags, ' '),
-          private     : 
-            (ps.private == null)? form.private : 
+          private     :
+            (ps.private == null)? form.private :
             (ps.private)? 'on' : '',
         }),
       });
     });
   },
-  
+
   getUserTags : function(){
     var self = this;
     return succeed().addCallback(function(){
       self.getCurrentUser();
-      
+
       return request('https://pinboard.in/user_tag_list/');
     }).addCallback(function(res){
       return evalInSandbox(
-        res.responseText, 
+        res.responseText,
         'https://pinboard.in/'
       ).usertags.map(function(tag){
         // 数字のみのタグが数値型になり並べ替え時の比較で失敗するのを避ける
@@ -1977,7 +1977,7 @@ Models.register(update({
       });
     });
   },
-  
+
   getRecommendedTags : function(url){
     return request('https://pinboard.in/ajax_suggest', {
       queryString : {
@@ -1985,14 +1985,14 @@ Models.register(update({
       }
     }).addCallback(function(res){
       // 空配列ではなく、空文字列が返ることがある
-      return res.responseText? 
+      return res.responseText?
         evalInSandbox(res.responseText, 'https://pinboard.in/').map(function(tag){
           // 数字のみのタグが数値型になるのを避ける
           return ''+tag;
         }) : [];
     });
   },
-  
+
   getSuggestions : function(url){
     var self = this;
     var ds = {
@@ -2000,7 +2000,7 @@ Models.register(update({
       recommended : this.getRecommendedTags(url),
       suggestions : succeed().addCallback(function(){
         self.getCurrentUser();
-        
+
         return request('https://pinboard.in/add', {
           queryString : {
             url : url,
@@ -2016,19 +2016,19 @@ Models.register(update({
             tags        : form.tags.split(' '),
             private     : !!form.private,
           },
-          
+
           // 入力の有無で簡易的に保存済みをチェックする
           // (submitボタンのラベルやalertの有無でも判定できる)
           duplicated : !!(form.tags || form.description),
         }
       })
     };
-    
+
     return new DeferredHash(ds).addCallback(function(ress){
       var res = ress.suggestions[1];
-      res.recommended = ress.recommended[1]; 
+      res.recommended = ress.recommended[1];
       res.tags = ress.tags[1];
-      
+
       return res;
     });
   },
@@ -2264,41 +2264,41 @@ Models.register({
   name : 'FirefoxBookmark',
   ICON : 'chrome://tombfix/skin/firefox.ico',
   ANNO_DESCRIPTION : 'bookmarkProperties/description',
-  
+
   check : function(ps){
     return ps.type == 'link';
   },
-  
+
   post : function(ps){
     return succeed(this.addBookmark(ps.itemUrl, ps.item, ps.tags, ps.description));
   },
-  
+
   addBookmark : function(uri, title, tags, description){
     var bs = NavBookmarksService;
-    
+
     var folder;
     var index = bs.DEFAULT_INDEX;
-    
+
     // ハッシュタイプの引数か?
     if(typeof(uri)=='object' && !(uri instanceof IURI)){
       if(uri.index!=null)
         index = uri.index;
-      
+
       folder = uri.folder;
       title = uri.title;
       tags = uri.tags;
       description = uri.description;
       uri = uri.uri;
     }
-    
+
     uri = createURI(uri);
     tags = tags || [];
-    
+
     // フォルダが未指定の場合は未整理のブックマークになる
-    folder = (!folder)? 
-      bs.unfiledBookmarksFolder : 
+    folder = (!folder)?
+      bs.unfiledBookmarksFolder :
       this.createFolder(folder);
-    
+
     // 同じフォルダにブックマークされていないか?
     if(!bs.getBookmarkIdsForURI(uri, {}).some(function(item){
       return bs.getFolderIdForItem(item) == folder;
@@ -2306,16 +2306,16 @@ Models.register({
       var folders = [folder].concat(tags.map(bind('createTag', this)));
       folders.forEach(function(folder){
         bs.insertBookmark(
-          folder, 
+          folder,
           uri,
           index,
           title);
       });
     }
-    
+
     this.setDescription(uri, description);
   },
-  
+
   getBookmark : function(uri){
     uri = createURI(uri);
     var item = this.getBookmarkId(uri);
@@ -2326,23 +2326,23 @@ Models.register({
         description : this.getDescription(item),
       };
   },
-  
+
   isBookmarked : function(uri){
     return this.getBookmarkId(uri) != null;
-    
+
     // 存在しなくてもtrueが返ってくるようになり利用できない
     // return NavBookmarksService.isBookmarked(createURI(uri));
   },
-  
+
   isVisited : function(uri) {
     try{
       var query = NavHistoryService.getNewQuery();
       var options = NavHistoryService.getNewQueryOptions();
       query.uri = createURI(uri);
-      
+
       var root = NavHistoryService.executeQuery(query, options).root;
       root.containerOpen = true;
-      
+
       return !!root.childCount;
     } catch(e) {
       return false;
@@ -2350,29 +2350,29 @@ Models.register({
       root.containerOpen = false;
     }
   },
-  
+
   removeBookmark : function(uri){
     this.removeItem(this.getBookmarkId(uri));
   },
-  
+
   removeItem : function(itemId){
     NavBookmarksService.removeItem(itemId);
   },
-  
+
   getBookmarkId : function(uri){
     if(typeof(uri)=='number')
       return uri;
-    
+
     uri = createURI(uri);
     return NavBookmarksService.getBookmarkIdsForURI(uri, {}).filter(function(item){
       while(item = NavBookmarksService.getFolderIdForItem(item))
         if(item == NavBookmarksService.tagsFolder)
           return false;
-      
+
       return true;
     })[0];
   },
-  
+
   getDescription : function(uri){
     try{
       return AnnotationService.getItemAnnotation(this.getBookmarkId(uri), this.ANNO_DESCRIPTION);
@@ -2380,22 +2380,22 @@ Models.register({
       return '';
     }
   },
-  
+
   setDescription : function(uri, description){
     if(description == null)
       return;
-    
+
     description = description || '';
     try{
-      AnnotationService.setItemAnnotation(this.getBookmarkId(uri), this.ANNO_DESCRIPTION, description, 
+      AnnotationService.setItemAnnotation(this.getBookmarkId(uri), this.ANNO_DESCRIPTION, description,
         0, AnnotationService.EXPIRE_NEVER);
     } catch(e){}
   },
-  
+
   createTag : function(name){
     return this.createFolder(name, NavBookmarksService.tagsFolder);
   },
-  
+
   /*
   NavBookmarksServiceに予め存在するフォルダID
     placesRoot
@@ -2404,38 +2404,38 @@ Models.register({
     toolbarFolder
     unfiledBookmarksFolder
   */
-  
+
   /**
    * フォルダを作成する。
    * 既に同名のフォルダが同じ場所に存在する場合は、新たに作成されない。
    *
    * @param {String} name フォルダ名称。
-   * @param {Number} parentId 
+   * @param {Number} parentId
    *        フォルダの追加先のフォルダID。省略された場合ブックマークメニューとなる。
    * @return {Number} 作成されたフォルダID。
    */
   createFolder : function(name, parentId){
     parentId = parentId || NavBookmarksService.bookmarksMenuFolder;
-    
+
     return this.getFolder(name, parentId) ||
       NavBookmarksService.createFolder(parentId, name, NavBookmarksService.DEFAULT_INDEX);
   },
-  
+
   /**
    * フォルダIDを取得する。
    * 既に同名のフォルダが同じ場所に存在する場合は、新たに作成されない。
    *
    * @param {String} name フォルダ名称。
-   * @param {Number} parentId 
+   * @param {Number} parentId
    *        フォルダの追加先のフォルダID。省略された場合ブックマークメニューとなる。
    */
   getFolder : function(name, parentId) {
     parentId = parentId || NavBookmarksService.bookmarksMenuFolder;
-    
+
     let query = NavHistoryService.getNewQuery();
     let options = NavHistoryService.getNewQueryOptions();
     query.setFolders([parentId], 1);
-    
+
     let root = NavHistoryService.executeQuery(query, options).root;
     try{
       root.containerOpen = true;
@@ -2587,7 +2587,7 @@ Models.register({
    * @param {String} task タスク名。
    * @param {Date} due 期日。未指定の場合、当日になる。
    * @param {Array} tags タグ。
-   * @param {String || Number} list 
+   * @param {String || Number} list
    *        追加先のリスト。リスト名またはリストID。未指定の場合、デフォルトのリストとなる。
    */
   addSimpleTask(task, due, tags, list) {
@@ -3027,16 +3027,16 @@ Models.register( {
   name     : 'HatenaDiary',
   ICON     : 'http://d.hatena.ne.jp/favicon.ico',
   POST_URL : 'http://d.hatena.ne.jp',
-  
+
   check : function(ps){
     return (/(regular|photo|quote|link)/).test(ps.type) && !ps.file;
   },
-  
+
   converters: {
     regular : function(ps, title){
       return ps.description;
     },
-    
+
     photo : function(ps, title){
       return [
         '<blockquote cite=' + ps.pageUrl + ' title=' + title + '>',
@@ -3045,14 +3045,14 @@ Models.register( {
         ps.description
       ].join('\n');
     },
-    
+
     link : function(ps, title){
       return [
         '<a href=' + ps.pageUrl + ' title=' + title + '>' + ps.page + '</a>',
         ps.description
       ].join('\n');
     },
-    
+
     quote : function(ps, title){
       return [
         '<blockquote cite=' + ps.pageUrl + ' title=' + title + '>' + ps.body + '</blockquote>',
@@ -3060,10 +3060,10 @@ Models.register( {
       ].join('\n');
     },
   },
-  
+
   post : function(ps){
     var self = this;
-    
+
     return Hatena.getInfo().addCallback(function(info){
       var title = ps.item || ps.page || '';
       var endpoint = [self.POST_URL, info.name, ''].join('/');
@@ -3313,23 +3313,23 @@ Models.register({
 Models.register({
   name : 'LibraryThing',
   ICON : 'http://www.librarything.com/favicon.ico',
-  
+
   check : function(ps){
     return ps.type == 'link' && !ps.file;
   },
-  
+
   getAuthCookie : function(){
     return getCookies('librarything.com', 'cookie_userid');
   },
-  
+
   getHost : function(){
     var cookies = this.getAuthCookie();
     if(!cookies.length)
       throw new Error(getMessage('error.notLoggedin'));
-    
+
     return cookies[0].host;
   },
-  
+
   post : function(ps){
     var self = this;
     return request('http://' + self.getHost() + '/import_submit.php', {
@@ -3340,7 +3340,7 @@ Models.register({
       var err = res.channel.URI.asciiSpec.extract('http://' + self.getHost() + '/import.php?pastealert=(.*)');
       if(err)
         throw new Error(err);
-      
+
       var doc = convertToHTMLDocument(res.responseText);
       return request('http://' + self.getHost() + '/import_questions_submit.php', {
         redirectionLimit : 0,
@@ -3357,7 +3357,7 @@ Models.register({
   name : '8tracks',
   ICON : 'http://8tracks.com/favicon.ico',
   URL  : 'http://8tracks.com',
-  
+
   upload : function(file){
     file = getLocalFile(file);
     return request(this.URL + '/tracks', {
@@ -3374,11 +3374,11 @@ Models.register({
   name : 'is.gd',
   ICON : 'http://is.gd/favicon.ico',
   URL  : 'http://is.gd/',
-  
+
   shorten : function(url){
     if((/\/\/is\.gd\//).test(url))
       return succeed(url);
-    
+
     return request(this.URL + '/api.php', {
       redirectionLimit : 0,
       queryString : {
@@ -3444,7 +3444,7 @@ function shortenUrls(text, model){
   var reUrl = /https?[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#\^]+/g;
   if(!reUrl.test(text))
     return text;
-    
+
   var urls = text.match(reUrl);
   return gatherResults(urls.map(function(url){
     return model.shorten(url);
@@ -3452,7 +3452,7 @@ function shortenUrls(text, model){
     zip(urls, ress).forEach(function([url, res]){
       text = text.replace(url, res);
     });
-    
+
     return text;
   });
 }

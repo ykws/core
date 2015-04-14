@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://tombfix/content/quickPostForm.css" type="text/css" ?>
-<window id="window" 
-  xmlns:html="http://www.w3.org/1999/xhtml" 
+<window id="window"
+  xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <grid id="base" flex="1">
     <columns>
@@ -37,16 +37,16 @@
                 <image id="toggleDetail" class="button image-button" />
               </vbox>
             </hbox>
-            
+
             <spacer id="titleSpace" flex="1" />
-            
+
             <vbox>
               <image id="close" class="button image-button" onclick="dialogPanel? dialogPanel.close() : window.close()"/>
             </vbox>
           </hbox>
-          
+
           <vbox id="form" flex="1"/>
-          
+
           <vbox id="control" >
             <description id="posters" pack="top" align="top" />
             <textbox id="message" multiline="true" wrap="off" readonly="true"/>

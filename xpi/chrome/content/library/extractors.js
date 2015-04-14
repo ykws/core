@@ -255,7 +255,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return cloneElm;
     }
   },
-  
+
   {
     name : 'Quote - inyo.jp',
     ICON : 'chrome://tombfix/skin/quote.png',
@@ -267,12 +267,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         type     : 'quote',
         item     : $x('//span[@class="title"]/text()'),
         itemUrl  : ctx.href,
-        body     : createFlavoredString((ctx.selection)? 
+        body     : createFlavoredString((ctx.selection)?
           ctx.window.getSelection() : $x('//blockquote[contains(@class, "text")]/p')),
       }
     },
   },
-  
+
   {
     name : 'Amazon',
     getAsin : function () {
@@ -476,7 +476,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return Extractors.Link.extract(ctx);
     }
   },
-  
+
   {
     name : 'ReBlog',
     extractByLink : function(ctx, link){
@@ -485,16 +485,16 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         var doc = convertToHTMLDocument(res.responseText);
         ctx.href = link;
         ctx.title = ($x('//title/text()', doc) || '').replace(/[\n\r]/g, '');
-        
+
         return self.extractByPage(ctx, doc);
       });
     },
-    
+
     extractByPage : function(ctx, doc){
       var m = unescapeHTML(this.getFrameUrl(doc)).match(/.+&pid=([^&]*)&rk=([^&]*)/);
       return this.extractByEndpoint(ctx, Tumblr.TUMBLR_URL+'reblog/' + m[1] + '/' + m[2]);
     },
-    
+
     extractByEndpoint : function(ctx, endpoint){
       var self = this;
       return Tumblr.getForm(endpoint).addCallback(function(form){
@@ -510,7 +510,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         }, self.convertToParams(form));
       })
     },
-    
+
     getFrameUrl : function(doc){
       var tumblr_controls = doc.querySelector('iframe#tumblr_controls[src*="pid="]');
       if (tumblr_controls) {
@@ -525,7 +525,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       var src = doc.body.textContent.extract(/(?:<|\\x3c)iframe\b[\s\S]*?src\s*=\s*(["']|\\x22)(http:\/\/(?:www|assets)\.tumblr\.com\/.*?iframe.*?pid=.*?)\1/i, 2);
       return (src || '').replace(/\\x22/g, '"').replace(/\\x26/g, '&');
     },
-    
+
     convertToParams : function(form){
       switch(form['post[type]']){
       case 'regular':
@@ -534,32 +534,32 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
           item    : form['post[one]'],
           body    : form['post[two]'],
         }
-      
+
       case 'photo':
         return {
           itemUrl : form.image,
           body    : form['post[two]'],
         }
-      
+
       case 'link':
         return {
           item    : form['post[one]'],
           itemUrl : form['post[two]'],
           body    : form['post[three]'],
         };
-      
+
       case 'quote':
         // FIXME: post[two]検討
         return {
           body    : form['post[one]'],
         };
-      
+
       case 'video':
         // FIXME: post[one]検討
         return {
           body    : form['post[two]'],
         };
-      
+
       case 'conversation':
         return {
           item : form['post[one]'],
@@ -568,7 +568,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'ReBlog - Tumblr',
     ICON : 'chrome://tombfix/skin/reblog.ico',
@@ -579,7 +579,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return Extractors.ReBlog.extractByPage(ctx, currentDocument());
     },
   },
-  
+
   {
     name : 'ReBlog - Dashboard',
     ICON : 'chrome://tombfix/skin/reblog.ico',
@@ -592,12 +592,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
     },
     getLink : function(ctx){
       var link = $x(
-        './ancestor-or-self::li[starts-with(normalize-space(@class), "post")]' + 
+        './ancestor-or-self::li[starts-with(normalize-space(@class), "post")]' +
         '//a[starts-with(@id, "permalink_") and not(contains(@href, "/private/"))]', ctx.target);
       return link && link.href;
     },
   },
-  
+
   {
     name : 'ReBlog - Tumblr link',
     ICON : 'chrome://tombfix/skin/reblog.ico',
@@ -608,12 +608,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return Extractors.ReBlog.extractByLink(ctx, ctx.link.href);
     },
   },
-  
+
   {
     name : 'Photo - Ameba blog',
     ICON : 'http://ameblo.jp/favicon.ico',
     check : function(ctx){
-      return ctx.onLink && 
+      return ctx.onLink &&
         ctx.host == ('ameblo.jp') &&
         ctx.onImage &&
         ctx.target.src.match(/\/t[0-9]+_/);
@@ -746,12 +746,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
     check : function(ctx){
       if(!(/^books.google./).test(ctx.host))
         return;
-      
+
       return !!this.getImage(ctx);
     },
     extract : function(ctx){
       ctx.target = this.getImage(ctx);
-      
+
       return Extractors['Photo - Upload from Cache'].extract(ctx);
     },
     getImage : function(ctx){
@@ -759,23 +759,23 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       var img = $x('./ancestor::div[@class="pageImageDisplay"]//img[contains(@src, "//books.google.")]', ctx.target);
       if(img)
         return img;
-      
+
       // HTMLモード
       var div = $x('./ancestor::div[@class="html_page_image"]', ctx.target);
       if(div){
         var img = new Image();
         img.src = getStyle(div, 'background-image').replace(/url\((.*)\)/, '$1');
-        
+
         return img;
       }
     },
   },
-  
+
   {
     name : 'Photo - Kiva',
     ICON : 'http://www.kiva.org/favicon.ico',
     check : function(ctx){
-      return (ctx.onImage && this.isOriginalUrl(ctx.target.src)) || 
+      return (ctx.onImage && this.isOriginalUrl(ctx.target.src)) ||
         (ctx.onLink && this.isOriginalUrl(ctx.link.href));
     },
     extract : function(ctx){
@@ -796,7 +796,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         // ホスティングサイトに変わったか?
         if(!self.isOriginalUrl(url))
           return url;
-        
+
         // s3と仮定してテストしてみる
         return getFinalUrl(original.replace('www', 's3'));
       }).addErrback(function(){
@@ -867,7 +867,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     }
   },
-  
+
   {
     name : 'Photo - Fishki.Net',
     ICON : 'http://de.fishki.net/favicon.ico',
@@ -883,7 +883,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'Photo - Google',
     ICON : Models.Google.ICON,
@@ -900,7 +900,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     },
   },
-  
+
   {
     name : 'Photo - 1101.com/ajisha',
     ICON : 'http://www.1101.com/favicon.ico',
@@ -912,12 +912,12 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         type      : 'photo',
         item      : ctx.title,
         itemUrl   : ctx.link.href.replace(
-          new RegExp('http://www.1101.com/ajisha/p_(.+).html'), 
+          new RegExp('http://www.1101.com/ajisha/p_(.+).html'),
           'http://www.1101.com/ajisha/photo/p_$1_z.jpg'),
       }
     },
   },
-  
+
   {
     name : 'Photo - Picasa',
     ICON : 'http://picasaweb.google.com/favicon.ico',
@@ -935,7 +935,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'Photo - webshots',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -956,7 +956,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return $x('(//img[@class="user-photo"])[1]/ancestor::a');
     },
   },
-  
+
   {
     name : 'Photo - Blogger',
     ICON : 'https://www.blogger.com/favicon.ico',
@@ -973,7 +973,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'Photo - Shorpy',
     ICON : 'http://www.shorpy.com/favicon.ico',
@@ -989,7 +989,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'Photo - FFFFOUND!',
     ICON : Models.FFFFOUND.ICON,
@@ -1004,21 +1004,21 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         var d = request(ctx.link.href).addCallback(function(res){
           // 相対パスを処理するためdocumentを渡す
           var doc = convertToHTMLDocument(res.responseText, ctx.document);
-          
+
           ctx.href = ctx.link.href;
           ctx.target = $x('(//img[starts-with(@id, "asset")])', doc);
-          
+
           return doc;
         })
       }
-      
+
       d.addCallback(function(doc){
         var author = $x('//div[@class="saved_by"]/a[1]', doc);
         ctx.title = $x('//title/text()', doc) || '';
-        
+
         var uri = createURI(ctx.href);
         ctx.href = uri.prePath + uri.filePath;
-        
+
         return {
           type      : 'photo',
           item      : $x('//div[@class="title"]/a/text()', doc).trim(),
@@ -1031,11 +1031,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
           },
         }
       });
-      
+
       return d;
     },
   },
-  
+
   {
     name : 'Photo - Google Image Search',
     ICON : Google.ICON,
@@ -1079,7 +1079,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       };
     }
   },
-  
+
   {
     name : 'Photo - MediaWiki Thumbnail',
     ICON : 'http://www.mediawiki.org/favicon.ico',
@@ -1132,7 +1132,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     }
   },
-  
+
   {
     name : 'Photo - ITmedia',
     ICON : 'http://www.itmedia.co.jp/favicon.ico',
@@ -1154,7 +1154,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     }
   },
-  
+
   {
     name : 'Photo - Cheezburger',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1176,7 +1176,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     },
   },
-  
+
   {
     name : 'Photo - Tabelog',
     ICON : 'http://tabelog.com/favicon.ico',
@@ -1191,7 +1191,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name           : 'Photo - pixiv',
     ICON           : 'http://www.pixiv.net/favicon.ico',
@@ -1509,7 +1509,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     }
   },
-  
+
   {
     name : 'Photo - Lightbox',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1532,13 +1532,13 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return {
         type    : 'photo',
         item    : ctx.title,
-        itemUrl : (img instanceof Ci.nsIDOMHTMLImageElement)? 
-          img.src : 
+        itemUrl : (img instanceof Ci.nsIDOMHTMLImageElement)?
+          img.src :
           resolveRelativePath(img.style.backgroundImage.extract(/\([" ]*([^"]+)/), ctx.href),
       }
     }
   },
-  
+
   {
     name : 'Photo - area element',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1555,14 +1555,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name : 'Photo - image link',
     ICON : 'chrome://tombfix/skin/photo.png',
     check : function(ctx){
       if(!ctx.onLink)
         return;
-      
+
       var uri = createURI(ctx.link.href);
       return uri && (/(png|gif|jpe?g)$/i).test(uri.fileExtension);
     },
@@ -1570,11 +1570,11 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       ctx.target = {
         src : ctx.link.href
       };
-      
+
       return Extractors.Photo.extract(ctx);
     },
   },
-  
+
   {
     name : 'Photo - Data URI',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1592,7 +1592,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     },
   },
-  
+
   {
     name : 'Photo - Canvas',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1603,7 +1603,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return Extractors['Photo - Data URI'].extract(ctx);
     },
   },
-  
+
   {
     name   : 'Photo - SVG to PNG',
     ICON   : 'chrome://tombfix/skin/photo.png',
@@ -1690,7 +1690,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       );
     }
   },
-  
+
   {
     name : 'Photo',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1716,16 +1716,16 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
     extract : function(ctx){
       var target = ctx.target;
       var itemUrl = (tagName(target)=='object')? target.data : target.src;
-      
+
       if(this.PROTECTED_SITES.some(function(re){
         return RegExp(re).test(itemUrl);
       })){
         return Extractors['Photo - Upload from Cache'].extract(ctx);
       };
-      
+
       if(ctx.document.contentType.match(/^image/))
         ctx.title = ctx.href.split('/').pop();
-      
+
       // ポスト先のサービスがリダイレクトを処理できずエラーになることがあるため必ずチェックをする(テスト中)
       return getFinalUrl(itemUrl).addCallback(function(url){
         return {
@@ -1736,7 +1736,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     },
   },
-  
+
   {
     name : 'Photo - Upload from Cache',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -1746,10 +1746,10 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
     extract : function(ctx){
       if(ctx.document.contentType.match(/^image/))
         ctx.title = ctx.href.split('/').pop();
-      
+
       var target = ctx.target;
       var itemUrl = (tagName(target)=='object')? target.data : target.src;
-      
+
       return download(itemUrl, getTempDir()).addCallback(function(file){
         return {
           type    : 'photo',
@@ -1760,7 +1760,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     },
   },
-  
+
   {
     name : 'Video - Vimeo',
     ICON : 'https://vimeo.com/favicon.ico',
@@ -1784,7 +1784,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return doc.querySelector('.byline > a[rel="author"]');
     }
   },
-  
+
   {
     name : 'Video - YouTube',
     ICON : 'https://www.youtube.com/favicon.ico',
@@ -1904,7 +1904,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       };
     }
   },
-  
+
   {
     name : 'Quote',
     ICON : 'chrome://tombfix/skin/quote.png',
@@ -1920,7 +1920,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     },
   },
-  
+
   {
     name  : 'Quote - textarea',
     ICON  : 'chrome://tombfix/skin/quote.png',
@@ -1952,7 +1952,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       };
     }
   },
-  
+
   {
     name : 'Link - trim parameters',
     ICON : 'chrome://tombfix/skin/link.png',
@@ -1970,7 +1970,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       return Extractors.Link.extract(ctx);
     },
   },
-  
+
   {
     name : 'Link - link',
     ICON : 'chrome://tombfix/skin/link.png',
@@ -1982,7 +1982,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       var title = convertToPlainText(ctx.link) || ctx.link.title;
       if(!title || title==ctx.link.href)
         title = ctx.title;
-      
+
       return {
         type    : 'link',
         item    : title,
@@ -1990,7 +1990,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       };
     },
   },
-  
+
   {
     name : 'Link',
     ICON : 'chrome://tombfix/skin/link.png',
@@ -2004,7 +2004,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
         var title = ctx.target.textContent;
         if(!title || title==ctx.target.href)
           title = ctx.title;
-        
+
         ps = {
           type    : 'link',
           item    : title,
@@ -2017,14 +2017,14 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
           itemUrl : ctx.href,
         }
       }
-      
+
       if(ctx.date)
         ps.date = ctx.date;
-      
+
       return ps;
     },
   },
-  
+
   {
     name : 'Photo - background image',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -2039,7 +2039,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     }
   },
-  
+
   {
     name : 'Photo - covered',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -2085,7 +2085,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       }
     }
   },
-  
+
   {
     name : 'Photo - Capture',
     ICON : 'chrome://tombfix/skin/photo.png',
@@ -2097,7 +2097,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       var type = ctx.captureType || input({'Capture Type' : ['Region', 'Element', 'View', 'Page']});
       if(!type)
         return;
-      
+
       var win = ctx.window;
       return succeed().addCallback(function(){
         switch (type){
@@ -2105,16 +2105,16 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
           return selectRegion().addCallback(function(region){
             return capture(win, region.position, region.dimensions);
           });
-        
+
         case 'Element':
           return selectElement().addCallback(function(elm){
             // getBoundingClientRectで少数が返され切り取り範囲がずれるため丸める
             return capture(win, roundPosition(getElementPosition(elm)), getElementDimensions(elm));
           });
-        
+
         case 'View':
           return capture(win, getViewportPosition(), getViewDimensions());
-        
+
         case 'Page':
           return capture(win, {x:0, y:0}, getPageDimensions());
         }
@@ -2129,7 +2129,7 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
       });
     }
   },
-  
+
   {
     name : 'Text',
     ICON : 'chrome://tombfix/skin/text.png',
@@ -2156,20 +2156,20 @@ update(Extractors, {
   ].map(function(re){
     return RegExp(re);
   }),
-  
+
   normalizeUrl : function(url){
-    return (!url || !this.REDIRECT_URLS.some(function(re){return re.test(url)}))? 
-      succeed(url) : 
+    return (!url || !this.REDIRECT_URLS.some(function(re){return re.test(url)}))?
+      succeed(url) :
       getFinalUrl(url).addErrback(function(err){
         // bit.lyの統計ページなどHEAD取得未対応ページから返されるエラーを回避する
         return url;
       });
   },
-  
+
   extract : function(ctx, ext){
     var doc = ctx.document;
     var self = this;
-    
+
     // ドキュメントタイトルを取得する
     var title;
     if(typeof(doc.title) == 'string'){
@@ -2178,25 +2178,25 @@ update(Extractors, {
       // idがtitleの要素を回避する
       title = $x('//title/text()', doc);
     }
-    
+
     if(!title)
       title = createURI(doc.location.href).fileBaseName;
-    
+
     ctx.title = title == null ? ctx.href : title.trim();
-    
+
     // canonicalが設定されていれば使う
     var canonical = $x('//link[@rel="canonical"]/@href', doc);
     if(canonical && !new RegExp(getPref('ignoreCanonical')).test(ctx.href))
       ctx.href = resolveRelativePath(canonical, ctx.href);
     ctx.href = ctx.href.replace(/\/#!\//, '/');
-    
+
     return withWindow(ctx.window, function(){
       return maybeDeferred(ext.extract(ctx)).addCallback(function(ps){
         ps = update({
           page    : ctx.title,
           pageUrl : ctx.href,
         }, ps);
-        
+
         return self.normalizeUrl(ps.itemUrl).addCallback(function(url){
           ps.itemUrl = url;
           return ps;

@@ -10,7 +10,7 @@ popup {
   -moz-binding: url("chrome://tombfix/content/completion.xml#popup");
   padding: 0;
   cursor: pointer;
-  
+
   border: 1px solid gray;
 }
 
