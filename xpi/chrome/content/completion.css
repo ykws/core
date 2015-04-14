@@ -1,5 +1,5 @@
 textbox {
-	-moz-binding: url("chrome://tombfix/content/completion.xml#textbox");
+  -moz-binding: url("chrome://tombfix/content/completion.xml#textbox");
 }
 
 textbox *|input {
@@ -7,28 +7,28 @@ textbox *|input {
 }
 
 popup {
-	-moz-binding: url("chrome://tombfix/content/completion.xml#popup");
-	padding: 0;
- 	cursor: pointer;
-	
-	border: 1px solid gray;
+  -moz-binding: url("chrome://tombfix/content/completion.xml#popup");
+  padding: 0;
+  cursor: pointer;
+  
+  border: 1px solid gray;
 }
 
 listbox {
-	-moz-binding: url("chrome://tombfix/content/completion.xml#listbox");
-	-moz-appearance: none !important;
- 	border: none !important;
-	margin: 0;
-	width : auto !important;
+  -moz-binding: url("chrome://tombfix/content/completion.xml#listbox");
+  -moz-appearance: none !important;
+  border: none !important;
+  margin: 0;
+  width : auto !important;
 }
 
 listitem {
-	-moz-binding: url("chrome://tombfix/content/completion.xml#listitem");
-	outline: none !important;
-	padding-right : 4px;
+  -moz-binding: url("chrome://tombfix/content/completion.xml#listitem");
+  outline: none !important;
+  padding-right : 4px;
 }
 
 listitem[selected="true"] {
-	background-color: Highlight;
-	color: HighlightText;
+  background-color: Highlight;
+  color: HighlightText;
 }
