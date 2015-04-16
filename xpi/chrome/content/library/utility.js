@@ -2657,7 +2657,7 @@ function isFavorite({favorite}, modelName) {
     let favName = favorite.name;
 
     if (favName) {
-      return (new RegExp('^' + favName + '(?: - .+)?$')).test(modelName);
+      return (new RegExp(`^${favName}(?: - .+)?$`)).test(modelName);
     }
   }
 
