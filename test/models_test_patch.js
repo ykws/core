@@ -18,69 +18,68 @@
     }
   };
 
+  assert(typeof Models, 'object');
+  assert(typeof models, 'object');
+  assert(Models, models);
+  assert(Models instanceof Repository);
+  assert(Object.getPrototypeOf(Models) !== Repository.prototype);
+  assert(Object.keys(Models).length, Models.values.length);
+
+
+  assert(Models.check !== Repository.prototype.check);
+  assert(Array.isArray(Models.check({type : 'photo'})));
+  assert(Models.check({type : 'photo'}).length !== 0);
+  assert(Models.check({type : 'photo'}).length, Repository.prototype.check.call(Models, {type : 'photo'}).length);
+  assert(Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length, Repository.prototype.check.call(Models, {type : 'photo', favorite : {name : 'Tumblr'}}).length);
+  assert(Models.check({type : 'photo', favorite : {name : 'Test'}}).length, Repository.prototype.check.call(Models, {type : 'photo', favorite : {name : 'Test'}}).length);
+  assert(Models.check({type : 'photo'}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length);
+  assert(Models.check({type : 'photo'}).length, Models.check({type : 'photo', favorite : {name : 'Test'}}).length);
+  assert(Models.check({type : 'photo'}).length !== Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length);
+  assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length !== Repository.prototype.check.call(Models, {type : 'reblog', favorite : {name : 'Tumblr'}}).length);
+  assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+  assert(Models.check({type : 'reblog', favorite : {name : 'Test'}}).length, 0);
+
+  Models.register(Object.assign({}, Tumblr, {
+    name : 'Tumblr - test'
+  }), 'Tumblr', true);
+
+  assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
+
+  delete Models['Tumblr - test'];
+
+
+  assert(Array.isArray(Models.getDefaults({type : 'photo'})));
+  assert(Models.getDefaults({type : 'photo'}).length !== 0);
+  assert(Models.getDefaults({type : 'photo'}).length, 1);
+  assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
+  assert(Models.getDefaults({type : 'photo'}).length, Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length);
+  assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+  assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Test'}}).length, 0);
+
+  setPref('postConfig', '{}');
+  Models.register(Object.assign({}, Tumblr, {
+    name   : 'Tumblr - test'
+  }), 'Tumblr', true);
+
+  assert(Models.getDefaults({type : 'photo'}).length, 0);
+  assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 0);
+
+  setPref('postConfig', '{"Tumblr":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"default"}}');
+
+  assert(Models.getDefaults({type : 'photo'}).length, 0);
+  assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
+  assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+
+  setPref('postConfig', '{"Tumblr - test":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"default"}}');
+
+  assert(Models.getDefaults({type : 'photo'}).length, 0);
+  assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
+  assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
+
+  delete Models['Tumblr - test'];
+  Preferences.reset('extensions.tombfix.postConfig');
+
   {
-    assert(typeof Models, 'object');
-    assert(typeof models, 'object');
-    assert(Models, models);
-    assert(Models instanceof Repository);
-    assert(Object.getPrototypeOf(Models) !== Repository.prototype);
-    assert(Object.keys(Models).length, Models.values.length);
-
-
-    assert(Models.check !== Repository.prototype.check);
-    assert(Array.isArray(Models.check({type : 'photo'})));
-    assert(Models.check({type : 'photo'}).length !== 0);
-    assert(Models.check({type : 'photo'}).length, Repository.prototype.check.call(Models, {type : 'photo'}).length);
-    assert(Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length, Repository.prototype.check.call(Models, {type : 'photo', favorite : {name : 'Tumblr'}}).length);
-    assert(Models.check({type : 'photo', favorite : {name : 'Test'}}).length, Repository.prototype.check.call(Models, {type : 'photo', favorite : {name : 'Test'}}).length);
-    assert(Models.check({type : 'photo'}).length, Models.check({type : 'photo', favorite : {name : 'Tumblr'}}).length);
-    assert(Models.check({type : 'photo'}).length, Models.check({type : 'photo', favorite : {name : 'Test'}}).length);
-    assert(Models.check({type : 'photo'}).length !== Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length);
-    assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length !== Repository.prototype.check.call(Models, {type : 'reblog', favorite : {name : 'Tumblr'}}).length);
-    assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
-    assert(Models.check({type : 'reblog', favorite : {name : 'Test'}}).length, 0);
-
-    Models.register(Object.assign({}, Tumblr, {
-      name : 'Tumblr - test'
-    }), 'Tumblr', true);
-
-    assert(Models.check({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 2);
-
-    delete Models['Tumblr - test'];
-
-
-    assert(Array.isArray(Models.getDefaults({type : 'photo'})));
-    assert(Models.getDefaults({type : 'photo'}).length !== 0);
-    assert(Models.getDefaults({type : 'photo'}).length, 1);
-    assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
-    assert(Models.getDefaults({type : 'photo'}).length, Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length);
-    assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
-    assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Test'}}).length, 0);
-
-    setPref('postConfig', '{}');
-    Models.register(Object.assign({}, Tumblr, {
-      name   : 'Tumblr - test'
-    }), 'Tumblr', true);
-
-    assert(Models.getDefaults({type : 'photo'}).length, 0);
-    assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 0);
-
-    setPref('postConfig', '{"Tumblr":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"default"}}');
-
-    assert(Models.getDefaults({type : 'photo'}).length, 0);
-    assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
-    assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
-
-    setPref('postConfig', '{"Tumblr - test":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"default"}}');
-
-    assert(Models.getDefaults({type : 'photo'}).length, 0);
-    assert(Models.getDefaults({type : 'photo', favorite : {name : 'Tumblr'}}).length, 1);
-    assert(Models.getDefaults({type : 'reblog', favorite : {name : 'Tumblr'}}).length, 1);
-
-    delete Models['Tumblr - test'];
-    Preferences.reset('extensions.tombfix.postConfig');
-
-
     assert(Array.isArray(Models.getEnables({type : 'photo'})));
 
     let enablesLen = Models.getEnables({type : 'photo'}).length;
@@ -158,8 +157,9 @@
 
     delete Models['Tumblr - test'];
     Preferences.reset('extensions.tombfix.postConfig');
+  }
 
-
+  {
     let _alert = alert,
         _openOptions = openOptions;
 
@@ -257,8 +257,9 @@
 
     alert = _alert;
     openOptions = _openOptions;
+  }
 
-
+  {
     let modelsConfig = JSON.parse(getPref('postConfig'));
 
     assert(Models.getPostConfig(modelsConfig, 'Tumblr', {type : 'photo'}), 'default');
