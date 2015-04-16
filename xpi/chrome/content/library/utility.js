@@ -2680,3 +2680,19 @@ function shortenUrls(text, model){
     return text;
   });
 }
+
+function openOptions(...messageArgs) {
+  let win = openDialog(
+    'chrome://tombfix/content/options/options.xul',
+    'resizable,centerscreen'
+  );
+
+  if (messageArgs.length) {
+    win.addEventListener('load', () => {
+      // load時は、まだダイアログが表示されていない
+      setTimeout(() => {
+        win.alert(getMessage(...messageArgs));
+      }, 0);
+    });
+  }
+}
