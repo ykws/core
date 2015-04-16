@@ -1,6 +1,6 @@
 /* global Components, keyString, cancel, observeMouseShortcut, FilePicker */
-/* global getDataDir, getProfileDir, Models, $x, AbstractTreeView, getPref */
-/* global setPref, AtomService, getMessage, getPrefValue, reload */
+/* global getDataDir, getProfileDir, Models, $x, AbstractTreeView, setPref */
+/* global AtomService, getMessage, getPrefValue, reload */
 
 (function executeOptions(global, win, doc) {
   'use strict';
@@ -143,7 +143,7 @@
     ],
 
     load() {
-      let modelsConfig = JSON.parse(getPref('postConfig'));
+      let modelsConfig = Models.getModelsConfig();
 
       this.all = Models.values.reduce((all, model) => {
         // インターフェースが実装されているポスト対象のサービスでない場合は処理しない

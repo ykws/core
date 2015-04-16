@@ -18,7 +18,7 @@ let Models = this.Models = Object.create(Object.expand(new Repository(), {
    * @return {Array}
    */
   getDefaults(ps) {
-    let modelsConfig = JSON.parse(getPref('postConfig'));
+    let modelsConfig = this.getModelsConfig(true);
 
     return this.check(ps).filter(model =>
       this.getPostConfig(modelsConfig, model.name, ps) === 'default'
@@ -32,7 +32,7 @@ let Models = this.Models = Object.create(Object.expand(new Repository(), {
    * @return {Array}
    */
   getEnables(ps) {
-    let modelsConfig = JSON.parse(getPref('postConfig'));
+    let modelsConfig = this.getModelsConfig(true);
 
     return this.check(ps).filter(model => {
       model.config = model.config || {};
@@ -44,6 +44,30 @@ let Models = this.Models = Object.create(Object.expand(new Repository(), {
 
       return !val || /^(?:default|enabled)$/.test(val);
     });
+  },
+  getModelsConfig(options) {
+    const PREF_NAME = 'extensions.tombfix.postConfig';
+
+    if (
+      !JSON.parseable(Preferences.get(PREF_NAME)) ||
+        Object.type(JSON.parse(Preferences.get(PREF_NAME))) !== 'Object'
+    ) {
+      Preferences.reset(PREF_NAME);
+
+      if (Preferences.get(PREF_NAME) === void 0) {
+        Preferences.set(PREF_NAME, '{}');
+      }
+
+      const MESSAGE_NAME = 'message.options.postConfig.recovery';
+
+      if (options) {
+        openOptions(MESSAGE_NAME);
+      } else {
+        alert(getMessage(MESSAGE_NAME));
+      }
+    }
+
+    return JSON.parse(Preferences.get(PREF_NAME));
   },
   /**
    * ポスト設定値を文字列で取得する。

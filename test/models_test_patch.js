@@ -160,6 +160,105 @@
     Preferences.reset('extensions.tombfix.postConfig');
 
 
+    let _alert = alert,
+        _openOptions = openOptions;
+
+    alert = function alert(message) {
+      assert(message, getMessage('message.options.postConfig.recovery'));
+    };
+    openOptions = function openOptions(messageName) {
+      assert(messageName, 'message.options.postConfig.recovery');
+    };
+
+    Preferences.reset('extensions.tombfix.postConfig');
+
+    let defaultConfig = JSON.stringify(JSON.parse(getPref('postConfig')));
+
+    setPref('postConfig', '');
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    setPref('postConfig', 'hoge');
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+/*
+    setPref('postConfig', false);
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    setPref('postConfig', true);
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    setPref('postConfig', 0);
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    setPref('postConfig', 1);
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+*/
+
+    setPref('postConfig', '"hoge"');
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    setPref('postConfig', '[]');
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    Preferences.reset('extensions.tombfix.postConfig');
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    let sampleConfig = '{"Tumblr":{"regular":"enabled","photo":"enabled","quote":"enabled","link":"enabled","video":"enabled","conversation":"enabled","favorite":"enabled"}}';
+
+    setPref('postConfig', sampleConfig);
+
+    assert(JSON.stringify(Models.getModelsConfig()), sampleConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), sampleConfig);
+
+    setPref('postConfig', '{}');
+
+    assert(JSON.stringify(Models.getModelsConfig()), '{}');
+    assert(JSON.stringify(Models.getModelsConfig(true)), '{}');
+
+    setPref('postConfig', defaultConfig);
+
+    assert(JSON.stringify(Models.getModelsConfig()), defaultConfig);
+    assert(JSON.stringify(Models.getModelsConfig(true)), defaultConfig);
+
+    Services.prefs.deleteBranch('extensions.tombfix.postConfig');
+
+    assert(JSON.stringify(Models.getModelsConfig()), '{}');
+    assert(JSON.stringify(Models.getModelsConfig(true)), '{}');
+
+    Preferences.reset('extensions.tombfix.postConfig');
+
+    assert(JSON.stringify(Models.getModelsConfig()), '{}');
+    assert(JSON.stringify(Models.getModelsConfig(true)), '{}');
+
+    setPref('postConfig', 'hoge');
+
+    assert(JSON.stringify(Models.getModelsConfig()), '{}');
+    assert(JSON.stringify(Models.getModelsConfig(true)), '{}');
+
+    setPref('postConfig', defaultConfig);
+
+    alert = _alert;
+    openOptions = _openOptions;
+
+
     let modelsConfig = JSON.parse(getPref('postConfig'));
 
     assert(Models.getPostConfig(modelsConfig, 'Tumblr', {type : 'photo'}), 'default');
