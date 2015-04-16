@@ -143,6 +143,29 @@
   assert(Array.hashtags(['hoge', '#fuga'])[0], '#hoge');
   assert(Array.hashtags(['hoge', '#fuga'])[1], '#fuga');
 
+  assert(JSON.parseable(void 0), false);
+  assert(JSON.parseable(''), false);
+  assert(JSON.parseable(NaN), false);
+  assert(JSON.parseable([]), false);
+  assert(JSON.parseable({}), false);
+  assert(JSON.parseable(Infinity), false);
+  assert(JSON.parseable('hoge'), false);
+  assert(JSON.parseable('\'hoge\''), false);
+  assert(JSON.parseable('{hoge : 0}'), false);
+  assert(JSON.parseable('{\'hoge\' : 0}'), false);
+  assert(JSON.parseable('{"hoge" : \'fuga\'}'), false);
+  assert(JSON.parseable(null));
+  assert(JSON.parseable(0));
+  assert(JSON.parseable(false));
+  assert(JSON.parseable(1));
+  assert(JSON.parseable(true));
+  assert(JSON.parseable('[]'));
+  assert(JSON.parseable('{}'));
+  assert(JSON.parseable('""'));
+  assert(JSON.parseable('"hoge"'));
+  assert(JSON.parseable('{"hoge" : 0}'));
+  assert(JSON.parseable('{"hoge" : "fuga"}'));
+
   {
     assert(Object.type(), 'Undefined');
     assert(Object.type(void 0), 'Undefined');

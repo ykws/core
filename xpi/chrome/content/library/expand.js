@@ -37,6 +37,18 @@
     }
   });
 
+  Object.expand(JSON, {
+    parseable(target) {
+      try {
+        JSON.parse(target);
+      } catch (err) {
+        return false;
+      }
+
+      return true;
+    }
+  });
+
   Object.expand(Object, {
     type(target) {
       return Object.prototype.toString.call(target).slice(8, -1);
