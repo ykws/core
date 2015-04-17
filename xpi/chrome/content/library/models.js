@@ -333,64 +333,66 @@ var Tumblr = update({}, AbstractSessionService, {
     return d;
   },
 
-  getPasswords : function(){
-    return getPasswords('https://www.tumblr.com');
-  },
+  login(user, password) {
+    const LOGIN_URL = this.ORIGIN + '/login';
 
-  login : function(user, password){
-    var LOGIN_FORM_URL = 'https://www.tumblr.com/login';
-    var self = this;
-    notify(self.name, getMessage('message.changeAccount.logout'), self.ICON);
-    return Tumblr.logout().addCallback(function(){
-      return request(LOGIN_FORM_URL).addCallback(function(res){
-        notify(self.name, getMessage('message.changeAccount.login'), self.ICON);
-        var doc = convertToHTMLDocument(res.responseText);
-        var form = doc.getElementById('signup_form');
-        return request(LOGIN_FORM_URL, {
-          sendContent : update(formContents(form), {
-            'user[email]'    : user,
-            'user[password]' : password
-          })
-        });
-      }).addCallback(function(){
-        self.updateSession();
-        self.user = user;
-        notify(self.name, getMessage('message.changeAccount.done'), self.ICON);
+    let modelName = this.name,
+        iconURL = this.ICON;
+
+    return succeed().addCallback(() => {
+      if (this.isLoggedIn()) {
+        notify(modelName, getMessage('message.changeAccount.logout'), iconURL);
+
+        return this.logout();
+      }
+    }).addCallback(() => {
+      return request(LOGIN_URL, {
+        responseType : 'document'
       });
+    }).addCallback(({response : doc}) => {
+      notify(modelName, getMessage('message.changeAccount.login'), iconURL);
+
+      return request(LOGIN_URL, {
+        sendContent : Object.assign(formContents(
+          doc.querySelector('form#signup_form')
+        ), {
+          'user[email]'    : user,
+          'user[password]' : password
+        })
+      });
+    }).addCallback(() => {
+      this.updateSession();
+      this.user = user;
+
+      notify(modelName, getMessage('message.changeAccount.done'), iconURL);
     });
   },
 
-  logout : function(){
-    return request(Tumblr.TUMBLR_URL+'logout');
+  logout() {
+    return request(this.ORIGIN + '/logout');
   },
 
-  getAuthCookie : function(){
-    return getCookieString('www.tumblr.com');
+  getPasswords() {
+    return getPasswords(this.ORIGIN);
   },
 
   /**
    * ログイン中のユーザーを取得する。
    * 結果はキャッシュされ、再ログインまで再取得は行われない。
-   * アカウント切り替えのためのインターフェースメソッド。
+   * 「アカウントの切り替え」のためのインターフェースメソッド。
    *
    * @return {Deferred} ログインに使われるメールアドレスが返される。
    */
-  getCurrentUser : function(){
-    switch (this.updateSession()){
-    case 'none':
-      return succeed('');
-
-    case 'same':
-      if(this.user)
-        return succeed(this.user);
-
-    case 'changed':
-      var self = this;
-      return request(Tumblr.TUMBLR_URL+'preferences').addCallback(function(res){
-        var doc = convertToHTMLDocument(res.responseText);
-        return self.user = $x('id("user_email")/@value', doc);
+  getCurrentUser() {
+    return this.getSessionValue('user', () => {
+      return request(this.ORIGIN + '/settings/account', {
+        responseType : 'document'
+      }).addCallback(({response : doc}) => {
+        return doc.querySelector(
+          '.email_group > .group_content p'
+        ).textContent.trim();
       });
-    }
+    }).addErrback(() => '');
   },
 
   getTumblelogs : function(){
@@ -502,6 +504,10 @@ var Tumblr = update({}, AbstractSessionService, {
 
   isLoggedIn() {
     return getCookieValue('.tumblr.com', 'logged_in') === '1';
+  },
+
+  getAuthCookie() {
+    return getCookieValue('www.tumblr.com', 'pfs');
   }
 });
 
