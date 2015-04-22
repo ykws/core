@@ -1786,37 +1786,90 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
   },
 
   {
-    name : 'Video - YouTube',
-    ICON : 'https://www.youtube.com/favicon.ico',
-    check : function (ctx) {
-      if (
-        !ctx.selection && !ctx.onImage && !ctx.onLink &&
-        /^https:\/\/www\.youtube\.com\/watch\?/.test(ctx.href)
-      ) {
-        let doc = ctx.document;
+    name    : 'Video - YouTube',
+    ICON    : 'https://www.youtube.com/favicon.ico',
+    ORIGIN  : 'https://www.youtube.com',
+    // via https://developers.google.com/youtube/v3/docs/videos/list
+    API_URL : 'https://www.googleapis.com/youtube/v3/videos',
+    API_KEY : 'AIzaSyACVKBQgqThsTtzvxSwpPdS7jSDgIT9Srw',
+    check(ctx) {
+      return !ctx.selection && !(ctx.onImage && !ctx.onLink) &&
+        this.getVideoID(ctx);
+    },
+    extract(ctx) {
+      let videoID = this.getVideoID(ctx);
 
-        return $x('//embed/@src | //video/@src', doc) &&
-          queryHash(ctx.search).v && this.getAuthor(doc);
+      return this.getInfo(videoID).addCallback(info => {
+        let {title} = info;
+
+        ctx.title = title + ' - YouTube';
+        ctx.href = `${this.ORIGIN}/watch?v=${videoID}`;
+
+        return {
+          type      : 'video',
+          item      : title,
+          itemUrl   : ctx.href,
+          author    : info.channelTitle,
+          authorUrl : `${this.ORIGIN}/channel/${info.channelId}`
+        };
+      });
+    },
+    getVideoID(ctx) {
+      let targetURL = ctx.onLink ? ctx.link.href : ctx.href;
+
+      if (targetURL) {
+        let urlObj = new URL(targetURL);
+
+        if (
+          /^(?:www\.)?youtube\.com$/.test(urlObj.hostname) &&
+            urlObj.pathname === '/watch'
+        ) {
+          if (
+            targetURL === ctx.href &&
+              !$x('//embed/@src | //video/@src', ctx.document)
+          ) {
+            return;
+          }
+
+          return urlObj.searchParams.get('v');
+        }
+        if (urlObj.hostname === 'youtu.be') {
+          return urlObj.pathname.slice(1);
+        }
       }
     },
-    extract : function (ctx) {
-      var doc = ctx.document,
-        name = doc.querySelector('meta[itemprop="name"]'),
-        url = doc.querySelector('link[itemprop="url"]'),
-        author = this.getAuthor(doc);
+    getInfo(videoID) {
+      return request(this.API_URL, {
+        responseType : 'json',
+        referrer     : 'https://tombfix.github.io/',
+        queryString  : {
+          part : 'snippet',
+          id   : videoID,
+          key  : this.API_KEY
+        }
+      }).addErrback(err => {
+        let res = err.message;
 
-      return {
-        type      : 'video',
-        item      : name ?
-          name.content :
-          doc.title.replace(/^▶ | - YouTube$/g, ''),
-        itemUrl   : (url || ctx).href,
-        author    : author.textContent.trim(),
-        authorUrl : author.origin + author.pathname
-      };
-    },
-    getAuthor : function (doc) {
-      return doc.querySelector('#watch7-user-header > .yt-user-info > a');
+        if (res && res.response) {
+          return res;
+        }
+
+        throw err;
+      }).addCallback(({response : json}) => {
+        let {error} = json;
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        let {items} = json;
+
+        if (!(items && items.length)) {
+          throw new Error(getMessage('error.contentsNotFound'));
+        }
+
+        return items[0].snippet;
+      });
     }
   },
 
