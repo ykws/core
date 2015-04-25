@@ -116,9 +116,6 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
 
   [
     ['WebBrowserPersist',       'embedding/browser/nsWebBrowserPersist;1', {}],
-    ['Request',                 'xmlextras/xmlhttprequest;1',      {
-      ifc: 'XMLHttpRequest'
-    }],
     ['HTMLFormatConverter',     'widget/htmlformatconverter;1',    {
       ifc: 'FormatConverter'
     }],

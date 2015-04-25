@@ -921,7 +921,7 @@ function request(url, opts){
 // via Taberareloo 3.0.2's request()
 // https://github.com/Constellation/taberareloo/blob/3.0.2/src/lib/utils.js#L870
 function simpleRequest(url, opt) {
-  var req = Request(), // new XMLHttpRequest()
+  var req = new XMLHttpRequest(),
     ret = new Deferred(),
     setHeader = true,
     position = -1,

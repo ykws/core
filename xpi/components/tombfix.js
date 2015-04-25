@@ -47,7 +47,7 @@
   ];
 
   // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
-  Cu.importGlobalProperties(['File', 'URL']);
+  Cu.importGlobalProperties(['File', 'URL', 'XMLHttpRequest']);
 
   var getContentDir, Module, ModuleImpl;
 
