@@ -266,8 +266,6 @@ function setPref(pref, value) {
 var CHROME_DIR = 'chrome://tombfix';
 var CHROME_CONTENT_DIR = CHROME_DIR + '/content';
 
-var EXTENSION_ID = 'tombfix@tombfix.github.io';
-
 var XUL_NS  = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 var HTML_NS = 'http://www.w3.org/1999/xhtml';
 
@@ -281,26 +279,6 @@ disconnectAll(grobal);
 // イベントに安定してフックするためなどに使われる
 if(typeof(constant)=='undefined')
   constant = {};
-
-updatePatchChromeManifest();
-
-function updatePatchChromeManifest(){
-  var DELIMITER = '# GENERATED';
-
-  var dataDir = createURI(getDataDir()).spec;
-  var line = 'content tombfix-patch ' + dataDir;
-  var manifest = getChromeManifestFile();
-  var contents = getContents(manifest);
-  var updated =
-    contents.split(DELIMITER).shift() +
-    DELIMITER + '\n' +
-    line + '\n';
-
-  if(contents != updated){
-    putContents(manifest, updated);
-    ChromeRegistry.checkForNewChrome();
-  }
-}
 
 function reload(){
   // getExtensionDir > till > processNextEventが非同期となり、
@@ -585,13 +563,6 @@ function getTempFile(ext){
   file.append(joinText(['tombfix_' + Date.now(), ext], '.'));
 
   return file;
-}
-
-function getChromeManifestFile(){
-  var manifest = getExtensionDir(EXTENSION_ID);
-  manifest.append('chrome.manifest');
-
-  return manifest;
 }
 
 /**
