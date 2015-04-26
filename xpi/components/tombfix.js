@@ -294,6 +294,22 @@
       // libraryとパッチを読み込む
       env.loadAllSubScripts();
 
+      env.reload = function reload() {
+        // getExtensionDir > till > processNextEventが非同期となり、
+        // コンテキスト全体の更新動作が不安定になる
+        // これを避けるためリロードを遅延させる
+        // (設定画面を閉じる際にFirefox 4以降がクラッシュするようになったのを避ける)
+        env.setTimeout(() => {
+          env.loadAllSubScripts();
+
+          for (let chromeWindow of simpleIterator(
+            WindowMediator.getEnumerator('navigator:browser')
+          )) {
+            env.connectToBrowser(chromeWindow);
+          }
+        }, 0);
+      };
+
       /* ここから他拡張用の処理 */
       GM_Tombloo = copy({
         Tombloo : {

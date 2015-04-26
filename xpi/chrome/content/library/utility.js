@@ -280,17 +280,6 @@ disconnectAll(grobal);
 if(typeof(constant)=='undefined')
   constant = {};
 
-function reload(){
-  // getExtensionDir > till > processNextEventが非同期となり、
-  // コンテキスト全体の更新動作が不安定になる
-  // これを避けるためリロードを遅延させる
-  // (設定画面を閉じる際にFirefox 4以降がクラッシュするようになったのを避ける)
-  setTimeout(function(){
-    loadAllSubScripts();
-    getWindows().forEach(connectToBrowser);
-  }, 0);
-}
-
 
 // ----[XPCOM]-------------------------------------------------
 /**
@@ -577,13 +566,6 @@ function openDialog(url, features, value){
   var args = Array.slice(arguments);
   args.splice(1, 0, '_blank')
   return win.openDialog.apply(win, args);
-}
-
-/**
- * ブラウザウィンドウのリストを取得する。
- */
-function getWindows(){
-  return list(WindowMediator.getEnumerator('navigator:browser'));
 }
 
 function addTab(url, background){
