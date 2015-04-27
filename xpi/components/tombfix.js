@@ -86,17 +86,16 @@
 
     // 変数/定数はhiddenDOMWindowのものを直接使う
     [
-      'navigator', 'document', 'window', 'screen', 'XMLHttpRequest',
+      'navigator', 'document', 'window',
       'XPathResult', 'Node', 'Element', 'KeyEvent', 'Event', 'DOMParser',
-      'XSLTProcessor', 'XMLSerializer', 'URL'
+      'XSLTProcessor', 'URL'
     ].forEach(propName => {
       env[propName] = win[propName];
     });
 
     // メソッドはthisが変わるとエラーになることがあるためbindして使う
     [
-      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'open',
-      'openDialog', 'atob', 'btoa'
+      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'btoa'
     ].forEach(propName => {
       env[propName] = win[propName].bind(win);
     });
@@ -116,12 +115,6 @@
   }
 
   // ----[Utility]--------------------------------------------
-  /* jshint ignore:start */
-  function log(msg) {
-    console[typeof msg === 'object' ? 'dir' : 'log'](msg);
-  }
-  /* jshint ignore:end */
-
   function getService(clsName, ifc) {
     try {
       let cls = Cc['@mozilla.org/' + clsName];
@@ -286,11 +279,7 @@
       // 以降のコードはアプリケーション起動後に一度だけ通過する
       env = this.instance;
 
-      // アプリケーション全体で、同じloadSubScripts関数を使いまわし汚染を防ぐ
-      env.loadSubScripts    = loadSubScripts;
       env.loadAllSubScripts = loadAllSubScripts;
-      env.getContentDir     = getContentDir;
-      env.getLibraries      = getLibraries;
       env.PID               = this.PID;
       env.CID               = this.CID;
       env.NAME              = this.NAME;
