@@ -259,6 +259,8 @@
     classID: Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
     QueryInterface: XPCOMUtils.generateQI(),
 
+    CHROME_DIR: CHROME_DIR,
+
     environment: {},
 
     init() {

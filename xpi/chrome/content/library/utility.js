@@ -263,8 +263,7 @@ function setPref(pref, value) {
   setPrefValue('extensions.tombfix.' + pref, value);
 }
 
-var CHROME_DIR = 'chrome://tombfix';
-var CHROME_CONTENT_DIR = CHROME_DIR + '/content';
+var CHROME_CONTENT_DIR = Tombfix.CHROME_DIR + '/content';
 
 var XUL_NS  = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 var HTML_NS = 'http://www.w3.org/1999/xhtml';
@@ -351,7 +350,7 @@ function getPasswords(host, user){
   }, LoginManager.findLogins({}, host, host, null)));
 }
 
-var stringBundle = StringBundleService.createBundle(CHROME_DIR + '/locale/messages.properties');
+var stringBundle = StringBundleService.createBundle(Tombfix.CHROME_DIR + '/locale/messages.properties');
 function getMessage(key){
   var ps = Array.splice(arguments, 1);
   try{
