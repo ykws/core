@@ -1,22 +1,35 @@
-/* jshint forin:false */
 /* global Components */
 
 (function executeTombfixService(global) {
   'use strict';
 
   const CHROME_DIR = 'chrome://tombfix',
+        SCRIPT_PATHS = [
+          'third_party/MochiKit.js',
+          'third_party/twitter-text.js',
+          'component.js',
+          'expand.js',
+          'utility.js',
+          'tabWatcher.js',
+          'repository.js',
+          'models.js',
+          'Tombfix.Service.js',
+          'actions.js',
+          'extractors.js',
+          'ui.js'
+        ],
         {interfaces: Ci, utils: Cu} = Components,
         // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
         {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
         // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
         {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {}),
         // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
-        /* jshint ignore:start */
+        /* jshint ignore: start */
         {console} = Cu.import(
           'resource://gre/modules/devtools/Console.jsm',
           {}
         ),
-        /* jshint ignore:end */
+        /* jshint ignore: end */
         {
           appShell: AppShellService,
           scriptloader: ScriptLoader,
@@ -26,21 +39,6 @@
           '@mozilla.org/network/protocol;1?name=file',
           'nsIFileProtocolHandler'
         )();
-
-  const SCRIPT_PATHS = [
-    'third_party/MochiKit.js',
-    'third_party/twitter-text.js',
-    'component.js',
-    'expand.js',
-    'utility.js',
-    'tabWatcher.js',
-    'repository.js',
-    'models.js',
-    'Tombfix.Service.js',
-    'actions.js',
-    'extractors.js',
-    'ui.js'
-  ];
 
   let loadScript = function loadScript(url, target) {
         ScriptLoader.loadSubScriptWithOptions(url, Object.assign({
@@ -59,54 +57,69 @@
 
   loadLibrary(['expand.js'], global);
 
-  // ----[Application]--------------------------------------------
-  function getScriptFiles(dir) {
-    return [...simpleIterator(
-      dir.directoryEntries,
-      'nsILocalFile'
-    )].reduce((files, file) => {
-      if (file.leafName.endsWith('.js')) {
-        files.push(file);
+  // ----[Utility]--------------------------------------------
+  function forwardToWindow(propName, ...args) {
+    return WindowMediator.getMostRecentWindow(
+      'navigator:browser'
+    )[propName](...args);
+  }
+
+  function copy(targetObj, obj, re) {
+    return Object.keys(obj).reduce((target, propName) => {
+      if (!re || re.test(propName)) {
+        target[propName] = obj[propName];
       }
 
-      return files;
-    }, []);
+      return target;
+    }, targetObj);
   }
 
-  function setupEnvironment(env) {
-    var win = AppShellService.hiddenDOMWindow;
-
-    // 変数/定数はhiddenDOMWindowのものを直接使う
-    [
-      'navigator', 'document', 'window',
-      'XPathResult', 'Node', 'Element', 'KeyEvent', 'Event', 'DOMParser',
-      'XSLTProcessor'
-    ].forEach(propName => {
-      env[propName] = win[propName];
+  function exposeProperties(obj, recursive) {
+    Object.expand(obj, {
+      __exposedProps__: {}
     });
 
-    // メソッドはthisが変わるとエラーになることがあるためbindして使う
-    [
-      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'
-    ].forEach(propName => {
-      env[propName] = win[propName].bind(win);
-    });
+    for (let propName of Object.keys(obj)) {
+      obj.__exposedProps__[propName] = 'r';
 
-    // モーダルにするためhiddenDOMWindowdではなく最新のウィンドウのメソッドを使う
-    [
-      'alert', 'confirm', 'prompt'
-    ].forEach(propName => {
-      env[propName] = forwardToWindow.bind(null, propName);
-    });
+      if (recursive) {
+        let val = obj[propName];
+
+        if (typeof val === 'object' && val !== null) {
+          exposeProperties(val, true);
+        }
+      }
+    }
   }
 
-  function forwardToWindow(propName, ...args) {
-    var win = WindowMediator.getMostRecentWindow('navigator:browser');
+  function* simpleIterator(simpleEnum, ifcName) {
+    let ifc = typeof ifcName === 'string' ? Ci[ifcName] : ifcName;
 
-    return win[propName].apply(win, args);
+    while (simpleEnum.hasMoreElements()) {
+      let value = simpleEnum.getNext();
+
+      yield ifc ? value.QueryInterface(ifc) : value;
+    }
   }
 
-  // ----[Utility]--------------------------------------------
+  function getScriptFiles(dir) {
+    return [...simpleIterator(dir.directoryEntries, 'nsILocalFile')].filter(
+      file => file.leafName.endsWith('.js')
+    );
+  }
+
+  function loadSubScripts(files, target) {
+    for (let file of files) {
+      // 壊れたパッチを読み込んだ時に、Tombfixが起動できなくなるのを防ぐ
+      // また、壊れたパッチがあると他の動作するパッチを読み込めなくなるのを防ぐ
+      try {
+        loadScript(FileProtocolHandler.getURLSpecFromFile(file), target);
+      } catch (err) {
+        Cu.reportError(err);
+      }
+    }
+  }
+
   function loadAllSubScripts(env) {
     // libraryの読み込み
     loadLibrary(SCRIPT_PATHS, env);
@@ -128,100 +141,72 @@
     }
   }
 
-  function loadSubScripts(files, target) {
-    for (let file of files) {
-      // 壊れたパッチを読み込んだ時に、Tombfixが起動できなくなるのを防ぐ
-      // また、壊れたパッチがあると他の動作するパッチを読み込めなくなるのを防ぐ
-      try {
-        loadScript(FileProtocolHandler.getURLSpecFromFile(file), target);
-      } catch (err) {
-        Cu.reportError(err);
-      }
-    }
-  }
+  // ----[Application]--------------------------------------------
+  function setupEnvironment(env) {
+    let win = AppShellService.hiddenDOMWindow;
 
-  function* simpleIterator(simpleEnum, ifcName) {
-    let ifc = typeof ifcName === 'string' ? Ci[ifcName] : ifcName;
-
-    while (simpleEnum.hasMoreElements()) {
-      let value = simpleEnum.getNext();
-
-      yield ifc ? value.QueryInterface(ifc) : value;
-    }
-  }
-
-  function copy(target, obj, re) {
-    for (let propName in obj) {
-      if (!re || re.test(propName)) {
-        target[propName] = obj[propName];
-      }
+    // 変数/定数はhiddenDOMWindowのものを直接使う
+    for (let propName of [
+      'window', 'document', 'navigator', 'Node', 'Element', 'Event', 'KeyEvent',
+      'DOMParser', 'XPathResult', 'XSLTProcessor'
+    ]) {
+      env[propName] = win[propName];
     }
 
-    return target;
-  }
-
-  function exposeProperties(obj, recursive) {
-    if (obj == null) {
-      return;
+    // メソッドはthisが変わるとエラーになることがあるためbindして使う
+    for (let propName of [
+      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'
+    ]) {
+      env[propName] = win[propName].bind(win);
     }
 
-    Object.defineProperty(obj, '__exposedProps__', {
-      value        : {},
-      enumerable   : false,
-      writable     : true,
-      configurable : true
-    });
-
-    for (let propName in obj) {
-      obj.__exposedProps__[propName] = 'r';
-
-      if (recursive && typeof obj[propName] === 'object') {
-        exposeProperties(obj[propName], true);
-      }
+    // モーダルにするためhiddenDOMWindowではなく最新のウィンドウのメソッドを使う
+    for (let propName of ['alert', 'confirm', 'prompt']) {
+      env[propName] = forwardToWindow.bind(null, propName);
     }
   }
 
   function setupExternalExtentionEnvironment(env) {
-    /* jshint camelcase:false */
-    let GM_Tombloo = copy({
-      Tombloo : {
-        Service : copy(
-          {},
-          env.Tombloo.Service,
-          /(check|share|posters|extractors)/
-        ),
-      },
-    }, env, /(Deferred|DeferredHash|copyString|notify)/);
+    /* jshint camelcase: false */
     let GM_Tombfix = copy({
-      Tombfix : {
-        Service : copy(
-          {},
-          env.Tombfix.Service,
-          /(check|share|posters|extractors)/
-        ),
-      },
-    }, env, /(Deferred|DeferredHash|copyString|notify)/);
+          Tombfix: {
+            Service: copy(
+              {},
+              env.Tombfix.Service,
+              /^(?:check|share|extractors)$/
+            )
+          }
+        }, env, /(Deferred|copyString|notify)/),
+        GM_Tombloo = copy({
+          Tombloo: {
+            Service: copy(
+              {},
+              env.Tombloo.Service,
+              /^(?:check|share|extractors)$/
+            )
+          }
+        }, env, /(Deferred|copyString|notify)/);
 
-    for (let modelName in env.Models) {
-      if (env.Models.hasOwnProperty(modelName)) {
-        GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
-          {},
-          env.Models[modelName],
-          /^(?!.*(password|cookie))/i
-        );
-      }
+    for (let model of env.Models.values) {
+      let modelName = model.name;
+
+      GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
+        {},
+        env.Models[modelName],
+        /^(?!.*(password|cookie))/i
+      );
     }
 
-    // 他拡張からの読み取りを許可する(Firefox 17用)
-    exposeProperties(GM_Tombloo, true);
+    // 他拡張からの読み取りを許可する(Firefox 17+)
     exposeProperties(GM_Tombfix, true);
+    exposeProperties(GM_Tombloo, true);
 
     // Scriptishサンドボックスの拡張
     try {
       let scope = Cu.import('resource://scriptish/api.js', {});
 
-      scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
       scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
+      scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
     } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
   }
 
