@@ -130,7 +130,13 @@
 
   function loadSubScripts(files, target) {
     for (let file of files) {
-      loadScript(FileProtocolHandler.getURLSpecFromFile(file), target);
+      // 壊れたパッチを読み込んだ時に、Tombfixが起動できなくなるのを防ぐ
+      // また、壊れたパッチがあると他の動作するパッチを読み込めなくなるのを防ぐ
+      try {
+        loadScript(FileProtocolHandler.getURLSpecFromFile(file), target);
+      } catch (err) {
+        Cu.reportError(err);
+      }
     }
   }
 
