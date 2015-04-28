@@ -126,14 +126,13 @@
     }
   }
 
-  function loadAllSubScripts() {
-    /* jshint validthis:true */
+  function loadAllSubScripts(env) {
     // libraryの読み込み
-    loadSubScripts(getLibraries(), this);
+    loadSubScripts(getLibraries(), env);
 
-    if (!this.getPref('disableAllScripts')) {
+    if (!env.getPref('disableAllScripts')) {
       // パッチの読み込み
-      loadSubScripts(getScriptFiles(this.getPatchDir()), this);
+      loadSubScripts(getScriptFiles(env.getPatchDir()), env);
     }
   }
 
@@ -277,7 +276,6 @@
       // 以降のコードはアプリケーション起動後に一度だけ通過する
       env = this.instance;
 
-      env.loadAllSubScripts = loadAllSubScripts;
       env.PID               = this.PID;
       env.CID               = this.CID;
       env.NAME              = this.NAME;
@@ -292,7 +290,7 @@
       env.twttr = env.window.twttr = {};
 
       // libraryとパッチを読み込む
-      env.loadAllSubScripts();
+      loadAllSubScripts(env);
 
       env.reload = function reload() {
         // getExtensionDir > till > processNextEventが非同期となり、
@@ -300,7 +298,7 @@
         // これを避けるためリロードを遅延させる
         // (設定画面を閉じる際にFirefox 4以降がクラッシュするようになったのを避ける)
         env.setTimeout(() => {
-          env.loadAllSubScripts();
+          loadAllSubScripts(env);
 
           for (let chromeWindow of simpleIterator(
             WindowMediator.getEnumerator('navigator:browser')
