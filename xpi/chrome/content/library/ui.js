@@ -349,6 +349,7 @@ function connectToBrowser(win){
   // チェック状況をグローバル環境に持つのは複雑になりリークを招くためwindowに置く
   var Tombfix = win.Tombfix = (win.Tombfix || {});
   var hooked = Tombfix.hooked = (Tombfix.hooked || {});
+  var {constant} = grobal.Tombfix;
   var tabbrowser = win.getBrowser();
 
   if(!hooked.contentReady && connected(grobal, 'content-ready')){

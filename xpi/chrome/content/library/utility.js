@@ -272,11 +272,6 @@ var PATH_DELIMITER = (navigator.appVersion.indexOf('Windows') != -1)? '\\' : '/'
 var grobal = this;
 disconnectAll(grobal);
 
-// リロードによって変更されない領域を用意する
-// イベントに安定してフックするためなどに使われる
-if(typeof(constant)=='undefined')
-  constant = {};
-
 
 // ----[XPCOM]-------------------------------------------------
 /**
