@@ -1,6 +1,4 @@
-var Tombfix, Tombloo = Tombfix = {};
-
-Tombfix.Service = {
+Object.assign(Tombfix.Service, {
   /**
    * コンテキストからどのような情報が抽出できるのかチェックする。
    * 処理は同期で行われる。
@@ -195,4 +193,4 @@ Tombfix.Service = {
       }, 0);
     }, false);
   }
-}
+});

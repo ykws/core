@@ -245,9 +245,11 @@
   }());
 
   // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
-  function TombfixService() {
-    // https://developer.mozilla.org/en-US/docs/wrappedJSObject
-    this.wrappedJSObject = this.init();
+  function TombfixService(noInit) {
+    if (!noInit) {
+      // https://developer.mozilla.org/en-US/docs/wrappedJSObject
+      this.wrappedJSObject = this.init();
+    }
   }
 
   Object.expand(TombfixService.prototype, {
@@ -269,6 +271,9 @@
       }
 
       // 以降のコードはアプリケーション起動後に一度だけ通過する
+      env.Tombfix = env.Tombloo = Object.assign(new TombfixService(true), {
+        Service: {}
+      });
 
       // ここでwindowやdocumentなどをenvに持ってくる
       setupEnvironment(env);
