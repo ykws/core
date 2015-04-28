@@ -1,4 +1,4 @@
-/* jshint camelcase:false, forin:false */
+/* jshint forin:false */
 /* global Components */
 
 (function executeTombfixService(global) {
@@ -181,6 +181,50 @@
     }
   }
 
+  function setupExternalExtentionEnvironment(env) {
+    /* jshint camelcase:false */
+    let GM_Tombloo = copy({
+      Tombloo : {
+        Service : copy(
+          {},
+          env.Tombloo.Service,
+          /(check|share|posters|extractors)/
+        ),
+      },
+    }, env, /(Deferred|DeferredHash|copyString|notify)/);
+    let GM_Tombfix = copy({
+      Tombfix : {
+        Service : copy(
+          {},
+          env.Tombfix.Service,
+          /(check|share|posters|extractors)/
+        ),
+      },
+    }, env, /(Deferred|DeferredHash|copyString|notify)/);
+
+    for (let modelName in env.Models) {
+      if (env.Models.hasOwnProperty(modelName)) {
+        GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
+          {},
+          env.Models[modelName],
+          /^(?!.*(password|cookie))/i
+        );
+      }
+    }
+
+    // 他拡張からの読み取りを許可する(Firefox 17用)
+    exposeProperties(GM_Tombloo, true);
+    exposeProperties(GM_Tombfix, true);
+
+    // Scriptishサンドボックスの拡張
+    try {
+      let scope = Cu.import('resource://scriptish/api.js', {});
+
+      scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
+      scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
+    } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
+  }
+
   // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
   function TombfixService(noInit) {
     if (!noInit) {
@@ -246,48 +290,7 @@
         }, 0);
       };
 
-      /* ここから他拡張用の処理 */
-      let GM_Tombloo = copy({
-        Tombloo : {
-          Service : copy(
-            {},
-            env.Tombloo.Service,
-            /(check|share|posters|extractors)/
-          ),
-        },
-      }, env, /(Deferred|DeferredHash|copyString|notify)/);
-      let GM_Tombfix = copy({
-        Tombfix : {
-          Service : copy(
-            {},
-            env.Tombfix.Service,
-            /(check|share|posters|extractors)/
-          ),
-        },
-      }, env, /(Deferred|DeferredHash|copyString|notify)/);
-
-      for (let modelName in env.Models) {
-        if (env.Models.hasOwnProperty(modelName)) {
-          GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
-            {},
-            env.Models[modelName],
-            /^(?!.*(password|cookie))/i
-          );
-        }
-      }
-
-      // 他拡張からの読み取りを許可する(Firefox 17用)
-      exposeProperties(GM_Tombloo, true);
-      exposeProperties(GM_Tombfix, true);
-
-      // Scriptishサンドボックスの拡張
-      try {
-        let scope = Cu.import('resource://scriptish/api.js', {});
-
-        scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
-        scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
-      } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
-      /* 他拡張用の処理ここまで */
+      setupExternalExtentionEnvironment(env);
 
       return env;
     }
