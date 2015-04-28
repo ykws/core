@@ -5,7 +5,8 @@
 (function executeTombfixService(global) {
   'use strict';
 
-  const EXTENSION_ID = 'tombfix@tombfix.github.io',
+  const CHROME_DIR = 'chrome://tombfix',
+        EXTENSION_ID = 'tombfix@tombfix.github.io',
         {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
         // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
         {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
@@ -46,8 +47,22 @@
     'ui.js'
   ];
 
+  let loadScript = function loadScript(url, target) {
+        ScriptLoader.loadSubScriptWithOptions(url, Object.assign({
+          charset: 'UTF-8',
+          ignoreCache: true
+        }, target ? {target} : {}));
+      },
+      loadLibrary = function loadLibrary(paths, target) {
+        for (let path of paths) {
+          loadScript(`${CHROME_DIR}/content/library/${path}`, target);
+        }
+      };
+
   // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
   Cu.importGlobalProperties(['File', 'URL', 'XMLHttpRequest']);
+
+  loadLibrary(['expand.js'], global);
 
   var getContentDir, Module, ModuleImpl;
 
