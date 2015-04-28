@@ -131,8 +131,19 @@
     loadSubScripts(getLibraries(), env);
 
     if (!env.getPref('disableAllScripts')) {
-      // パッチの読み込み
-      loadSubScripts(getScriptFiles(env.getPatchDir()), env);
+      let patchDir;
+
+      // dataDirの設定が不正なものである時に、Tombfixが起動できなくなるのを防ぐ
+      try {
+        patchDir = env.getPatchDir();
+      } catch (err) {
+        Cu.reportError(err);
+      }
+
+      if (patchDir) {
+        // パッチの読み込み
+        loadSubScripts(getScriptFiles(patchDir), env);
+      }
     }
   }
 
