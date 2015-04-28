@@ -263,8 +263,6 @@ function setPref(pref, value) {
   setPrefValue('extensions.tombfix.' + pref, value);
 }
 
-var CHROME_CONTENT_DIR = Tombfix.CHROME_DIR + '/content';
-
 var XUL_NS  = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 var HTML_NS = 'http://www.w3.org/1999/xhtml';
 
@@ -1588,7 +1586,7 @@ function runWSH(func, args, blocking){
   return d;
 }
 
-runWSH.utility = getContents(CHROME_CONTENT_DIR + '/wsh.js');
+runWSH.utility = getContents(Tombfix.CHROME_DIR + '/content/wsh.js');
 
 function getFinalUrl(url){
   return request(url, {
