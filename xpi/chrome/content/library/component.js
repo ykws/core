@@ -37,7 +37,7 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
 
   [
     'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IInputStream',
-    'IContentPolicy', 'IHttpChannel'
+    'IHttpChannel'
   ].forEach(name => {
     global[name] = Ci['ns' + name];
   });

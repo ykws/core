@@ -1,5 +1,4 @@
-/* jshint camelcase:false, nomen:false, latedef:false, forin:false */
-/* jshint maxparams:4 */
+/* jshint camelcase:false, latedef:false, forin:false */
 /* global Components */
 
 (function executeTombfixService(global) {
@@ -7,7 +6,7 @@
 
   const CHROME_DIR = 'chrome://tombfix',
         EXTENSION_ID = 'tombfix@tombfix.github.io',
-        {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
+        {interfaces: Ci, classes: Cc, utils: Cu} = Components,
         // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
         {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
         // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
@@ -64,7 +63,7 @@
 
   loadLibrary(['expand.js'], global);
 
-  var getContentDir, Module, ModuleImpl;
+  var getContentDir;
 
   // ----[Application]--------------------------------------------
   function getScriptFiles(dir) {
@@ -245,66 +244,31 @@
     };
   }());
 
-  Module = {
-    CID  : Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
-    NAME : 'TombfixService',
-    PID  : '@tombfix.github.io/tombfix-service;1',
+  // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
+  function TombfixService() {
+    // https://developer.mozilla.org/en-US/docs/wrappedJSObject
+    this.wrappedJSObject = this.init();
+  }
 
-    initialized : false,
+  Object.expand(TombfixService.prototype, {
+    className: TombfixService.name,
+    classDescription: 'Tombfix\'s JavaScript XPCOM Component',
+    contractID: '@tombfix.github.io/tombfix-service;1',
+    classID: Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
+    QueryInterface: XPCOMUtils.generateQI(),
 
-    onRegister : function onRegister() {
-      XPCOMUtils.categoryManager.addCategoryEntry(
-        'content-policy',
-        this.NAME,
-        this.PID,
-        true,
-        true
-      );
-    },
+    environment: {},
 
-    instance : {
-      // http://mxr.mozilla.org/mozilla-central/source/content/base/public/nsIContentPolicy.idl
-      shouldLoad : function shouldLoad() {
-        return Ci.nsIContentPolicy.ACCEPT;
-      },
-
-      shouldProcess : function shouldProcess() {
-        return Ci.nsIContentPolicy.ACCEPT;
-      },
-
-      QueryInterface : function queryInterface(iid) {
-        if (
-          iid.equals(Ci.nsIContentPolicy) || iid.equals(Ci.nsISupports) ||
-            iid.equals(Ci.nsISupportsWeakReference)
-        ) {
-          return this;
-        }
-
-        throw Cr.NS_NOINTERFACE;
-      }
-    },
-
-    createInstance : function initialize(outer, iid) {
-      var env, GM_Tombloo, GM_Tombfix;
-
-      // nsIContentPolicyはhiddenDOMWindowの準備ができる前に取得される
-      // 仮に応答できるオブジェクトを返し環境を構築できるまでの代替とする
-      if (iid.equals(Ci.nsIContentPolicy)) {
-        return this.instance;
-      }
+    init() {
+      let env = this.environment;
 
       // ブラウザが開かれるタイミングでインスタンスの要求を受け環境を初期化する
       // 2個目以降のウィンドウからは生成済みの環境を返す
-      if (this.initialized) {
-        return this.instance;
+      if (env.reload) {
+        return env;
       }
 
       // 以降のコードはアプリケーション起動後に一度だけ通過する
-      env = this.instance;
-
-      env.PID               = this.PID;
-      env.CID               = this.CID;
-      env.NAME              = this.NAME;
 
       // ここでwindowやdocumentなどをenvに持ってくる
       setupEnvironment(env);
@@ -335,7 +299,7 @@
       };
 
       /* ここから他拡張用の処理 */
-      GM_Tombloo = copy({
+      let GM_Tombloo = copy({
         Tombloo : {
           Service : copy(
             {},
@@ -344,7 +308,7 @@
           ),
         },
       }, env, /(Deferred|DeferredHash|copyString|notify)/);
-      GM_Tombfix = copy({
+      let GM_Tombfix = copy({
         Tombfix : {
           Service : copy(
             {},
@@ -377,65 +341,10 @@
       } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
       /* 他拡張用の処理ここまで */
 
-      // 以降は初期化の最終処理
-      env.signal(env, 'environment-load');
-
-      this.initialized = true;
-
       return env;
     }
-  };
-
-  // http://mxr.mozilla.org/mozilla-central/source/xpcom/components/nsIModule.idl
-  ModuleImpl = {
-    registerSelf : function registerSelf(compMgr, fileSpec, location, type) {
-      compMgr.QueryInterface(Ci.nsIComponentRegistrar)
-        .registerFactoryLocation(
-          Module.CID, Module.NAME, Module.PID,
-            fileSpec, location, type
-        );
-
-      if (Module.onRegister) {
-        Module.onRegister(compMgr, fileSpec, location, type);
-      }
-    },
-    canUnload : function canUnload() {
-      return true;
-    },
-    getClassObject : function getClassObject(compMgr, cid, iid) {
-      if (!cid.equals(Module.CID)) {
-        throw Cr.NS_ERROR_NO_INTERFACE;
-      }
-
-      if (!iid.equals(Ci.nsIFactory)) {
-        throw Cr.NS_ERROR_NOT_IMPLEMENTED;
-      }
-
-      if (Module.onInit) {
-        Module.onInit(compMgr, cid, iid);
-      }
-
-      return this.factory;
-    },
-    factory : {
-      createInstance: function createInstance(outer, iid) {
-        var obj;
-
-        if (outer != null) {
-          throw Cr.NS_ERROR_NO_AGGREGATION;
-        }
-
-        obj = Module.createInstance(outer, iid);
-        obj.Module = Module;
-        obj.wrappedJSObject = obj;
-
-        return obj;
-      }
-    }
-  };
+  });
 
   // https://developer.mozilla.org/en-US/docs/Mozilla/XPCOM/XPCOM_changes_in_Gecko_2.0#JavaScript_components
-  global.NSGetFactory = function NSGetFactory() {
-    return ModuleImpl.factory;
-  };
+  global.NSGetFactory = XPCOMUtils.generateNSGetFactory([TombfixService]);
 }(this));
