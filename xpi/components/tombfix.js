@@ -1,12 +1,11 @@
-/* jshint camelcase:false, latedef:false, forin:false */
+/* jshint camelcase:false, forin:false */
 /* global Components */
 
 (function executeTombfixService(global) {
   'use strict';
 
   const CHROME_DIR = 'chrome://tombfix',
-        EXTENSION_ID = 'tombfix@tombfix.github.io',
-        {interfaces: Ci, classes: Cc, utils: Cu} = Components,
+        {interfaces: Ci, utils: Cu} = Components,
         // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
         {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
         // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
@@ -23,17 +22,14 @@
           scriptloader: ScriptLoader,
           wm: WindowMediator
         } = Services,
-        FileProtocolHandler = getService(
-          'network/protocol;1?name=file',
-          Ci.nsIFileProtocolHandler
-        ),
-        {nsILocalFile: ILocalFile} = Ci;
+        FileProtocolHandler = new Components.Constructor(
+          '@mozilla.org/network/protocol;1?name=file',
+          'nsIFileProtocolHandler'
+        )();
 
-  const SCRIPT_FILES = [
-    // library/third_party
-    'MochiKit.js',
-    'twitter-text.js',
-    // library
+  const SCRIPT_PATHS = [
+    'third_party/MochiKit.js',
+    'third_party/twitter-text.js',
     'component.js',
     'expand.js',
     'utility.js',
@@ -63,8 +59,6 @@
 
   loadLibrary(['expand.js'], global);
 
-  var getContentDir;
-
   // ----[Application]--------------------------------------------
   function getScriptFiles(dir) {
     return [...simpleIterator(
@@ -77,23 +71,6 @@
 
       return files;
     }, []);
-  }
-
-  function getLibraries() {
-    var libDir, thirdPartyDir, scripts;
-
-    libDir = getContentDir();
-    libDir.append('library');
-
-    thirdPartyDir = getContentDir();
-    thirdPartyDir.setRelativeDescriptor(thirdPartyDir, 'library');
-    thirdPartyDir.append('third_party');
-
-    scripts = getScriptFiles(thirdPartyDir).concat(getScriptFiles(libDir));
-
-    return SCRIPT_FILES.map(scriptName => {
-      return scripts.find(file => file.leafName === scriptName);
-    });
   }
 
   function setupEnvironment(env) {
@@ -130,19 +107,9 @@
   }
 
   // ----[Utility]--------------------------------------------
-  function getService(clsName, ifc) {
-    try {
-      let cls = Cc['@mozilla.org/' + clsName];
-
-      return cls ? (ifc ? cls.getService(ifc) : cls.getService()) : null;
-    } catch (err) {
-      return null;
-    }
-  }
-
   function loadAllSubScripts(env) {
     // libraryの読み込み
-    loadSubScripts(getLibraries(), env);
+    loadLibrary(SCRIPT_PATHS, env);
 
     if (!env.getPref('disableAllScripts')) {
       let patchDir;
@@ -161,16 +128,9 @@
     }
   }
 
-  function loadSubScripts(files, global = function () {}) {
-    var now = Date.now();
-
+  function loadSubScripts(files, target) {
     for (let file of files) {
-      // クエリを付加しキャッシュを避ける
-      ScriptLoader.loadSubScript(
-        FileProtocolHandler.getURLSpecFromFile(file) + '?time=' + now,
-        global,
-        'UTF-8'
-      );
+      loadScript(FileProtocolHandler.getURLSpecFromFile(file), target);
     }
   }
 
@@ -214,35 +174,6 @@
       }
     }
   }
-
-  getContentDir = (function executeFunc() {
-    var {AddonManager} = Cu.import(
-          'resource://gre/modules/AddonManager.jsm',
-          {}
-        ),
-        dir = null,
-        thread;
-
-    AddonManager.getAddonByID(EXTENSION_ID, addon => {
-      var target = addon.getResourceURI('/').QueryInterface(Ci.nsIFileURL)
-        .file.QueryInterface(ILocalFile);
-
-      target.setRelativeDescriptor(target, 'chrome/content');
-
-      dir = target;
-    });
-
-    // using id:piro (http://piro.sakura.ne.jp/) method
-    thread = getService('thread-manager;1').mainThread;
-
-    while (dir === null) {
-      thread.processNextEvent(true);
-    }
-
-    return function getContentDir() {
-      return dir.clone();
-    };
-  }());
 
   // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
   function TombfixService(noInit) {
