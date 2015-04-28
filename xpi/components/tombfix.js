@@ -47,7 +47,7 @@
   ];
 
   // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
-  Cu.importGlobalProperties(['File']);
+  Cu.importGlobalProperties(['File', 'URL']);
 
   var getContentDir, Module, ModuleImpl;
 
@@ -88,14 +88,14 @@
     [
       'navigator', 'document', 'window',
       'XPathResult', 'Node', 'Element', 'KeyEvent', 'Event', 'DOMParser',
-      'XSLTProcessor', 'URL'
+      'XSLTProcessor'
     ].forEach(propName => {
       env[propName] = win[propName];
     });
 
     // メソッドはthisが変わるとエラーになることがあるためbindして使う
     [
-      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'btoa'
+      'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'
     ].forEach(propName => {
       env[propName] = win[propName].bind(win);
     });
