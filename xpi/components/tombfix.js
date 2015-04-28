@@ -53,15 +53,16 @@
 
   // ----[Application]--------------------------------------------
   function getScriptFiles(dir) {
-    var scripts = [];
-
-    simpleIterator(dir.directoryEntries, ILocalFile, file => {
-      if (/\.js$/.test(file.leafName)) {
-        scripts.push(file);
+    return [...simpleIterator(
+      dir.directoryEntries,
+      'nsILocalFile'
+    )].reduce((files, file) => {
+      if (file.leafName.endsWith('.js')) {
+        files.push(file);
       }
-    });
 
-    return scripts;
+      return files;
+    }, []);
   }
 
   function getLibraries() {
@@ -149,17 +150,14 @@
     }
   }
 
-  function simpleIterator(directoryEntries, ifc, func) {
-    if (typeof ifc === 'string') {
-      ifc = Ci[ifc];
-    }
+  function* simpleIterator(simpleEnum, ifcName) {
+    let ifc = typeof ifcName === 'string' ? Ci[ifcName] : ifcName;
 
-    try {
-      while (directoryEntries.hasMoreElements()) {
-        let value = directoryEntries.getNext();
-        func(ifc ? value.QueryInterface(ifc) : value);
-      }
-    } catch (err) {}
+    while (simpleEnum.hasMoreElements()) {
+      let value = simpleEnum.getNext();
+
+      yield ifc ? value.QueryInterface(ifc) : value;
+    }
   }
 
   function copy(target, obj, re) {
