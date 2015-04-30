@@ -104,6 +104,8 @@ var Tumblr = update({}, AbstractSessionService, {
   TUMBLR_URL : 'http://www.tumblr.com/',
   SVC_URL : 'https://www.tumblr.com/svc/',
 
+  blogID : '',
+
   /**
    * reblog情報を取り除く。
    *
@@ -502,6 +504,28 @@ var Tumblr = update({}, AbstractSessionService, {
     });
   },
 
+  /**
+   * ユーザーの利用しているタグ一覧を取得する。
+   *
+   * @return {Array}
+   */
+  getUserTags() {
+    return Tumblr.isLoggedIn() ? this.getBlogs().addCallback(blogs => (
+      this.blogID ? blogs.find(blog => blog.name === this.blogID) : blogs[0]
+    ).tags.map(tag => ({
+      name : tag
+    }))).addErrback(() => []) : succeed([]);
+  },
+
+  /**
+   * タグを取得する。
+   *
+   * @return {Object}
+   */
+  getSuggestions() {
+    return this.getUserTags().addCallback(tags => ({tags}));
+  },
+
   isLoggedIn() {
     return getCookieValue('.tumblr.com', 'logged_in') === '1';
   },
@@ -628,7 +652,8 @@ if (getPref('model.tumblr.secondaryBlogs') && Tumblr.isLoggedIn()) {
 
     Models.register(blogs.slice(1).map(({name : blogID}) => {
       let copyModel = Object.assign({}, Tumblr, {
-        name : 'Tumblr - ' + blogID
+        name   : 'Tumblr - ' + blogID,
+        blogID : blogID
       });
 
       addBefore(copyModel, 'appendTags', form => {
