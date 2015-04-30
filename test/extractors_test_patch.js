@@ -22,12 +22,12 @@
   assert(Object.type(Tombfix.Service.extractors), 'Object');
   assert(Extractors, Tombfix.Service.extractors);
   assert(Extractors instanceof Repository);
-  // assert(Object.getPrototypeOf(Extractors) !== Repository.prototype);
-  // assert(Object.keys(Extractors).length, Extractors.values.length);
+  assert(Object.getPrototypeOf(Extractors) !== Repository.prototype);
+  assert(Object.keys(Extractors).length, Extractors.values.length);
 
 
-  assert(Array.isArray(Extractors.REDIRECT_URLS));
-  assert(typeof Extractors.normalizeUrl, 'function');
+  assert(Array.isArray(Extractors.REDIRECTORS));
+  assert(typeof Extractors.normalizeURL, 'function');
   assert(typeof Extractors.extract, 'function');
 
 

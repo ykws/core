@@ -1,5 +1,101 @@
-var Extractors;
-this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
+let Extractors = Object.create(Object.expand(new Repository(), {
+  REDIRECTORS : [
+    {
+      re : new RegExp(`^https?://(?:${[
+        'feedproxy.google.com', 'bit.ly', 'j.mp', 'is.gd', 'goo.gl', 'nico.ms'
+      ].join('|').replace(/\./g, '\\.')})/`),
+      getURL(url) {
+        return request(url, {
+          responseType : 'document'
+        }).addCallback(
+          // res.responseURLではhashが省略されてしまう為、それ以外からURLを取得する
+          ({response : doc}) => doc.URL
+        )
+      }
+    }
+  ],
+  normalizeURL(url) {
+    if (url) {
+      let target = this.REDIRECTORS.find(redirector => redirector.re.test(url));
+
+      if (target) {
+        return target.getURL(url).addErrback(() => url);
+      }
+    }
+
+    return succeed(url);
+  },
+  extract(ctx, extractor) {
+    let doc = ctx.document,
+        originalURL = ctx.href;
+
+    // ドキュメントタイトルを取得する
+    {
+      let title = '';
+
+      if (typeof doc.title === 'string') {
+        title = doc.title;
+      } else {
+        // idがtitleの要素を回避する
+        let titleElm = doc.querySelector('head > title');
+
+        if (titleElm) {
+          title = titleElm.textContent;
+        }
+      }
+
+      if (!title) {
+        title = createURI(originalURL).fileBaseName;
+      }
+
+      ctx.title = title == null ? originalURL : title.trim();
+    }
+
+    // Canonical Linkが設定されていれば使う
+    {
+      let canonicalLink = doc.querySelector('link[rel="canonical"]');
+
+      if (canonicalLink) {
+        let canonicalURL = canonicalLink.href;
+
+        if (canonicalURL) {
+          let re;
+
+          // ignoreCanonicalが不正な正規表現である時に処理が停止するのを防ぐ
+          try {
+            re = new RegExp(getPref('ignoreCanonical'));
+          } catch (err) {
+            Cu.reportError(err);
+          }
+
+          if (re && !re.test(originalURL)) {
+            ctx.href = (new URL(canonicalURL, originalURL)).href;
+          }
+        }
+      }
+    }
+
+    ctx.href = ctx.href.replace('/#!/', '/');
+
+    return withWindow(ctx.window, () => maybeDeferred(
+      // currentDocument()などの為に、
+      // このwithWindow()内でextractor.extract()を必ず同期的に実行しなければならない
+      extractor.extract(ctx)
+    )).addCallback(originalPS =>
+      originalPS ? this.normalizeURL(originalPS.itemUrl).addCallback(url =>
+        Object.assign({
+          page    : ctx.title,
+          pageUrl : ctx.href
+        }, originalPS, {
+          itemUrl : url
+        })
+      ) : {}
+    );
+  }
+}));
+this.Extractors = Tombfix.Service.extractors = Extractors;
+
+Extractors.register([
   {
     name     : 'LDR',
     PARAM_RE : new RegExp(
@@ -2196,65 +2292,3 @@ this.Extractors = Extractors = Tombfix.Service.extractors = new Repository([
     }
   },
 ]);
-
-update(Extractors, {
-  REDIRECT_URLS : [
-    'pheedo.jp/',
-    '//feedproxy.google.com/',
-    '//bit.ly/',
-    '//j.mp/',
-    '//is.gd/',
-    '//goo.gl/',
-    '//nico.ms/',
-  ].map(function(re){
-    return RegExp(re);
-  }),
-
-  normalizeUrl : function(url){
-    return (!url || !this.REDIRECT_URLS.some(function(re){return re.test(url)}))?
-      succeed(url) :
-      getFinalUrl(url).addErrback(function(err){
-        // bit.lyの統計ページなどHEAD取得未対応ページから返されるエラーを回避する
-        return url;
-      });
-  },
-
-  extract : function(ctx, ext){
-    var doc = ctx.document;
-    var self = this;
-
-    // ドキュメントタイトルを取得する
-    var title;
-    if(typeof(doc.title) == 'string'){
-      title = doc.title;
-    } else {
-      // idがtitleの要素を回避する
-      title = $x('//title/text()', doc);
-    }
-
-    if(!title)
-      title = createURI(doc.location.href).fileBaseName;
-
-    ctx.title = title == null ? ctx.href : title.trim();
-
-    // canonicalが設定されていれば使う
-    var canonical = $x('//link[@rel="canonical"]/@href', doc);
-    if(canonical && !new RegExp(getPref('ignoreCanonical')).test(ctx.href))
-      ctx.href = resolveRelativePath(canonical, ctx.href);
-    ctx.href = ctx.href.replace(/\/#!\//, '/');
-
-    return withWindow(ctx.window, function(){
-      return maybeDeferred(ext.extract(ctx)).addCallback(function(ps){
-        ps = update({
-          page    : ctx.title,
-          pageUrl : ctx.href,
-        }, ps);
-
-        return self.normalizeUrl(ps.itemUrl).addCallback(function(url){
-          ps.itemUrl = url;
-          return ps;
-        });
-      });
-    });
-  },
-})
