@@ -93,6 +93,10 @@
         }
       }
     }
+
+    if (!elmTagProvider.selectedItem) {
+      elmTagProvider.selectedIndex = 0;
+    }
   });
 
 

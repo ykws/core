@@ -648,8 +648,13 @@ function TagsPanel(elmPanel, formPanel){
     }));
   });
 
-  if(!self.tagProvider)
+  if (
+    !self.tagProvider ||
+      !Models.values.some(model => model.name === self.tagProvider) ||
+      !Models[self.tagProvider].getSuggestions
+  ) {
     return;
+  }
 
   self.elmCompletion.addEventListener('construct', function(){
     self.elmTextbox = self.elmCompletion.textbox;
