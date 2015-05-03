@@ -32,7 +32,7 @@
         return ((
           // GitHubでかつraw以外のリンクの場合は除外する
           /^(?:gist\.)?github(?:usercontent)?\.com$/.test(hostname) &&
-            /\/raw\//.test(pathname)
+            pathname.split('/')[3] === 'raw'
         ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(hostname)) &&
           createURI(targetURL).fileExtension === 'js';
       },
