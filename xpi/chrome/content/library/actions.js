@@ -1,5 +1,5 @@
-/* global request, Tombfix, Repository, getMessage, createURI, alert, input */
-/* global download, getPatchDir, reload, notify, openDialog */
+/* global Tombfix, Repository, getMessage, createURI, request, alert, input */
+/* global download, getPatchDir, reload, notify, openDialog, openOptions */
 
 (function executeActions(global) {
   'use strict';
@@ -7,38 +7,36 @@
   global.Actions = Tombfix.Service.actions = new Repository([
     // FIXME: より簡易にインストールできるように
     {
-      type : 'context',
-      icon : 'chrome://tombfix/skin/tombloo_16.png',
-      name : getMessage('label.action.installPatch'),
-      check : function check(ctx) {
+      type: 'context',
+      icon: 'chrome://tombfix/skin/tombloo_16.png',
+      name: getMessage('label.action.installPatch'),
+      check(ctx) {
         if (ctx.onLink) {
-          let uri = createURI(ctx.linkURL);
+          let uriObj = createURI(ctx.linkURL);
 
-          return uri.fileExtension === 'js' && ((
+          return uriObj.fileExtension === 'js' && ((
             // GitHubでかつraw以外のリンクの場合は除外する
-            /^(?:gist\.)?github(?:usercontent)?\.com$/.test(uri.host) &&
-            /\/raw\//.test(uri.path)
-          ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(uri.host));
+            /^(?:gist\.)?github(?:usercontent)?\.com$/.test(uriObj.host) &&
+            /\/raw\//.test(uriObj.path)
+          ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(uriObj.host));
         }
       },
-      execute : function execute(ctx) {
+      execute(ctx) {
         // ファイルタイプを取得しチェックする
-        return request(ctx.linkURL).addCallback(res => {
-          var result;
-
-          if (
-            [
-              'text/plain', 'application/javascript'
-            ].indexOf(res.channel.contentType) === -1
-          ) {
+        return request(ctx.linkURL, {
+          responseType: 'blob'
+        }).addCallback(({response: blob}) => {
+          if ([
+            'text/plain', 'application/javascript'
+          ].indexOf(blob.type) === -1) {
             alert(getMessage('message.install.invalid'));
 
             return;
           }
 
-          result = input({
-            'message.install.warning' : null,
-            'label.install.agree' : false,
+          let result = input({
+            'message.install.warning': null,
+            'label.install.agree': false
           }, 'message.install.warning');
 
           if (!(result && result['label.install.agree'])) {
@@ -46,7 +44,6 @@
           }
 
           return download(ctx.linkURL, getPatchDir()).addCallback(() => {
-            // 異常なスクリプトが含まれているとここで停止する
             reload();
             notify(
               this.name,
@@ -54,27 +51,27 @@
               notify.ICON_INFO
             );
           });
-        }).addErrback(err => {
-          alert(err.message.message);
+        }).addErrback(({message}) => {
+          alert((
+            typeof message === 'string' ? message : message.message
+          ) || getMessage('error.contentsNotFound'));
         });
       }
     },
-
     {
-      type : 'menu,context',
-      name : getMessage('label.action.changeAccount'),
-      execute : function execute() {
+      type: 'menu,context',
+      name: getMessage('label.action.changeAccount'),
+      execute() {
         openDialog(
           'chrome://tombfix/content/changeAccount/changeAccount.xul',
           'resizable,centerscreen'
         );
       }
     },
-
     {
-      type : 'menu,context',
-      name : getMessage('label.action.openScriptFolder'),
-      execute : function execute() {
+      type: 'menu,context',
+      name: getMessage('label.action.openScriptFolder'),
+      execute() {
         try {
           getPatchDir().launch();
         } catch (err) {
@@ -82,27 +79,23 @@
         }
       }
     },
-
     {
-      type : 'menu,context',
-      name : getMessage('label.action.reloadTombfix'),
-      execute : () => reload()
+      type: 'menu,context',
+      name: getMessage('label.action.reloadTombfix'),
+      execute() {
+        reload();
+      }
     },
-
     {
-      type : 'menu,context',
-      name : '----'
+      type: 'menu,context',
+      name: '----'
     },
-
     {
-      type : 'menu,context',
-      icon : 'chrome://tombfix/skin/tombloo_16.png',
-      name : getMessage('label.action.tombfixOptions'),
-      execute : function execute() {
-        openDialog(
-          'chrome://tombfix/content/options/options.xul',
-          'resizable,centerscreen'
-        );
+      type: 'menu,context',
+      icon: 'chrome://tombfix/skin/tombloo_16.png',
+      name: getMessage('label.action.tombfixOptions'),
+      execute() {
+        openOptions();
       }
     }
   ]);
