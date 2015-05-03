@@ -1,34 +1,44 @@
-/* global Tombfix, Repository, getMessage, createURI, request, alert, input */
-/* global download, getPatchDir, reload, notify, openDialog, openOptions */
+/* global Tombfix, Repository, getMessage, createURI, alert, input, download */
+/* global getPatchDir, reload, notify, request, succeed, openDialog */
+/* global openOptions */
 
 (function executeActions(global) {
   'use strict';
 
   global.Actions = Tombfix.Service.actions = new Repository([
-    // FIXME: より簡易にインストールできるように
     {
       type: 'context',
       icon: 'chrome://tombfix/skin/tombloo_16.png',
       name: getMessage('label.action.installPatch'),
       check(ctx) {
-        if (ctx.onLink) {
-          let uriObj = createURI(ctx.linkURL);
+        let targetURL;
 
-          return uriObj.fileExtension === 'js' && ((
-            // GitHubでかつraw以外のリンクの場合は除外する
-            /^(?:gist\.)?github(?:usercontent)?\.com$/.test(uriObj.host) &&
-            /\/raw\//.test(uriObj.path)
-          ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(uriObj.host));
+        if (ctx.onLink) {
+          targetURL = ctx.linkURL;
+        } else {
+          let info = this.getInfoFromDocument(ctx.document);
+
+          if (info.valid) {
+            targetURL = info.url;
+          }
         }
+
+        if (!targetURL) {
+          return;
+        }
+
+        let {hostname, pathname} = new URL(targetURL);
+
+        return ((
+          // GitHubでかつraw以外のリンクの場合は除外する
+          /^(?:gist\.)?github(?:usercontent)?\.com$/.test(hostname) &&
+            /\/raw\//.test(pathname)
+        ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(hostname)) &&
+          createURI(targetURL).fileExtension === 'js';
       },
       execute(ctx) {
-        // ファイルタイプを取得しチェックする
-        return request(ctx.linkURL, {
-          responseType: 'blob'
-        }).addCallback(({response: blob}) => {
-          if ([
-            'text/plain', 'application/javascript'
-          ].indexOf(blob.type) === -1) {
+        return this.getInfo(ctx).addCallback(({valid, url}) => {
+          if (!valid) {
             alert(getMessage('message.install.invalid'));
 
             return;
@@ -43,7 +53,7 @@
             return;
           }
 
-          return download(ctx.linkURL, getPatchDir()).addCallback(() => {
+          return download(url, getPatchDir()).addCallback(() => {
             reload();
             notify(
               this.name,
@@ -56,6 +66,27 @@
             typeof message === 'string' ? message : message.message
           ) || getMessage('error.contentsNotFound'));
         });
+      },
+      getInfo(ctx) {
+        return ctx.onLink ? request(ctx.linkURL, {
+          responseType: 'blob'
+        }).addCallback(
+          res => ({
+            valid: this.isValidContentType(res.response.type),
+            url: res.responseURL
+          })
+        ) : succeed(this.getInfoFromDocument(ctx.document));
+      },
+      getInfoFromDocument(doc) {
+        return {
+          valid: this.isValidContentType(doc.contentType),
+          url: doc.URL
+        };
+      },
+      isValidContentType(contentType) {
+        return [
+          'text/plain', 'application/javascript'
+        ].indexOf(contentType) !== -1;
       }
     },
     {
