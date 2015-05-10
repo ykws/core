@@ -75,8 +75,6 @@ let Extractors = Object.create(Object.expand(new Repository(), {
       }
     }
 
-    ctx.href = ctx.href.replace('/#!/', '/');
-
     return withWindow(ctx.window, () => maybeDeferred(
       // currentDocument()などの為に、
       // このwithWindow()内でextractor.extract()を必ず同期的に実行しなければならない
