@@ -2,7 +2,8 @@ let Extractors = Object.create(Object.expand(new Repository(), {
   REDIRECTORS : [
     {
       re : new RegExp(`^https?://(?:${[
-        'feedproxy.google.com', 'bit.ly', 'j.mp', 'is.gd', 'goo.gl', 'nico.ms'
+        'feedproxy.google.com', 'tinyurl.com', 'bitly.com', 'bit.ly', 'j.mp',
+        'is.gd', 'goo.gl', 'nico.ms'
       ].join('|').replace(/\./g, '\\.')})/`),
       getURL(url) {
         return request(url, {
