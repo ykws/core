@@ -13,6 +13,14 @@ let Extractors = Object.create(Object.expand(new Repository(), {
           ({response : doc}) => doc.URL
         )
       }
+    },
+    {
+      re : /^https?:\/\/t\.co\//,
+      getURL(url) {
+        return request(url, {
+          responseType : 'document'
+        }).addCallback(({response : doc}) => (new URL(doc.title)).href)
+      }
     }
   ],
   normalizeURL(url) {
