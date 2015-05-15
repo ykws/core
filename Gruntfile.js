@@ -1,7 +1,7 @@
-/* jshint esnext: false, moz: false, node: true */
+/* jshint esnext: false, moz: false, browser: false, node: true */
 'use strict';
 
-module.exports = function (grunt) {
+module.exports = function createGruntConfig(grunt) {
   grunt.initConfig({
     jshint: {
       all: [
@@ -56,8 +56,8 @@ module.exports = function (grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-compress');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
   grunt.registerTask('default', ['jshint', 'jscs']);
   grunt.registerTask('xpi', 'compress');
