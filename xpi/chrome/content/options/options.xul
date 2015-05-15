@@ -399,7 +399,6 @@
   </hbox>
   <script
     type="application/javascript"
-    src="chrome://tombfix/content/library/expand.js">
-  </script>
-  <script type="application/javascript" src="options.js"></script>
+    src="chrome://tombfix/content/library/expand.js"/>
+  <script type="application/javascript" src="options.js"/>
 </prefwindow>

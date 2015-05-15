@@ -30,6 +30,5 @@
   <!-- via https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/overlay -->
   <script
     type="application/javascript"
-    src="chrome://tombfix/content/overlay/overlay.js">
-  </script>
+    src="chrome://tombfix/content/overlay/overlay.js"/>
 </overlay>
