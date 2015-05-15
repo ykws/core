@@ -147,7 +147,7 @@
 
     // 変数/定数はhiddenDOMWindowのものを直接使う
     for (let propName of [
-      'window', 'document', 'navigator', 'Node', 'Element', 'Event', 'KeyEvent',
+      'window', 'document', 'navigator', 'Node', 'Element', 'KeyEvent',
       'DOMParser', 'XPathResult', 'XSLTProcessor'
     ]) {
       env[propName] = win[propName];
