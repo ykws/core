@@ -36,7 +36,8 @@ module.exports = function createGruntConfig(grunt) {
           ]
         },
         options: {
-          config: '.jscsrc'
+          config: '.jscsrc',
+          esnext: null
         }
       }
     },
