@@ -4,22 +4,24 @@
   'use strict';
 
   Object.defineProperty(Object, 'expand', {
-    value        : function expand(target, props) {
+    value: function expand(target, props) {
       return Object.defineProperties(
         target,
-        Object.keys(props).reduce((descriptors, propName) => {
-          return Object.assign(descriptors, {
+        Object.keys(props).reduce(
+          (descriptors, propName) => Object.assign(descriptors, {
             [propName] : Object.assign(
-              Object.getOwnPropertyDescriptor(props, propName),
-              {enumerable : false}
+              Object.getOwnPropertyDescriptor(props, propName), {
+                enumerable: false
+              }
             )
-          });
-        }, {})
+          }),
+          {}
+        )
       );
     },
-    writable     : true,
-    enumerable   : false,
-    configurable : true
+    writable: true,
+    enumerable: false,
+    configurable: true
   });
 
   Object.expand(Array, {
@@ -70,6 +72,7 @@
       if (typeof target === 'string') {
         return Boolean(target);
       }
+
       if (
         Object.type(target) === 'String' && Object(target) instanceof String
       ) {
