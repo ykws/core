@@ -1338,12 +1338,12 @@ Extractors.register([
       'unknown08', 'unknown09', 'profile_icon_url'
     ],
     DIR_IMG_RE     : new RegExp(
-      '^https?://(?:[^.]+\\.)?pixiv\\.net/' +
+      '^https?://(?:[^.]+\\.)?(?:secure\\.)?pixiv\\.net/' +
         'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
         '(?:mobile/)?(\\d+)(?:_p(\\d+)|_[^_]+)*\\.'
     ),
     DATE_IMG_RE    : new RegExp(
-      '^https?://(?:[^.]+\\.)?pixiv\\.net/' +
+      '^https?://(?:[^.]+\\.)?(?:secure\\.)?pixiv\\.net/' +
         '(?:c/\\d+x\\d+/img-master|img-inf|img-original)' +
         '/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+' +
         '/(\\d+)(?:-[\\da-f]{32})?(?:_p(\\d+))?'
@@ -1841,7 +1841,7 @@ Extractors.register([
       '/awkwardfamilyphotos.com/',
       '/docs.google.com/',
       'share-image.com/pictures/big/',
-      '^http://i\\d+\\.pixiv\\.net/'
+      '^https?://i\\d+\\.(?:secure\\.)?pixiv\\.net/'
     ],
     check : function(ctx){
       return ctx.onImage;
