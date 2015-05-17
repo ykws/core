@@ -1480,7 +1480,8 @@ Extractors.register([
       // for manga, illust book
       if (!(
         this.DIR_IMG_RE.test(cleanedURL) &&
-          /のイラスト \[pixiv\](?: - [^ ]+)?$/.test(info.pageTitle)
+          // FIXME: this check code should be strict.
+          /(?:のイラスト|」イラスト\/.+?) \[pixiv\](?: - [^ ]+)?$/.test(info.pageTitle)
       )) {
         let pageNum = this.getPageNumber(ctx);
 
