@@ -1597,15 +1597,17 @@ Extractors.register([
         info.imageURL = uriObj.spec;
 
         return info;
-      }).addErrback(err => {
+      }).addErrback(({message}) => {
         if (
-          err.message === getMessage('error.contentsNotFound') &&
+          message === getMessage('error.contentsNotFound') &&
             this.DATE_IMG_RE.test(info.imageURL)
         ) {
           return this.fixImageExtensionFromList(info);
         }
 
-        throw new Error(err.message);
+        throw new Error((
+          typeof message === 'string' ? message : message.message
+        ) || getMessage('error.contentsNotFound'));
       });
     },
     fixImageExtensionFromList : function (info) {
