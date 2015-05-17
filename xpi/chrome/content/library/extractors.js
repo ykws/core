@@ -1467,6 +1467,8 @@ Extractors.register([
         'body > img:only-child',
         // mode=manga
         'img.image',
+        // book(mode=manga)
+        'div.image > img',
         // non-r18 illust on logout
         '.cool-work-main > .img-container > a.medium-image > img',
         // r18 on logout
