@@ -1462,6 +1462,7 @@ Extractors.register([
       return ctx.document.querySelector([
         // mode=medium on login
         anchor + ' > div > img',
+        '.works_display > div > img',
         // mode=big and mode=manga_big on login
         'body > img:only-child',
         // mode=manga
