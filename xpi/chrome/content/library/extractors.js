@@ -1328,15 +1328,6 @@ Extractors.register([
     ICON           : 'http://www.pixiv.net/favicon.ico',
     REFERRER       : 'http://www.pixiv.net/',
     PAGE_URL       : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
-    API_URL        : 'http://spapi.pixiv.net/iphone/illust.php?illust_id=',
-    API_DATA_NAMES : [
-      'id', 'user_id', 'extension', 'title', 'img_dir', 'nickname',
-      'thumbnail_url', 'unknown01', 'unknown02', 'medium_url',
-      'unknown03', 'unknown04', 'date', 'tags', 'tools', 'rate', 'score',
-      'view', 'description', 'page_number', 'unknown05', 'unknown06',
-      'bookmark_number', 'comment_number', 'username', 'unknown07', 'r18',
-      'unknown08', 'unknown09', 'profile_icon_url'
-    ],
     DIR_IMG_RE     : new RegExp(
       '^https?://(?:[^.]+\\.)?(?:secure\\.)?pixiv\\.net/' +
         'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
@@ -1376,7 +1367,9 @@ Extractors.register([
           if (retry) {
             retry = false;
 
-            return that.fixImageExtensionFromAPI(info).addCallback(getImage);
+            if (that.DATE_IMG_RE.test(info.imageURL)) {
+              return that.fixImageExtensionFromList(info).addCallback(getImage);
+            }
           }
 
           throw new Error(err);
@@ -1568,46 +1561,6 @@ Extractors.register([
       urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
 
       return urlObj.toString();
-    },
-    getImageData : function (illustID) {
-      return request(
-        this.API_URL + illustID + '&' + getCookieString('pixiv.net', 'PHPSESSID')
-      ).addCallback(res => {
-        var text = res.responseText.trim();
-
-        if (!text) {
-          throw new Error(getMessage('error.contentsNotFound'));
-        }
-
-        return getCSVList(text).reduce((data, str, idx) => {
-          var item = str.replace(/^"|"$/g, '');
-
-          data[this.API_DATA_NAMES[idx]] = item;
-
-          return data;
-        }, {});
-      });
-    },
-    fixImageExtensionFromAPI : function (info) {
-      return this.getImageData(info.illustID).addCallback(({extension}) => {
-        var uriObj = createURI(info.imageURL);
-
-        uriObj.fileExtension = extension;
-        info.imageURL = uriObj.spec;
-
-        return info;
-      }).addErrback(({message}) => {
-        if (
-          message === getMessage('error.contentsNotFound') &&
-            this.DATE_IMG_RE.test(info.imageURL)
-        ) {
-          return this.fixImageExtensionFromList(info);
-        }
-
-        throw new Error((
-          typeof message === 'string' ? message : message.message
-        ) || getMessage('error.contentsNotFound'));
-      });
     },
     fixImageExtensionFromList : function (info) {
       var that = this,
