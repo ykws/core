@@ -1346,7 +1346,7 @@ Extractors.register([
       '^https?://(?:[^.]+\\.)?(?:secure\\.)?pixiv\\.net/' +
         '(?:c/\\d+x\\d+/img-master|img-inf|img-original)' +
         '/img/\\d+/\\d+/\\d+/\\d+/\\d+/\\d+' +
-        '/(\\d+)(?:-[\\da-f]{32})?(?:_p(\\d+))?'
+        '/(\\d+)(?:-[\\da-f]{32})?(?:_(?:p|ugoira)(\\d+))?'
     ),
     IMG_PAGE_RE    : /^https?:\/\/(?:[^.]+\.)?pixiv\.net\/member_illust\.php/,
     // via http://help.pixiv.net/171/
@@ -1428,18 +1428,14 @@ Extractors.register([
         };
 
       if (!img || (!this.DIR_IMG_RE.test(url) && !this.DATE_IMG_RE.test(url))) {
-        if (isUgoira) {
-          return this.fixImageURLforUgoiraFromAPI(info);
-        }
-
         // for limited access about mypixiv & age limit on login, and delete
         throw new Error(getMessage('error.contentsNotFound'));
       }
 
       return succeed(update(info, {
-        imageURL : (this.DATE_IMG_RE.test(url) && (/\/img-inf\//.test(url) || isUgoira)) ?
+        imageURL : this.DATE_IMG_RE.test(url) && !isUgoira && /\/img-inf\//.test(url) ?
           this.getLargeThumbnailURL(url) :
-          (this.getFullSizeImageURL(ctx, info) || url)
+          (this.getFullSizeImageURL(ctx, info, isUgoira) || url)
       }));
     },
     isImagePage : function (target, mode) {
@@ -1457,7 +1453,8 @@ Extractors.register([
       return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
     },
     getImageElement : function (ctx, illustID) {
-      var anchor = 'a[href*="illust_id=' + (illustID || queryHash(ctx.search).illust_id) + '"]';
+      var currentIllustID = illustID || queryHash(ctx.search).illust_id,
+          anchor = `a[href*="illust_id=${currentIllustID}"]`;
 
       return ctx.document.querySelector([
         // mode=medium on login
@@ -1474,11 +1471,25 @@ Extractors.register([
         // r18 on logout
         '.cool-work-main > .sensored > img',
         // ugoira on logout
-        anchor + ' > img'
+        anchor + ` > img[src*="${currentIllustID}"]`
       ].join(', '));
     },
-    getFullSizeImageURL : function (ctx, info) {
+    getFullSizeImageURL : function (ctx, info, isUgoira) {
       var cleanedURL = this.getCleanedURL(info.imageURL);
+
+      if (isUgoira) {
+        let urlObj = new URL(cleanedURL);
+
+        urlObj.pathname = urlObj.pathname.replace(
+          /^\/c\/\d+x\d+\/img-master\/|\/img-inf\//,
+          '/img-original/'
+        ).replace(
+          /(\/\d+(?:-[\da-f]{32})?_)[^.\/]+\./,
+          `$1ugoira${this.getPageNumber(ctx)}.`
+        );
+
+        return urlObj.toString();
+      }
 
       // for manga, illust book
       if (!(
@@ -1554,19 +1565,7 @@ Extractors.register([
       var urlObj = new URL(url),
         {pathname} = urlObj;
 
-      if (/^\/img-inf\//.test(pathname)) {
-        urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
-      } else if (
-        /^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
-          /\/\d+(?:-[\da-f]{32})?_(?:master|square)\d+\./.test(pathname)
-      ) {
-        let maxQuality = pathname.extract(/\/\d+(?:-[\da-f]{32})?_(?:master|square)(\d+)\./);
-
-        urlObj.pathname = pathname.replace(
-          /^\/c\/\d+x\d+\/img-master\//,
-          '/c/' + maxQuality + 'x' + maxQuality + '/img-master/'
-        ).replace(/(\/\d+(?:-[\da-f]{32})?_)square(\d+\.)/, '$1master$2');
-      }
+      urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
 
       return urlObj.toString();
     },
@@ -1637,13 +1636,6 @@ Extractors.register([
           throw new Error(getMessage('error.contentsNotFound'));
         });
       }());
-    },
-    fixImageURLforUgoiraFromAPI : function (info) {
-      return this.getImageData(info.illustID).addCallback(({medium_url}) => {
-        info.imageURL = this.getLargeThumbnailURL(medium_url);
-
-        return info;
-      });
     }
   },
 
