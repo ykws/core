@@ -1170,7 +1170,7 @@ Models.register(update({
   ORIGIN            : 'https://twitter.com',
   ACCOUT_URL        : 'https://twitter.com/settings/account',
   TWEET_API_URL     : 'https://twitter.com/i/tweet',
-  UPLOAD_API_URL    : 'https://upload.twitter.com/i/media/upload.iframe',
+  UPLOAD_API_URL    : 'https://upload.twitter.com/i/media/upload.json',
   STATUS_MAX_LENGTH : 140,
   OPTIONS           : {
     // for twttr.txt.getTweetLength()
@@ -1413,17 +1413,13 @@ Models.register(update({
       var bis = new BinaryInputStream(new FileInputStream(file, -1, 0, false));
 
       return request(this.UPLOAD_API_URL, {
-        responseType : 'document',
+        responseType : 'json',
         sendContent  : update({
           media : btoa(bis.readBytes(bis.available()))
         }, token)
       }).addErrback(() => {
         throw new Error(getMessage('message.model.twitter.upload'));
-      }).addCallback(({response : doc}) => {
-        var json = JSON.parse(doc.scripts[0].textContent.extract(
-          /parent\.postMessage\(JSON\.stringify\((\{.+\})\), ".+"\);/
-        ));
-
+      }).addCallback(({response : json}) => {
         return this.update(update({
           media_ids : json.media_id_string
         }, token), status);
