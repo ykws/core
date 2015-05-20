@@ -1327,7 +1327,8 @@ Extractors.register([
     name           : 'Photo - pixiv',
     ICON           : 'http://www.pixiv.net/favicon.ico',
     REFERRER       : 'http://www.pixiv.net/',
-    PAGE_URL       : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
+    PAGE_URL       : 'http://www.pixiv.net/member_illust.php' +
+      '?mode=medium&illust_id=',
     PUBLIC_API_URL : 'https://public-api.secure.pixiv.net/v1/',
     TOKEN_API_URL  : 'https://oauth.secure.pixiv.net/v2/auth/token',
     DIR_IMG_RE     : new RegExp(
@@ -1348,16 +1349,20 @@ Extractors.register([
     CLIENT_ID      : 'bYGKuGVw91e0NMfPGp44euvGt59s',
     CLIENT_SECRET  : 'HP3RmkgAmEGro0gn1x9ioawQE8WMfvLXDz3ZqxpK',
     accessToken    : '',
-    check : function (ctx) {
+    check(ctx) {
       return !ctx.selection && this.getIllustID(ctx);
     },
-    extract : function (ctx) {
-      var that = this, retry = true;
+    extract(ctx) {
+      let that = this,
+          retry = true;
 
-      return this.getMediumPage(ctx).addCallback(function getImage(info) {
-        var {imageURL, pageTitle, illustID} = info;
+      return this.getInfo(ctx).addCallback(function getImage(info) {
+        let {imageURL, pageTitle, illustID} = info;
 
-        return downloadWithReferrer(imageURL, that.REFERRER).addCallback(file => {
+        return downloadWithReferrer(
+          imageURL,
+          that.REFERRER
+        ).addCallback(file => {
           ctx.title = pageTitle;
           ctx.href = that.PAGE_URL + illustID;
 
@@ -1372,19 +1377,19 @@ Extractors.register([
           if (retry) {
             retry = false;
 
-            if (that.DATE_IMG_RE.test(info.imageURL)) {
+            if (that.DATE_IMG_RE.test(imageURL)) {
               return that.fixImageExtensionFromList(info).addCallback(getImage);
             }
           }
 
-          throw new Error(err);
+          throw err;
         });
       });
     },
-    getIllustID : function (ctx) {
-      var imageURL = (ctx.onImage && ctx.target.src) || '',
-        backgroundImageURL = (ctx.hasBGImage && ctx.bgImageURL) || '',
-        targetURL = (ctx.onLink && ctx.linkURL) || ctx.href || '';
+    getIllustID(ctx) {
+      let imageURL = (ctx.onImage && ctx.target.src) || '',
+          backgroundImageURL = (ctx.hasBGImage && ctx.bgImageURL) || '',
+          targetURL = (ctx.onLink && ctx.link.href) || ctx.href || '';
 
       for (let url of [imageURL, backgroundImageURL, targetURL]) {
         if (this.DIR_IMG_RE.test(url) || this.DATE_IMG_RE.test(url)) {
@@ -1396,64 +1401,96 @@ Extractors.register([
 
       if (
         this.isImagePage(ctx.link) || (
-          !imageURL && targetURL === ctx.href &&
-          this.isImagePage(ctx) &&
-          (this.getImageElement(ctx) || this.isUgoiraPage(ctx))
+          !imageURL && targetURL === ctx.href && this.isImagePage(ctx) &&
+            this.getImageURLFromDocument(ctx)
         )
       ) {
         return (new URL(targetURL)).searchParams.get('illust_id');
       }
     },
-    getMediumPage : function (ctx) {
-      var illustID = this.getIllustID(ctx);
+    getInfo(ctx) {
+      let illustID = this.getIllustID(ctx);
 
-      if (!ctx.onImage && !ctx.onLink && this.isImagePage(ctx, 'medium')) {
-        return this.getInfo(ctx, illustID);
-      }
+      return this.getMediumPage(ctx, illustID).addCallback(doc => {
+        let url = this.getImageURLFromDocument({document : doc}, illustID);
 
-      return request(this.PAGE_URL + illustID, {
-        responseType : 'document'
-      }).addCallback(res => this.getInfo(ctx, illustID, res.response));
-    },
-    getInfo : function (ctx, illustID, doc = ctx.document) {
-      var isUgoira = this.isUgoiraPage({document : doc}),
-        img = this.getImageElement({document : doc}, illustID),
-        url = img ? (img.src || img.dataset.src) : '',
-        info =  {
+        if (
+          !url || (!this.DIR_IMG_RE.test(url) && !this.DATE_IMG_RE.test(url))
+        ) {
+          // for limited access about mypixiv & age limit on login, and delete
+          throw new Error(getMessage('error.contentsNotFound'));
+        }
+
+        let info = {
           imageURL  : url,
           pageTitle : doc.title,
           illustID  : illustID
         };
 
-      if (!img || (!this.DIR_IMG_RE.test(url) && !this.DATE_IMG_RE.test(url))) {
-        // for limited access about mypixiv & age limit on login, and delete
-        throw new Error(getMessage('error.contentsNotFound'));
+        return succeed().addCallback(() =>
+          this.DATE_IMG_RE.test(url) && /\/img-inf\//.test(url) &&
+            !this.isUgoiraPage(doc) ?
+            this.getWorkInfo(illustID).addCallback(workInfo =>
+              this.getOriginalImageURL(ctx, workInfo)
+            ).addErrback(() => this.getLargeThumbnailURL(url)) :
+            (this.getFullSizeImageURL(ctx, info, doc) || url)
+        ).addCallback(imageURL => Object.assign(info, {imageURL}));
+      });
+    },
+    getMediumPage(ctx, illustID) {
+      if (!ctx.onImage && !ctx.onLink && this.isImagePage(ctx, 'medium')) {
+        return succeed(ctx.document);
       }
 
-      return succeed().addCallback(() =>
-        this.DATE_IMG_RE.test(url) && !isUgoira && /\/img-inf\//.test(url) ?
-          this.getWorkInfo(illustID).addCallback(workInfo =>
-            this.getOriginalImageURL(ctx, workInfo)
-          ).addErrback(() => this.getLargeThumbnailURL(url)) :
-          (this.getFullSizeImageURL(ctx, info, doc) || url)
-      ).addCallback(imageURL => Object.assign(info, {imageURL}));
+      return request(this.PAGE_URL + illustID, {
+        responseType : 'document'
+      }).addCallback(({response : doc}) => doc);
     },
-    isImagePage : function (target, mode) {
+    isImagePage(target, mode) {
       if (target && this.IMG_PAGE_RE.test(target.href)) {
         let queries = queryHash(target.search);
 
-        if (queries.illust_id && (mode ? queries.mode === mode : queries.mode)) {
-          return true;
-        }
+        return Boolean(
+          queries.illust_id && (mode ? queries.mode === mode : queries.mode)
+        );
       }
 
       return false;
     },
-    isUgoiraPage : function (ctx) {
-      return Boolean(ctx.document.querySelector('._ugoku-illust-player-container'));
+    isUgoiraPage(doc) {
+      return Boolean(doc.querySelector('._ugoku-illust-player-container'));
     },
-    getImageElement : function (ctx, illustID) {
-      var currentIllustID = illustID || queryHash(ctx.search).illust_id,
+    getImageURLFromDocument(ctx, illustID) {
+      let img = this.getImageElement(ctx, illustID);
+
+      if (img) {
+        let url = img.src || img.dataset.src;
+
+        if (url) {
+          return url;
+        }
+      }
+
+      let doc = ctx.document;
+
+      if (this.isUgoiraPage(doc)) {
+        let ogImage = doc.querySelector('meta[property="og:image"]');
+
+        if (ogImage) {
+          let url = ogImage.content;
+
+          if (url) {
+            return url;
+          }
+        }
+
+        return this.getUgoiraImageURLFromDocument(doc);
+      }
+
+      return '';
+    },
+    getImageElement(ctx, illustID) {
+      let currentIllustID = illustID || queryHash(ctx.search).illust_id,
           anchor = `a[href*="illust_id=${currentIllustID}"]`;
 
       return ctx.document.querySelector([
@@ -1474,32 +1511,65 @@ Extractors.register([
         anchor + ` > img[src*="${currentIllustID}"]`
       ].join(', '));
     },
-    getFullSizeImageURL : function (ctx, info, doc) {
-      var cleanedURL = this.getCleanedURL(info.imageURL);
+    getUgoiraImageURLFromDocument(doc) {
+      let str = doc.body.innerHTML.extract(
+        /pixiv\.context\.ugokuIllustFullscreenData\s*=\s*({.+});/
+      );
 
-      if (this.isUgoiraPage({document : doc})) {
-        let urlObj = new URL(cleanedURL);
+      if (str) {
+        let info = JSON.parse(str);
 
-        urlObj.pathname = urlObj.pathname.replace(
-          /^\/c\/\d+x\d+\/img-master\/|\/img-inf\//,
-          '/img-original/'
-        ).replace(
-          /(\/\d+(?:-[\da-f]{32})?_)[^.\/]+\./,
-          `$1ugoira${this.getPageNumber(ctx)}.`
-        );
+        if (info) {
+          let {src} = info;
 
-        return urlObj.toString();
+          if (src) {
+            let urlObj = new URL(src);
+
+            urlObj.pathname = urlObj.pathname
+              .replace(/^\/img-zip-ugoira\//, '/img-original/')
+              .replace(/_ugoira\d+x\d+\.zip$/, '_ugoira0.jpg');
+
+            return urlObj.toString();
+          }
+        }
       }
+
+      return '';
+    },
+    getLargeThumbnailURL(url) {
+      let urlObj = new URL(url);
+
+      urlObj.pathname = urlObj.pathname.replace(
+        /(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./,
+        '$1s.'
+      );
+
+      return urlObj.toString();
+    },
+    getFullSizeImageURL(ctx, info, doc) {
+      let cleanedURL = this.getCleanedURL(info.imageURL);
 
       if (!this.isOldIllustPage(cleanedURL, doc)) {
         let pageNum = this.getPageNumber(ctx);
 
+        if (this.isUgoiraPage(doc)) {
+          let urlObj = new URL(cleanedURL);
+
+          urlObj.pathname = urlObj.pathname.replace(
+            /^\/(?:c\/\d+x\d+\/img-master|img-inf)\//,
+            '/img-original/'
+          ).replace(
+            /(\/\d+(?:-[\da-f]{32})?_)[^.\/]+\./,
+            `$1ugoira${pageNum}.`
+          );
+
+          return urlObj.toString();
+        }
         if (this.DIR_IMG_RE.test(cleanedURL)) {
           return cleanedURL.replace(
             /img\/[^\/]+\/\d+(?:_[\da-f]{10})?/,
-            '$&_' + (
-              this.FIRST_BIG_P_ID > info.illustID ? '' : 'big_'
-            ) + 'p' + pageNum
+            '$&_' + (this.FIRST_BIG_P_ID > info.illustID ? '' : 'big_') +
+              'p' + pageNum
           );
         }
         if (this.DATE_IMG_RE.test(cleanedURL)) {
@@ -1512,49 +1582,32 @@ Extractors.register([
 
       return cleanedURL;
     },
-    getCleanedURL : function (url) {
-      var urlObj = new URL(url),
-        {pathname} = urlObj;
+    getCleanedURL(url) {
+      let urlObj = new URL(url),
+          {pathname} = urlObj;
 
       if (this.DIR_IMG_RE.test(url)) {
-        pathname = pathname
-          .replace(/works\/\d+x\d+/, 'img')
-          .replace(/(img\/[^\/]+\/)(?:mobile\/)?(\d+(?:_[\da-f]{10})?)(?:_[^.]+)?/, '$1$2');
+        pathname = pathname.replace(/works\/\d+x\d+/, 'img').replace(
+          /(img\/[^\/]+\/)(?:mobile\/)?(\d+(?:_[\da-f]{10})?)(?:_[^.]+)?/,
+          '$1$2'
+        );
       } else if (
         this.DATE_IMG_RE.test(url) &&
           /^\/c\/\d+x\d+\/img-master\//.test(pathname) &&
           /\/\d+(?:-[\da-f]{32})?_p\d+_(?:master|square)\d+\./.test(pathname)
       ) {
-        pathname = pathname
-          .replace(/^\/c\/\d+x\d+\/img-master\//, '/img-original/')
-          .replace(/(\/\d+(?:-[\da-f]{32})?_p\d+)_(?:master|square)\d+\./, '$1.');
+        pathname = pathname.replace(
+          /^\/c\/\d+x\d+\/img-master\//,
+          '/img-original/'
+        ).replace(
+          /(\/\d+(?:-[\da-f]{32})?_p\d+)_(?:master|square)\d+\./,
+          '$1.'
+        );
       }
 
       urlObj.pathname = pathname;
 
       return urlObj.toString();
-    },
-    getPageNumber : function (ctx) {
-      var imageURL = ctx.onImage ? ctx.target.src : (ctx.hasBGImage ? ctx.bgImageURL : ''),
-        targetURL = ctx.onLink ? ctx.linkURL : ctx.href;
-
-      return (() => {
-        for (let url of [imageURL, targetURL]) {
-          if (url) {
-            let urlObj = new URL(url);
-
-            if (this.DIR_IMG_RE.test(url)) {
-              return url.extract(this.DIR_IMG_RE, 2);
-            }
-            if (this.DATE_IMG_RE.test(url)) {
-              return url.extract(this.DATE_IMG_RE, 2);
-            }
-            if (this.isImagePage(urlObj, 'manga_big')) {
-              return urlObj.searchParams.get('page');
-            }
-          }
-        }
-      })() || '0';
     },
     isOldIllustPage(url, doc) {
       if (this.DIR_IMG_RE.test(url)) {
@@ -1564,52 +1617,39 @@ Extractors.register([
           let authorNameElm = doc.querySelector('.userdata > .name');
 
           if (authorNameElm) {
-            return (new RegExp(
-              `」イラスト/${authorNameElm.textContent.trim()} \\[pixiv\\]$`
-            )).test(pageTitle);
+            return pageTitle.endsWith(
+              `」イラスト/${authorNameElm.textContent.trim()} [pixiv]`
+            );
           }
         }
 
-        return /のイラスト \[pixiv\]$/.test(pageTitle);
+        return pageTitle.endsWith('のイラスト [pixiv]');
       }
 
       return false;
     },
-    getLargeThumbnailURL : function (url) {
-      var urlObj = new URL(url),
-        {pathname} = urlObj;
+    getPageNumber(ctx) {
+      let imageURL = (ctx.onImage && ctx.target.src) || '',
+          backgroundImageURL = (ctx.hasBGImage && ctx.bgImageURL) || '',
+          targetURL = (ctx.onLink && ctx.link.href) || ctx.href || '';
 
-      urlObj.pathname = pathname.replace(/(\/\d+(?:_[\da-f]{10})?_)[^_.]+\./, '$1s.');
+      return (() => {
+        for (let url of [imageURL, backgroundImageURL, targetURL]) {
+          if (url) {
+            let urlObj = new URL(url);
 
-      return urlObj.toString();
-    },
-    fixImageExtensionFromList : function (info) {
-      var that = this,
-        uriObj = createURI(info.imageURL),
-        extensions = this.IMG_EXTENSIONS.filter(function removeCurrent(candidate) {
-          // `this` type is "object", not "string".
-          return String(this) !== candidate;
-        }, uriObj.fileExtension);
-
-      return (function recursive() {
-        var imageURL;
-
-        uriObj.fileExtension = extensions.shift();
-
-        imageURL = uriObj.spec;
-
-        return downloadWithReferrer(imageURL, that.REFERRER).addCallback(() => {
-          info.imageURL = imageURL;
-
-          return info;
-        }).addErrback(() => {
-          if (extensions.length) {
-            return recursive();
+            if (this.DIR_IMG_RE.test(url) || this.DATE_IMG_RE.test(url)) {
+              return url.extract(
+                this.DIR_IMG_RE.test(url) ? this.DIR_IMG_RE : this.DATE_IMG_RE,
+                2
+              );
+            }
+            if (this.isImagePage(urlObj, 'manga_big')) {
+              return urlObj.searchParams.get('page');
+            }
           }
-
-          throw new Error(getMessage('error.contentsNotFound'));
-        });
-      }());
+        }
+      })() || '0';
     },
     getWorkInfo(illustID) {
       let that = this,
@@ -1742,6 +1782,30 @@ Extractors.register([
       }
 
       return workInfo.image_urls.large;
+    },
+    fixImageExtensionFromList(info) {
+      let that = this,
+          uriObj = createURI(info.imageURL),
+          extension = uriObj.fileExtension,
+          extensions = this.IMG_EXTENSIONS.filter(candidate =>
+            extension !== candidate
+          );
+
+      return (function recursive() {
+        uriObj.fileExtension = extensions.shift();
+
+        let imageURL = uriObj.spec;
+
+        return downloadWithReferrer(imageURL, that.REFERRER).addCallback(() =>
+          Object.assign(info, {imageURL})
+        ).addErrback(() => {
+          if (extensions.length) {
+            return recursive();
+          }
+
+          throw new Error(getMessage('error.contentsNotFound'));
+        });
+      }());
     }
   },
 
