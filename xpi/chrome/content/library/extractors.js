@@ -1328,6 +1328,8 @@ Extractors.register([
     ICON           : 'http://www.pixiv.net/favicon.ico',
     REFERRER       : 'http://www.pixiv.net/',
     PAGE_URL       : 'http://www.pixiv.net/member_illust.php?mode=medium&illust_id=',
+    PUBLIC_API_URL : 'https://public-api.secure.pixiv.net/v1/',
+    TOKEN_API_URL  : 'https://oauth.secure.pixiv.net/v2/auth/token',
     DIR_IMG_RE     : new RegExp(
       '^https?://(?:[^.]+\\.)?(?:secure\\.)?pixiv\\.net/' +
         'img\\d+/(?:works/\\d+x\\d+|img)/[^/]+/' +
@@ -1343,6 +1345,9 @@ Extractors.register([
     // via http://help.pixiv.net/171/
     IMG_EXTENSIONS : ['jpg', 'png', 'gif', 'jpeg'],
     FIRST_BIG_P_ID : 11319936,
+    CLIENT_ID      : 'bYGKuGVw91e0NMfPGp44euvGt59s',
+    CLIENT_SECRET  : 'HP3RmkgAmEGro0gn1x9ioawQE8WMfvLXDz3ZqxpK',
+    accessToken    : '',
     check : function (ctx) {
       return !ctx.selection && this.getIllustID(ctx);
     },
@@ -1425,11 +1430,13 @@ Extractors.register([
         throw new Error(getMessage('error.contentsNotFound'));
       }
 
-      return succeed(update(info, {
-        imageURL : this.DATE_IMG_RE.test(url) && !isUgoira && /\/img-inf\//.test(url) ?
-          this.getLargeThumbnailURL(url) :
+      return succeed().addCallback(() =>
+        this.DATE_IMG_RE.test(url) && !isUgoira && /\/img-inf\//.test(url) ?
+          this.getWorkInfo(illustID).addCallback(workInfo =>
+            this.getOriginalImageURL(ctx, workInfo)
+          ).addErrback(() => this.getLargeThumbnailURL(url)) :
           (this.getFullSizeImageURL(ctx, info, isUgoira) || url)
-      }));
+      ).addCallback(imageURL => Object.assign(info, {imageURL}));
     },
     isImagePage : function (target, mode) {
       if (target && this.IMG_PAGE_RE.test(target.href)) {
@@ -1589,6 +1596,138 @@ Extractors.register([
           throw new Error(getMessage('error.contentsNotFound'));
         });
       }());
+    },
+    getWorkInfo(illustID) {
+      let that = this,
+          retry = true;
+
+      return (function recursive(forceUpdate) {
+        return succeed().addCallback(() => {
+          if (forceUpdate || !that.accessToken) {
+            return that.getAccessToken().addCallback(accessToken => {
+              if (!accessToken) {
+                throw new Error(getMessage('error.contentsNotFound'));
+              }
+            });
+          }
+        }).addCallback(() =>
+          that.callMethod('works/' + illustID, {
+            image_sizes : 'large'
+          }).addErrback(err => {
+            if (retry) {
+              retry = false;
+
+              return recursive(true);
+            }
+
+            throw err;
+          })
+        );
+      }()).addCallback(json => json.response[0]);
+    },
+    callMethod(method, options) {
+      return request(this.PUBLIC_API_URL + method + '.json', {
+        responseType : 'json',
+        queryString  : Object.assign({
+          access_token : this.accessToken
+        }, options)
+      }).addCallback(
+        ({response : json}) => json
+      ).addErrback(err => {
+        let res = err.message;
+
+        if (res) {
+          let json = res.response;
+
+          if (json && json.has_error) {
+            throw new Error(json.errors.system.message);
+          }
+        }
+
+        throw err;
+      });
+    },
+    getAccessToken() {
+      let [accountInfo] = this.getAccountInfoList();
+
+      if (!accountInfo) {
+        return succeed('');
+      }
+
+      let sessIDInfo = this.getSESSIDInfo();
+
+      return request(this.TOKEN_API_URL, {
+        responseType : 'json',
+        sendContent  : {
+          client_id     : this.CLIENT_ID,
+          client_secret : this.CLIENT_SECRET,
+          grant_type    : 'password',
+          username      : accountInfo.username,
+          password      : accountInfo.password
+        }
+      }).addCallback(({response : json}) => {
+        // 認証によりPHPSESSIDが更新され、ログインしていても強制的にログアウトになってしまうのを防ぐ
+        if (sessIDInfo.length) {
+          CookieManager.remove('.pixiv.net', 'PHPSESSID', '/', false);
+          CookieManager.add(...sessIDInfo);
+        }
+
+        return this.setAccessToken(json.access_token);
+      }).addErrback(() => '');
+    },
+    setAccessToken(accessToken) {
+      if (!accessToken) {
+        return '';
+      }
+
+      this.accessToken = accessToken;
+
+      return accessToken;
+    },
+    getAccountInfoList() {
+      return [
+        'https://www.secure.pixiv.net', 'http://www.pixiv.net'
+      ].reduce((list, origin) => list.concat(
+        LoginManager.findLogins({}, origin, '', null)
+      ), []);
+    },
+    getSESSIDInfo() {
+      let [info] = getCookies('.pixiv.net', 'PHPSESSID');
+
+      return info ? [
+        'host', 'path', 'name', 'value', 'isSecure', 'isHttpOnly', 'isSession',
+        'expiry'
+      ].map(propName => info[propName]) : [];
+    },
+    getOriginalImageURL(ctx, workInfo) {
+      let {metadata} = workInfo;
+
+      if (metadata) {
+        let pageNum = this.getPageNumber(ctx);
+
+        if (workInfo.type === 'ugoira') {
+          let {frames} = metadata;
+
+          if (frames) {
+            if (frames.length <= pageNum) {
+              pageNum = 0;
+            }
+
+            return workInfo.image_urls.large.replace(
+              /_ugoira\d+/,
+              `_ugoira${pageNum}`
+            );
+          }
+        } else if (workInfo.page_count > 1) {
+          if (workInfo.page_count <= pageNum) {
+            pageNum = 0;
+          }
+
+          return metadata.pages[pageNum].image_urls.large;
+        }
+      }
+
+      return workInfo.image_urls.large;
     }
   },
 
