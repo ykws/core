@@ -1435,7 +1435,7 @@ Extractors.register([
           this.getWorkInfo(illustID).addCallback(workInfo =>
             this.getOriginalImageURL(ctx, workInfo)
           ).addErrback(() => this.getLargeThumbnailURL(url)) :
-          (this.getFullSizeImageURL(ctx, info, isUgoira) || url)
+          (this.getFullSizeImageURL(ctx, info, doc) || url)
       ).addCallback(imageURL => Object.assign(info, {imageURL}));
     },
     isImagePage : function (target, mode) {
@@ -1474,10 +1474,10 @@ Extractors.register([
         anchor + ` > img[src*="${currentIllustID}"]`
       ].join(', '));
     },
-    getFullSizeImageURL : function (ctx, info, isUgoira) {
+    getFullSizeImageURL : function (ctx, info, doc) {
       var cleanedURL = this.getCleanedURL(info.imageURL);
 
-      if (isUgoira) {
+      if (this.isUgoiraPage({document : doc})) {
         let urlObj = new URL(cleanedURL);
 
         urlObj.pathname = urlObj.pathname.replace(
@@ -1491,12 +1491,7 @@ Extractors.register([
         return urlObj.toString();
       }
 
-      // for manga, illust book
-      if (!(
-        this.DIR_IMG_RE.test(cleanedURL) &&
-          // FIXME: this check code should be strict.
-          /(?:のイラスト|」イラスト\/.+?) \[pixiv\](?: - [^ ]+)?$/.test(info.pageTitle)
-      )) {
+      if (!this.isOldIllustPage(cleanedURL, doc)) {
         let pageNum = this.getPageNumber(ctx);
 
         if (this.DIR_IMG_RE.test(cleanedURL)) {
@@ -1560,6 +1555,25 @@ Extractors.register([
           }
         }
       })() || '0';
+    },
+    isOldIllustPage(url, doc) {
+      if (this.DIR_IMG_RE.test(url)) {
+        let pageTitle = doc.title;
+
+        if (doc.querySelector('.introduction form')) {
+          let authorNameElm = doc.querySelector('.userdata > .name');
+
+          if (authorNameElm) {
+            return (new RegExp(
+              `」イラスト/${authorNameElm.textContent.trim()} \\[pixiv\\]$`
+            )).test(pageTitle);
+          }
+        }
+
+        return /のイラスト \[pixiv\]$/.test(pageTitle);
+      }
+
+      return false;
     },
     getLargeThumbnailURL : function (url) {
       var urlObj = new URL(url),
