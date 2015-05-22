@@ -9,7 +9,7 @@
         target,
         Object.keys(props).reduce(
           (descriptors, propName) => Object.assign(descriptors, {
-            [propName] : Object.assign(
+            [propName]: Object.assign(
               Object.getOwnPropertyDescriptor(props, propName), {
                 enumerable: false
               }
