@@ -69,8 +69,7 @@ module.exports = function createGruntConfig(grunt) {
           ]
         },
         options: {
-          config: '.jscsrc',
-          disallowKeywords: ['var', 'continue', 'debugger', 'with']
+          config: '.jscsrc'
         }
       },
       old: {
