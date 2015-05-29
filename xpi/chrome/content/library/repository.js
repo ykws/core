@@ -23,19 +23,12 @@
       if (targetName) {
         let defList = this.values;
 
-        for (let def of defList) {
-          delete this[def.name];
-        }
+        this.unregister();
 
-        let idx = defList.findIndex(def => def.name === targetName);
-
-        if (idx === -1) {
-          idx = defList.length;
-        }
-
-        defList.splice(after ? idx + 1 : idx, 0, ...defs);
-
-        defs = defList;
+        defs = defList.merge(defs, {
+          indexFunc: def => def.name === targetName,
+          after
+        });
       }
 
       for (let def of defs) {
@@ -44,6 +37,13 @@
         if (defName) {
           this[defName] = def;
         }
+      }
+    },
+    unregister() {
+      for (let def of this.values) {
+        // jscs: disable disallowKeywords
+        delete this[def.name];
+        // jscs: enable
       }
     },
     check(...args) {

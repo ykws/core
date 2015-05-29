@@ -32,6 +32,8 @@
   assert(Array.isArray((new Repository()).check({})));
   assert((new Repository()).check({}).length, 0);
 
+  assert((new Repository()).unregister(), void 0);
+
   assert((new Repository()).register(), void 0);
   assert((new Repository()).register({}), void 0);
   assert((new Repository()).register({name : 'Hoge'}), void 0);
@@ -352,6 +354,46 @@
   assert(Test.Piyo.name, 'Piyo');
   assert(Test.check().length, 1);
   assert(Test.check({}).length, 1);
+
+  Test = new Repository();
+
+  Test.register({name : 'Hoge'});
+
+  assert(Object.keys(Test).length, 1);
+  assert(Test.values.length, 1);
+  assert(Test.Hoge.name, 'Hoge');
+  assert(Test.check().length, 0);
+  assert(Test.check({}).length, 0);
+
+  Test.unregister();
+
+  assert(Object.keys(Test).length, 0);
+  assert(Test.values.length, 0);
+  assert(Test.check().length, 0);
+  assert(Test.check({}).length, 0);
+
+  Test = new Repository();
+
+  Test.register({name : 'Hoge'});
+
+  Test.func1 = function (...args) {
+    return args;
+  };
+
+  assert(Object.keys(Test).length, 2);
+  assert(Test.values.length, 1);
+  assert(Test.Hoge.name, 'Hoge');
+  assert(Test.func1.name, '');
+  assert(Test.check().length, 0);
+  assert(Test.check({}).length, 0);
+
+  Test.unregister();
+
+  assert(Object.keys(Test).length, 1);
+  assert(Test.values.length, 0);
+  assert(Test.func1.name, '');
+  assert(Test.check().length, 0);
+  assert(Test.check({}).length, 0);
 
   console.log([
     `${createURI(Components.stack.filename).fileName}'s ${assert.count} tests:`,
