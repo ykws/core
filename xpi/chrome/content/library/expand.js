@@ -39,6 +39,31 @@
     }
   });
 
+  Object.expand(Array.prototype, {
+    merge(items, option) {
+      let master = this.slice();
+      let branch = Array.wrap(items);
+      let {indexFunc, after} = Object.assign({
+        indexFunc: null,
+        after: false
+      }, option);
+
+      if (indexFunc) {
+        let idx = master.findIndex(indexFunc);
+
+        if (idx !== -1) {
+          master.splice(after ? idx + 1 : idx, 0, ...branch);
+
+          return master;
+        }
+      } else if (!after) {
+        return branch.concat(master);
+      }
+
+      return master.concat(branch);
+    }
+  });
+
   Object.expand(JSON, {
     parseable(target) {
       try {
