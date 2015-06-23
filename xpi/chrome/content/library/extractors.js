@@ -361,16 +361,15 @@ Extractors.register([
   },
 
   {
-    name : 'Quote - Twitter',
-    ICON : Models.Twitter.ICON,
+    name         : 'Quote - Twitter',
+    ICON         : Twitter.ICON,
     TWEET_URL_RE : /^https?:\/\/twitter\.com\/(.+?)\/status(?:es)?\/(\d+)/,
-    check : function (ctx) {
-      if (!(ctx.onImage || ctx.onVideo) && !(ctx.onLink && !ctx.selection)) {
-        return this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
-      }
+    check(ctx) {
+      return !ctx.onImage && !ctx.onVideo && !(ctx.onLink && !ctx.selection) &&
+        this.TWEET_URL_RE.test(ctx.href) && this.getTweet(ctx);
     },
-    extract : function (ctx) {
-      var url = ctx.href;
+    extract(ctx) {
+      let url = ctx.href;
 
       return {
         type     : 'quote',
@@ -387,38 +386,38 @@ Extractors.register([
         }
       };
     },
-    getTweet : function (ctx) {
+    getTweet(ctx) {
       return ctx.document.querySelector('.permalink-tweet .tweet-text');
     },
-    getCustomFlavoredString : function (src) {
-      var customStr = new String(
-        src instanceof Element ?
-          src.textContent :
-          convertToPlainText(src)
-      );
-
-      customStr.flavors = {
-        html : convertToHTMLString(src, true)
-      };
-
-      return customStr;
+    getCustomFlavoredString(src) {
+      return Object.assign(new String(
+        src instanceof Element ? src.textContent : convertToPlainText(src)
+      ), {
+        flavors : {
+          html : convertToHTMLString(src, true)
+        }
+      });
     },
-    modifyTweet : function (elm, ctx) {
-      var doc = ctx.document,
-        cloneElm = elm.cloneNode(true);
+    modifyTweet(elm, ctx) {
+      let cloneElm = elm.cloneNode(true);
 
       for (let tcoEllipsis of cloneElm.querySelectorAll('.tco-ellipsis')) {
         tcoEllipsis.remove();
       }
 
       for (let link of cloneElm.querySelectorAll('a.twitter-timeline-link')) {
-        let firstInvisible = link.querySelector('.invisible'),
-          jsDisplayURL = link.querySelector('.js-display-url');
+        let firstInvisible = link.querySelector('.invisible');
 
-        if (this.TWEET_URL_RE.test(getTextContent(firstInvisible)) && jsDisplayURL) {
+        if (
+          firstInvisible &&
+            this.TWEET_URL_RE.test(firstInvisible.textContent) &&
+            link.querySelector('.js-display-url')
+        ) {
           firstInvisible.remove();
         }
       }
+
+      let doc = ctx.document;
 
       for (let emoji of cloneElm.querySelectorAll('img.twitter-emoji[alt]')) {
         let {alt} = emoji;
