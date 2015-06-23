@@ -284,7 +284,6 @@ module.exports = function createGruntConfig(grunt) {
             'space-after-keywords': 0,
             'space-before-blocks': 0,
             'space-before-function-paren': 0,
-            'space-in-brackets': 0,
             'space-in-parens': 0,
             'space-infix-ops': 0,
             'space-unary-ops': 0,
