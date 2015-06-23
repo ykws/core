@@ -2442,10 +2442,6 @@ function commentToText(commentFunc) {
   return commentFunc.toString().replace(/^.*?\r?\n/, '').replace(/\r?\n.*?$/, '');
 }
 
-function getTextContent(node) {
-  return node ? node.textContent : '';
-}
-
 function getLocalStorage(origin) {
   return DOMStorageManager.createStorage(
     null, ScriptSecurityManager.getNoAppCodebasePrincipal(IOService.newURI(origin, '', null)), ''
