@@ -1438,9 +1438,13 @@ Models.register(update({
   },
 
   login : function (user, password) {
-    notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
+    return succeed().addCallback(() => {
+      if (this.getAuthCookie()) {
+        notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
 
-    return (this.getCurrentUser() ? this.logout() : succeed()).addCallback(() => {
+        return this.logout();
+      }
+    }).addCallback(() => {
       return request(this.ORIGIN, {
         responseType : 'document'
       }).addCallback(({response : doc}) => {
@@ -1473,10 +1477,6 @@ Models.register(update({
     });
   },
 
-  getAuthCookie : function () {
-    return getCookieString('twitter.com', 'auth_token');
-  },
-
   getCurrentUser : function () {
     return request(this.ACCOUT_URL, {
       responseType : 'document'
@@ -1493,6 +1493,10 @@ Models.register(update({
 
   getPasswords : function () {
     return getPasswords(this.ORIGIN);
+  },
+
+  getAuthCookie() {
+    return getCookieValue('.twitter.com', 'auth_token');
   }
 }, AbstractSessionService));
 
