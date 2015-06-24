@@ -1164,7 +1164,7 @@ Models.register({
 });
 
 
-Models.register(update({
+Models.register(Object.assign({
   name              : 'Twitter',
   ICON              : 'https://twitter.com/favicon.ico',
   ORIGIN            : 'https://twitter.com',
@@ -1178,13 +1178,13 @@ Models.register(update({
     short_url_length_https : 23
   },
 
-  check : function (ps) {
-    return /^(?:regular|photo|quote|link|conversation|video)$/.test(ps.type);
+  check(ps) {
+    return /^(?:regular|photo|quote|link|video|conversation)$/.test(ps.type);
   },
 
-  post : function (ps) {
+  post(ps) {
     return this.getToken().addCallback(token => {
-      var status = this.createStatus(ps);
+      let status = this.createStatus(ps);
 
       return ps.type === 'photo' ?
         this.upload(ps, token, status) :
@@ -1192,40 +1192,153 @@ Models.register(update({
     });
   },
 
-  getToken : function () {
-    if (!this.getAuthCookie()) {
-      throw new Error(getMessage('error.notLoggedin'));
-    }
-
-    return request(this.ACCOUT_URL, {
-      responseType : 'document'
-    }).addCallback(res => ({
-      authenticity_token : res.response.querySelector('.authenticity_token').value
-    }));
+  favor(ps) {
+    return this.getToken().addCallback(token =>
+      this.callMethod('favorite', Object.assign(token, {
+        id : ps.favorite.id
+      }))
+    );
   },
 
-  createStatus : function (ps) {
-    var contents, maxLen, status;
+  login(user, password) {
+    let modelName = this.name,
+        iconURL = this.ICON;
 
-    contents = {
+    return succeed().addCallback(() => {
+      if (this.getAuthCookie()) {
+        notify(modelName, getMessage('message.changeAccount.logout'), iconURL);
+
+        return this.logout();
+      }
+    }).addCallback(() =>
+      request(this.ORIGIN + '/login', {
+        responseType : 'document'
+      })
+    ).addCallback(({response : doc}) => {
+      notify(modelName, getMessage('message.changeAccount.login'), iconURL);
+
+      return request(this.ORIGIN + '/sessions', {
+        sendContent : Object.assign(formContents(
+          doc.querySelector('form.signin')
+        ), {
+          'session[username_or_email]' : user,
+          'session[password]'          : password
+        })
+      });
+    }).addCallback(() => {
+      notify(modelName, getMessage('message.changeAccount.done'), iconURL);
+    });
+  },
+
+  logout() {
+    return request(this.ACCOUT_URL, {
+      responseType : 'document'
+    }).addCallback(({response : doc}) =>
+      request(this.ORIGIN + '/logout', {
+        sendContent : formContents(doc.getElementById('signout-form'))
+      })
+    );
+  },
+
+  getPasswords() {
+    return getPasswords(this.ORIGIN);
+  },
+
+  getCurrentUser() {
+    return request(this.ACCOUT_URL, {
+      responseType : 'document'
+    }).addCallback(({response : doc}) =>
+      doc.querySelector('[name="user[screen_name]"]').value
+    ).addErrback(() => '');
+  },
+
+  getToken() {
+    return this.getSessionValue('token', () =>
+      request(this.ACCOUT_URL, {
+        responseType : 'document'
+      }).addCallback(({response : doc}) => {
+        let tokenElm = doc.querySelector('.authenticity_token');
+
+        if (tokenElm) {
+          return {
+            authenticity_token : tokenElm.value
+          };
+        }
+
+        throw new Error(getMessage('error.unknown'));
+      })
+    );
+  },
+
+  callMethod(method, content) {
+    return request(`${this.TWEET_API_URL}/${method}`, {
+      responseType : 'json',
+      sendContent  : content
+    }).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {message} = json;
+
+        if (message) {
+          throw new Error(message.trimTag());
+        }
+      }
+
+      throw err;
+    });
+  },
+
+  update(token, status) {
+    return this.callMethod('create', Object.assign(token, {status}));
+  },
+
+  upload(ps, token, status) {
+    return getFileFromPS(ps).addCallback(file =>
+      request(this.UPLOAD_API_URL, {
+        responseType : 'json',
+        sendContent  : Object.assign({
+          media : fileToBase64(file)
+        }, token)
+      }).addErrback(err => {
+        let json = err.message.response;
+
+        if (json) {
+          let {error} = json;
+
+          if (error) {
+            throw new Error(error);
+          }
+        }
+
+        throw err;
+      })
+    ).addCallback(({response : json}) =>
+      this.update(Object.assign({
+        media_ids : json.media_id_string
+      }, token), status)
+    );
+  },
+
+  createStatus(ps) {
+    let contents = {
       desc  : (ps.description || '').trim(),
-      quote : ps.type !== 'video' && ps.body ? this.createQuote(ps.body) : '',
+      quote : getQuoteFromPS(ps, {
+        quoteOnly : false,
+        trimSpace : true
+      }),
       title : (ps.item || '').trim(),
       url   : ps.itemUrl || '',
-      tags  : (ps.tags || []).map(tag => '#' + tag)
+      tags  : Array.hashtags(ps.tags)
     };
-    maxLen = this.STATUS_MAX_LENGTH;
-
-    if (ps.favorite && ps.favorite.name === 'Tumblr' && contents.quote) {
-      contents.quote = this.createQuote(ps.body.trimTag());
-    }
+    let maxLen = this.STATUS_MAX_LENGTH;
 
     if (ps.type === 'photo') {
       contents.url = ps.pageUrl;
       maxLen -= this.OPTIONS.short_url_length + 1;
     }
 
-    status = this.joinContents(contents);
+    let status = this.joinContents(contents);
 
     if (ps.type !== 'regular' && getPref('model.twitter.truncateStatus')) {
       let over = this.getTweetLength(status) - maxLen;
@@ -1238,50 +1351,59 @@ Models.register(update({
     return status;
   },
 
-  createQuote : function (body) {
-    body = body.trim();
+  createQuote(body) {
+    let str = body.trim();
 
-    return body && body.wrap('"');
+    return str && str.wrap('"');
   },
 
-  getTweetLength : function (str) {
+  getTweetLength(str) {
     return twttr.txt.getTweetLength(str, this.OPTIONS);
   },
 
-  joinContents : function ({desc, quote, title, url, tags}) {
-    var prefix = desc ? '' : getPref('model.twitter.template.prefix'),
-      template = getPref('model.twitter.template');
+  joinContents(contents) {
+    let template = getPref('model.twitter.template'),
+        {desc, quote, title, url, tags} = contents,
+        prefix = desc ? '' : getPref('model.twitter.template.prefix');
 
     return template ?
-      this.extractTemplate(prefix, template, arguments[0]) :
+      this.extractTemplate(prefix, template, contents) :
       joinText([prefix, desc, quote, title, url, ...tags], ' ');
   },
 
-  extractTemplate : function (prefix, template, contents) {
+  extractTemplate(prefix, template, contents) {
     contents.usage = {};
 
-    template = template.replace(/%(desc|quote|title|url|tags|br)%/g, (match, name) => {
-      if (name === 'br') {
-        return '\n';
+    let fixedTemplate = template.replace(
+      /%(desc|quote|title|url|tags|br)%/g,
+      (match, name) => {
+        if (name === 'br') {
+          return '\n';
+        }
+
+        contents.usage[name] = true;
+
+        return contents[name].length ? match : '';
       }
+    ).trim().replace(/^ +| +$/mg, '').replace(/ +/g, ' ');
 
-      contents.usage[name] = true;
-
-      return contents[name].length ? match : '';
-    }).trim().replace(/^ +| +$/mg, '').replace(/ +/g, ' ');
-
-    return joinText([prefix, ...(template.split(' '))].map(content => {
-      return content.replace(/%(desc|quote|title|url|tags)%/g, (match, name) => name === 'tags' ?
-        contents.tags.join(' ') :
-        contents[name]
-      );
-    }), ' ');
+    return joinText([prefix, ...(fixedTemplate.split(' '))].map(content =>
+      content.replace(
+        /%(desc|quote|title|url|tags)%/g,
+        (match, name) => name === 'tags' ?
+          contents.tags.join(' ') :
+          contents[name]
+      )
+    ), ' ');
   },
 
-  truncateStatus : function (contents, over) {
-    var truncator = {
-      tags  : tags => {
-        contents.tags = tags = tags.reverse().filter(tag => {
+  truncateStatus(contents, overLength) {
+    let over = overLength;
+    let truncators = {
+      tags  : array => {
+        let arr = array.slice();
+
+        contents.tags = arr = arr.reverse().filter(tag => {
           if (over <= 0) {
             return true;
           }
@@ -1289,18 +1411,18 @@ Models.register(update({
           over -= tag.charLength + 1;
         }).reverse();
 
-        if (tags.length || over <= 0) {
+        if (arr.length || over <= 0) {
           return true;
         }
       },
-      title : title => {
-        title = this.truncateContent(title, over);
+      title : string => {
+        let str = this.truncateContent(string, over);
 
-        if (title) {
-          contents.title = title + '…';
+        if (str) {
+          contents.title = str + '…';
         } else {
-          over -= this.getTweetLength(contents.title) + 1;
-          contents.title = title;
+          over -= this.getTweetLength(string) + 1;
+          contents.title = str;
 
           if (over > 0) {
             return false;
@@ -1309,14 +1431,14 @@ Models.register(update({
 
         return true;
       },
-      quote : quote => {
-        quote = this.truncateContent(quote.slice(1, -1), over);
+      quote : string => {
+        let str = this.truncateContent(string.slice(1, -1), over);
 
-        if (quote) {
-          contents.quote = (quote + '…').wrap('"');
+        if (str) {
+          contents.quote = (str + '…').wrap('"');
         } else {
-          over -= this.getTweetLength(contents.quote) + 1;
-          contents.quote = quote;
+          over -= this.getTweetLength(string) + 1;
+          contents.quote = str;
 
           if (over > 0) {
             return false;
@@ -1325,19 +1447,19 @@ Models.register(update({
 
         return true;
       },
-      desc  : desc => {
-        contents.desc = this.truncateContent(desc, over) + '…';
+      desc  : string => {
+        contents.desc = this.truncateContent(string, over) + '…';
       }
     };
 
-    for (let name of Object.keys(truncator)) {
-      if (contents.usage && !contents.usage[name]) {
-        contents[name] = name === 'tags' ? [] : '';
+    for (let truncatorName of Object.keys(truncators)) {
+      if (contents.usage && !contents.usage[truncatorName]) {
+        contents[truncatorName] = truncatorName === 'tags' ? [] : '';
       }
 
-      let content = contents[name];
+      let content = contents[truncatorName];
 
-      if (content.length && truncator[name](content)) {
+      if (content.length && truncators[truncatorName](content)) {
         break;
       }
     }
@@ -1345,18 +1467,19 @@ Models.register(update({
     return this.joinContents(contents);
   },
 
-  truncateContent : function (content, over) {
-    var strArr = [...content], // for surrogate pair
-      urls = twttr.txt.extractUrlsWithIndices(content).reverse(),
-      twLen = this.getTweetLength(content);
+  truncateContent(content, overLength) {
+    // for surrogate pair
+    let strArr = [...content],
+        urls = twttr.txt.extractUrlsWithIndices(content).reverse(),
+        twLen = this.getTweetLength(content),
+        over = overLength;
 
     if (!urls.length || twLen <= over + 1) {
       return strArr.slice(0, -(over + 1)).join('');
     }
 
-    for (let {indices} of urls) {
-      let [start, end] = indices,
-        len = strArr.length;
+    for (let {indices : [start, end]} of urls) {
+      let len = strArr.length;
 
       if (over < len - end) {
         break;
@@ -1377,135 +1500,6 @@ Models.register(update({
     }
 
     return strArr.join('');
-  },
-
-  update : function (token, status) {
-    token.status = status;
-
-    // can't handle a post error correctly. Twitter's Bug?
-    /*
-    return request(this.TWEET_API_URL + '/create', {
-      responseType : 'json',
-      sendContent : token
-    }).addErrback(({message : req}) => {
-      throw new Error(req.response.message.trimTag());
-    });
-    */
-
-    return request(this.TWEET_API_URL + '/create', {
-      responseType : 'text',
-      sendContent : token
-    }).addErrback(({message : req}) => {
-      var text = req.responseText, json;
-
-      try {
-        json = JSON.parse(text);
-      } catch (err) {
-        throw new Error(getMessage('error.resultsUnclear'));
-      }
-
-      throw new Error(json.message.trimTag());
-    });
-  },
-
-  upload : function (ps, token, status) {
-    return (ps.file ? succeed(ps.file) : download(ps.itemUrl, getTempDir())).addCallback(file => {
-      var bis = new BinaryInputStream(new FileInputStream(file, -1, 0, false));
-
-      return request(this.UPLOAD_API_URL, {
-        responseType : 'json',
-        sendContent  : update({
-          media : btoa(bis.readBytes(bis.available()))
-        }, token)
-      }).addErrback(() => {
-        throw new Error(getMessage('message.model.twitter.upload'));
-      }).addCallback(({response : json}) => {
-        return this.update(update({
-          media_ids : json.media_id_string
-        }, token), status);
-      });
-    });
-  },
-
-  favor : function (ps) {
-    return this.getToken().addCallback(token => {
-      token.id = ps.favorite.id;
-
-      return request(this.TWEET_API_URL + '/favorite', {
-        responseType : 'json',
-        sendContent  : token
-      }).addErrback(err => {
-        let json = err.message.response;
-
-        if (json) {
-          let {message} = json;
-
-          if (message) {
-            throw new Error(message.trimTag());
-          }
-        }
-
-        throw err;
-      });
-    });
-  },
-
-  login : function (user, password) {
-    return succeed().addCallback(() => {
-      if (this.getAuthCookie()) {
-        notify(this.name, getMessage('message.changeAccount.logout'), this.ICON);
-
-        return this.logout();
-      }
-    }).addCallback(() => {
-      return request(this.ORIGIN, {
-        responseType : 'document'
-      }).addCallback(({response : doc}) => {
-        var form = doc.querySelector('form.signin');
-
-        notify(this.name, getMessage('message.changeAccount.login'), this.ICON);
-
-        return request(this.ORIGIN + '/sessions', {
-          sendContent : update(formContents(form), {
-            'session[username_or_email]' : user,
-            'session[password]'          : password
-          })
-        });
-      });
-    }).addCallback(() => {
-      this.updateSession();
-      this.user = user;
-
-      notify(this.name, getMessage('message.changeAccount.done'), this.ICON);
-    });
-  },
-
-  logout : function () {
-    return request(this.ACCOUT_URL, {
-      responseType : 'document'
-    }).addCallback(({response : doc}) => {
-      return request(this.ORIGIN + '/logout', {
-        sendContent : formContents(doc.getElementById('signout-form'))
-      });
-    });
-  },
-
-  getCurrentUser : function () {
-    return request(this.ACCOUT_URL, {
-      responseType : 'document'
-    }).addCallback(({response : doc}) => {
-      var user = doc.getElementsByName('user[screen_name]')[0].value;
-
-      if (!/[^\w]/.test(user)) {
-        this.user = user;
-      }
-
-      return user;
-    });
-  },
-
-  getPasswords : function () {
-    return getPasswords(this.ORIGIN);
   },
 
   getAuthCookie() {
