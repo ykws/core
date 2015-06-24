@@ -2610,3 +2610,9 @@ function openOptions(...messageArgs) {
     });
   }
 }
+
+function fileToBase64(file) {
+  let bis = new BinaryInputStream(new FileInputStream(file, -1, 0, 0));
+
+  return btoa(bis.readBytes(bis.available()));
+}
