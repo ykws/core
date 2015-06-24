@@ -1432,7 +1432,20 @@ Models.register(update({
       token.id = ps.favorite.id;
 
       return request(this.TWEET_API_URL + '/favorite', {
-        sendContent : token
+        responseType : 'json',
+        sendContent  : token
+      }).addErrback(err => {
+        let json = err.message.response;
+
+        if (json) {
+          let {message} = json;
+
+          if (message) {
+            throw new Error(message.trimTag());
+          }
+        }
+
+        throw err;
       });
     });
   },
