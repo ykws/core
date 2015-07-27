@@ -259,6 +259,7 @@ module.exports = function createGruntConfig(grunt) {
             'no-shadow': 0,
             'no-undef': 0,
             'no-undefined': 0,
+            'no-unused-vars': 0,
             'no-use-before-define': 0,
 
             'brace-style': 0,
