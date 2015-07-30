@@ -1323,14 +1323,16 @@ Models.register(Object.assign({
   createStatus(ps) {
     let contents = {
       desc  : (ps.description || '').trim(),
-      quote : getQuoteFromPS(ps, {
-        quoteOnly : false,
-        trimSpace : true
-      }),
+      quote : ps.type !== 'video' && ps.body ? this.createQuote(ps.body) : '',
       title : (ps.item || '').trim(),
       url   : ps.itemUrl || '',
       tags  : Array.hashtags(ps.tags)
     };
+
+    if (contents.quote && isFavorite(ps, 'Tumblr')) {
+      contents.quote = this.createQuote(ps.body.trimTag());
+    }
+
     let maxLen = this.STATUS_MAX_LENGTH;
 
     if (ps.type === 'photo') {
