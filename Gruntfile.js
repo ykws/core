@@ -45,6 +45,7 @@ module.exports = function createGruntConfig(grunt) {
         options: {
           config: '.jscsrc',
           disallowDanglingUnderscores: null,
+          requireBlocksOnNewline: null,
           requireCamelCaseOrUpperCaseIdentifiers: null
         }
       },
