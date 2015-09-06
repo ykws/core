@@ -164,9 +164,14 @@ module.exports = function createGruntConfig(grunt) {
           rules: {
             'no-unused-vars': 0,
             camelcase: 0,
+            complexity: [2, 5],
             'new-cap': 0,
             'no-inline-comments': 0,
-            'no-underscore-dangle': 0
+            'no-underscore-dangle': 0,
+            'one-var': 0,
+            indent: 0,
+            'no-shadow': 0,
+            'object-shorthand': 0
           }
         }
       },
@@ -192,8 +197,16 @@ module.exports = function createGruntConfig(grunt) {
         },
         options: {
           rules: {
+            'no-extra-parens': 0,
             'no-alert': 0,
-            'new-cap': 0
+            complexity: [2, 5],
+            'new-cap': 0,
+            'one-var': 0,
+            indent: 0,
+            'consistent-return': 0,
+            'prefer-template': 0,
+            'no-shadow': 0,
+            'no-nested-ternary': 0
           }
         }
       },
@@ -218,13 +231,14 @@ module.exports = function createGruntConfig(grunt) {
             'no-console': 0,
             'no-constant-condition': 0,
             'no-empty': 0,
+            'no-extra-parens': 0,
             'no-extra-semi': 0,
             'no-func-assign': 0,
             'no-inner-declarations': 0,
-            'no-reserved-keys': 0,
             'valid-typeof': 0,
 
             complexity: 0,
+            'consistent-return': 0,
             curly: 0,
             'default-case': 0,
             'dot-notation': 0,
@@ -236,7 +250,7 @@ module.exports = function createGruntConfig(grunt) {
             'no-else-return': 0,
             'no-eval': 0,
             'no-fallthrough': 0,
-            'no-lone-blocks': 0,
+            'no-implicit-coercion': 0,
             'no-loop-func': 0,
             'no-multi-spaces': 0,
             'no-multi-str': 0,
@@ -247,6 +261,7 @@ module.exports = function createGruntConfig(grunt) {
             'no-redeclare': 0,
             'no-return-assign': 0,
             'no-unused-expressions': 0,
+            'no-useless-call': 0,
             'no-void': 0,
             'no-warning-comments': 0,
             radix: 0,
@@ -267,6 +282,8 @@ module.exports = function createGruntConfig(grunt) {
             'comma-spacing': 0,
             'consistent-this': 0,
             'func-names': 0,
+            'id-length': 0,
+            indent: 0,
             'key-spacing': 0,
             'max-nested-callbacks': 0,
             'new-cap': 0,
@@ -275,11 +292,14 @@ module.exports = function createGruntConfig(grunt) {
             'no-inline-comments': 0,
             'no-lonely-if': 0,
             'no-multiple-empty-lines': 0,
+            'no-nested-ternary': 0,
             'no-underscore-dangle': 0,
             'object-curly-spacing': 0,
+            'one-var': 0,
             'padded-blocks': 0,
             'quote-props': 0,
             quotes: 0,
+            'id-match': 0,
             'semi-spacing': 0,
             semi: 0,
             'space-after-keywords': 0,
@@ -290,8 +310,13 @@ module.exports = function createGruntConfig(grunt) {
             'space-unary-ops': 0,
 
             'no-var': 0,
+            'object-shorthand': 0,
+            'prefer-arrow-callback': 0,
+            'prefer-spread': 0,
+            'prefer-template': 0,
 
             'max-depth': 0,
+            'max-len': 0,
             'max-params': 0,
             'max-statements': 0,
             'no-bitwise': 0,
@@ -302,6 +327,11 @@ module.exports = function createGruntConfig(grunt) {
       prefs: {
         files: {
           src: 'xpi/defaults/preferences/prefs.js'
+        },
+        options: {
+          rules: {
+            'max-len': 0
+          }
         }
       }
     },
