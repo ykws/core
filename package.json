@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "grunt"
+    "test": "grunt",
+    "package": "grunt xpi"
   },
   "devDependencies": {
     "grunt": "",
@@ -9,6 +10,10 @@
     "grunt-jscs": "",
     "grunt-eslint": "",
     "grunt-contrib-compress": ""
+  },
+  "engines": {
+    "node": ">=0.12",
+    "npm": ">=2.9"
   },
   "private": true
 }
