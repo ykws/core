@@ -6,7 +6,6 @@
     <em:id>tombfix@tombfix.github.io</em:id>
     <em:version>0.3.6</em:version>
     <em:type>2</em:type>
-    <em:unpack>true</em:unpack>
     <em:updateURL>
       https://raw.githubusercontent.com/tombfix/update/master/update.rdf
     </em:updateURL>
