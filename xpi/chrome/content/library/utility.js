@@ -274,22 +274,6 @@ disconnectAll(grobal);
 
 
 // ----[XPCOM]-------------------------------------------------
-/**
- * JavaScriptコードを評価する。
- *
- * @param {String} js JavaScriptコード。
- * @param {String ||  nsIXPCComponents_utils_Sandbox} url
- *        同一生成元チェックのベースになるURI、またはサンドボックスオブジェクト。
- * @return {Object}
- *         評価結果。値がundefinedの場合、評価コンテキスト(サンドボックス)が返る。
- *         'var obj = {};'のようなAPI返り値を処理しやすくする。
- */
-function evalInSandbox(js, url){
-  var sandbox = (url.importFunction)? url : Cu.Sandbox(url);
-  var res = Cu.evalInSandbox(js, sandbox);
-  return (typeof(res)=='undefined')? sandbox : res;
-}
-
 function wrappedObject(obj){
   return obj.wrappedJSObject || obj;
 }
