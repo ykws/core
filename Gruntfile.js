@@ -37,20 +37,10 @@ module.exports = function createGruntConfig(grunt) {
           esnext: null
         }
       },
-      tombfix: {
-        files: {
-          src: 'xpi/components/tombfix.js'
-        },
-        options: {
-          config: '.jscsrc',
-          disallowDanglingUnderscores: null,
-          requireBlocksOnNewline: null,
-          requireCamelCaseOrUpperCaseIdentifiers: null
-        }
-      },
       main: {
         files: {
           src: [
+            'xpi/components/tombfix.js',
             'xpi/chrome/content/overlay/overlay.js',
             // 'xpi/chrome/content/library/component.js',
             'xpi/chrome/content/library/expand.js',
@@ -162,11 +152,8 @@ module.exports = function createGruntConfig(grunt) {
         options: {
           rules: {
             'no-unused-vars': 0,
-            camelcase: 0,
             complexity: [2, 5],
             'new-cap': 0,
-            'no-inline-comments': 0,
-            'no-underscore-dangle': 0,
             'one-var': 0,
             indent: 0,
             'no-shadow': 0,

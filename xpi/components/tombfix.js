@@ -64,34 +64,6 @@
     )[propName](...args);
   }
 
-  function copy(targetObj, obj, re) {
-    return Object.keys(obj).reduce((target, propName) => {
-      if (!re || re.test(propName)) {
-        target[propName] = obj[propName];
-      }
-
-      return target;
-    }, targetObj);
-  }
-
-  function exposeProperties(obj, recursive) {
-    Object.expand(obj, {
-      __exposedProps__: {}
-    });
-
-    for (let propName of Object.keys(obj)) {
-      obj.__exposedProps__[propName] = 'r';
-
-      if (recursive) {
-        let val = obj[propName];
-
-        if (typeof val === 'object' && val !== null) {
-          exposeProperties(val, true);
-        }
-      }
-    }
-  }
-
   function* simpleIterator(simpleEnum, ifcName) {
     let ifc = typeof ifcName === 'string' ? Ci[ifcName] : ifcName;
 
@@ -166,50 +138,6 @@
     }
   }
 
-  function setupExternalExtentionEnvironment(env) {
-    /* jshint camelcase: false */
-    let GM_Tombfix = copy({
-          Tombfix: {
-            Service: copy(
-              {},
-              env.Tombfix.Service,
-              /^(?:check|share|extractors)$/
-            )
-          }
-        }, env, /(Deferred|copyString|notify)/),
-        GM_Tombloo = copy({
-          Tombloo: {
-            Service: copy(
-              {},
-              env.Tombloo.Service,
-              /^(?:check|share|extractors)$/
-            )
-          }
-        }, env, /(Deferred|copyString|notify)/);
-
-    for (let model of env.Models.values) {
-      let modelName = model.name;
-
-      GM_Tombfix[modelName] = GM_Tombloo[modelName] = copy(
-        {},
-        env.Models[modelName],
-        /^(?!.*(password|cookie))/i
-      );
-    }
-
-    // 他拡張からの読み取りを許可する(Firefox 17+)
-    exposeProperties(GM_Tombfix, true);
-    exposeProperties(GM_Tombloo, true);
-
-    // Scriptishサンドボックスの拡張
-    try {
-      let scope = Cu.import('resource://scriptish/api.js', {});
-
-      scope.GM_API.prototype.GM_Tombfix = GM_Tombfix;
-      scope.GM_API.prototype.GM_Tombloo = GM_Tombloo;
-    } catch (err) { /* インストールされていない場合や無効になっている場合にエラーになる */ }
-  }
-
   // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
   function TombfixService(noInit) {
     if (!noInit) {
@@ -274,8 +202,6 @@
           }
         }, 0);
       };
-
-      setupExternalExtentionEnvironment(env);
 
       return env;
     }
