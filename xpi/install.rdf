@@ -6,9 +6,7 @@
     <em:id>tombfix@tombfix.github.io</em:id>
     <em:version>0.3.6</em:version>
     <em:type>2</em:type>
-    <em:updateURL>
-      https://raw.githubusercontent.com/tombfix/update/master/update.rdf
-    </em:updateURL>
+    <em:updateURL>https://raw.githubusercontent.com/tombfix/update/master/update.rdf</em:updateURL>
 
     <!-- Front End MetaData -->
     <em:name>Tombfix</em:name>
