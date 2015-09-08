@@ -397,18 +397,6 @@ var Tumblr = update({}, AbstractSessionService, {
     }).addErrback(() => '');
   },
 
-  getTumblelogs : function(){
-    return request(Tumblr.TUMBLR_URL+'new/text').addCallback(function(res){
-      var doc = convertToHTMLDocument(res.responseText);
-      return $x('id("channel_id")//option[@value!=0]', doc, true).map(function(opt){
-        return {
-          id : opt.value,
-          name : opt.textContent,
-        }
-      });
-    });
-  },
-
   getBlogs() {
     return new DeferredHash({
       primaryblogID       : this.getPrimaryBlogID(),
