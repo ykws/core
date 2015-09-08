@@ -21,7 +21,6 @@ module.exports = function createGruntConfig(grunt) {
         // 'xpi/chrome/content/quickPostForm.js',
         'xpi/chrome/content/options/options.js',
         'xpi/chrome/content/changeAccount/changeAccount.js',
-        // 'xpi/chrome/content/wsh.js',
         'xpi/defaults/preferences/prefs.js'
       ],
       options: {
@@ -66,7 +65,6 @@ module.exports = function createGruntConfig(grunt) {
             // 'xpi/chrome/content/quickPostForm.js',
             // 'xpi/chrome/content/options/options.js',
             'xpi/chrome/content/changeAccount/changeAccount.js'
-            // 'xpi/chrome/content/wsh.js'
           ]
         },
         options: {
@@ -193,7 +191,6 @@ module.exports = function createGruntConfig(grunt) {
             // 'xpi/chrome/content/quickPostForm.js',
             // 'xpi/chrome/content/options/options.js',
             'xpi/chrome/content/changeAccount/changeAccount.js'
-            // 'xpi/chrome/content/wsh.js'
           ]
         },
         options: {
