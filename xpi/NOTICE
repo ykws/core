@@ -1,6 +1,7 @@
 NOTICE for third party library
 
 Tombfix includes MochiKit, a JavaScript Library, developed by Bob Ippolito, under MIT License.
+For Extension Signing, Tombfix uses modified MochiKit.
 http://mochi.github.io/mochikit/
 https://github.com/mochi/mochikit
 

@@ -155,6 +155,8 @@
 
     CHROME_DIR: CHROME_DIR,
 
+    global: global,
+
     // リロードによって変更されない領域を用意する
     // イベントに安定してフックするためなどに使われる
     constant: {},
