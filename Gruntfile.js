@@ -239,6 +239,9 @@ module.exports = function createGruntConfig(grunt) {
             'no-loop-func': 0,
             'no-multi-spaces': 0,
             'no-multi-str': 0,
+            'no-restricted-syntax': [
+              2, 'DebuggerStatement', 'LabeledStatement', 'WithStatement'
+            ],
             'no-new-wrappers': 0,
             'no-new': 0,
             'no-octal': 0,
@@ -288,6 +291,7 @@ module.exports = function createGruntConfig(grunt) {
             'semi-spacing': 0,
             semi: 0,
             'space-after-keywords': 0,
+            'space-before-keywords': 0,
             'space-before-blocks': 0,
             'space-before-function-paren': 0,
             'space-in-parens': 0,
