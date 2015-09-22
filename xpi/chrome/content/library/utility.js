@@ -2533,3 +2533,8 @@ function fileToBase64(file) {
 
   return btoa(bis.readBytes(bis.available()));
 }
+
+function getDataURLFromFile(file) {
+  return 'data:' + MIMEService.getTypeFromFile(file) + ';base64,' +
+    fileToBase64(file);
+}
