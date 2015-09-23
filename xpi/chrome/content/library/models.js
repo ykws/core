@@ -2385,25 +2385,25 @@ Models.register({
   name : 'Pocket',
   ICON : 'https://getpocket.com/favicon.ico',
 
-  check : function (ps) {
+  check(ps) {
     return /^(?:quote|link)$/.test(ps.type);
   },
 
-  post : function (ps) {
-    if (!getCookieString('.getpocket.com', 'sess_user_id')) {
-      throw new Error(getMessage('error.notLoggedin'));
-    }
+  post(ps) {
+    let {tags} = ps;
 
     return request('https://getpocket.com/edit', {
-      responseType : 'document',
-      queryString : {
-        url   : ps.itemUrl,
-        tags  : (ps.tags || []).join()
+      responseType : 'text',
+      queryString  : {
+        url  : ps.itemUrl,
+        tags : Array.wrap(tags).length ? tags.join(',') : ''
       }
-    }).addCallback(({response : doc}) => {
-      if (new URL(doc.URL).pathname !== '/edit') {
-        throw new Error(getMessage('error.notLoggedin'));
+    }).addCallback(res => {
+      if (new URL(res.responseURL).pathname === '/edit') {
+        return;
       }
+
+      throw new Error(getMessage('error.notLoggedin'));
     });
   }
 });
