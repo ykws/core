@@ -489,10 +489,10 @@ FormPanel.prototype = {
             break;
 
           case 'photo':
-            var src = ps.itemUrl || (createURI(ps.file).spec + '?' + Date.now());
+            var src = ps.itemUrl || getDataURLFromFile(ps.file);
 
             if (/^http:\/\/i\d+\.pixiv\.net\/c\//.test(src) && ps.file) {
-              src = (createURI(ps.file).spec + '?' + Date.now());
+              src = getDataURLFromFile(ps.file);
             }
 
             // flexを大きくし詳細ボックスとバランスを取る
