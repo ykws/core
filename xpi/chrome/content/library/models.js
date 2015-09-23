@@ -3184,7 +3184,7 @@ Models.register({
     return this.getInfo(this.ORIGIN, {
       again : 1
     }).addCallback(info => {
-      return [...info.form.querySelectorAll('#usetag > #view1 > a')].map(
+      return [...info.form.querySelectorAll('#usetag > #view1 a')].map(
         link => ({
           name : link.textContent
         })
@@ -3193,7 +3193,7 @@ Models.register({
   },
 
   getRecommendedTagsFromForm(form) {
-    return [...form.querySelectorAll('#poptag > a')].map(
+    return [...form.querySelectorAll('#poptag a')].map(
       link => link.textContent
     );
   },
