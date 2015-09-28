@@ -523,13 +523,6 @@ function getTempDir(name){
   return dir;
 }
 
-function getTempFile(ext){
-  var file = getTempDir();
-  file.append(joinText(['tombfix_' + Date.now(), ext], '.'));
-
-  return file;
-}
-
 /**
  * ダイアログを開く。
  *
