@@ -2531,3 +2531,9 @@ function getDataURLFromFile(file) {
   return 'data:' + MIMEService.getTypeFromFile(file) + ';base64,' +
     fileToBase64(file);
 }
+
+function getImageURLFromPS(ps) {
+  let {file} = ps;
+
+  return (file ? getDataURLFromFile(file) : ps.itemUrl) || '';
+}
