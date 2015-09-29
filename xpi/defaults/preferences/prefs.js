@@ -38,7 +38,6 @@ pref('extensions.tombfix@tombfix.github.io.description', 'chrome://tombfix/local
 // Others
 pref('extensions.tombfix.ignoreCanonical', '^https?://(?:twitter\\.com|www\\.youtube\\.com|weheartit\\.com|vimeo\\.com)/');
 pref('extensions.tombfix.model.evernote.clipFullPage', true);
-pref('extensions.tombfix.model.gyazo.id', '');
 
 // Debug
 pref('extensions.tombfix.debug', false);

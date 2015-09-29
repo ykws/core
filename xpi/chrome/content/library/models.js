@@ -1051,37 +1051,28 @@ Models.register({
 
 
 Models.register({
-  name     : 'Gyazo',
-  ICON     : 'chrome://tombfix/skin/favicon/gyazo.ico',
-  POST_URL : 'https://gyazo.com/upload.cgi',
+  name           : 'Gyazo',
+  ICON           : 'chrome://tombfix/skin/favicon/gyazo.ico',
+  // via https://gyazo.com/api/docs/image#easy_auth
+  UPLOAD_API_URL : 'https://upload.gyazo.com/api/upload/easy_auth',
+  CLIENT_ID      : 'a300152784a920653ba6e1b4637e55835f6eecbc96d33dfc127c89db8' +
+    '0e70f6c',
 
   check(ps) {
     return ps.type === 'photo';
   },
 
   post(ps) {
-    return (
-      ps.file ? succeed(ps.file) : download(ps.itemUrl, getTempDir())
-    ).addCallback(file => {
-      return request(this.POST_URL, {
-        responseType : 'text',
-        // via https://github.com/gyazo/Gyazo/blob/master/Server/upload.cgi#L13-14
-        sendContent  : {
-          id        : getPref('model.gyazo.id'),
-          imagedata : file
-        }
-      }).addCallback(res => {
-        // via https://github.com/gyazo/Gyazo/blob/master/Server/upload.cgi#L31
-        // IDが不正な場合でもX-Gyazo-Idは新たに発行されるようなので
-        // X-Gyazo-Idがある場合は既存のIDよりもそちらを使った方が良い
-        let gyazoID = res.getResponseHeader('X-Gyazo-Id');
-
-        if (gyazoID) {
-          setPref('model.gyazo.id', gyazoID);
-        }
-
-        addTab(res.responseText);
-      });
+    return request(this.UPLOAD_API_URL, {
+      responseType : 'json',
+      sendContent  : {
+        client_id   : this.CLIENT_ID,
+        image_url   : getImageURLFromPS(ps),
+        referer_url : ps.pageUrl,
+        title       : ps.page || ''
+      }
+    }).addCallback(({response : json}) => {
+      addTab(json.get_image_url);
     });
   }
 });
