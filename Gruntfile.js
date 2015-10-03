@@ -281,6 +281,7 @@ module.exports = function createGruntConfig(grunt) {
             'no-lonely-if': 0,
             'no-multiple-empty-lines': 0,
             'no-nested-ternary': 0,
+            'no-negated-condition': 0,
             'no-underscore-dangle': 0,
             'object-curly-spacing': 0,
             'one-var': 0,
