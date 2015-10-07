@@ -39,3 +39,4 @@
 
 <!-- Change Account -->
 <!ENTITY title.changeAccount "アカウントの切り替え">
+<!ENTITY label.changeAccount.login "ログイン">

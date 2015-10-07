@@ -39,3 +39,4 @@
 
 <!-- Change Account -->
 <!ENTITY title.changeAccount "Change Account">
+<!ENTITY label.changeAccount.login "Login">

@@ -12,7 +12,7 @@
       <listbox class="accounts" flex="1"/>
       <button
         class="login-button"
-        label="Login"
+        label="&label.changeAccount.login;"
         image="chrome://tombfix/skin/accept.png"
         disabled="true"
         dlgtype="accept"/>
