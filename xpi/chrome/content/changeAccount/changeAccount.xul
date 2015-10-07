@@ -6,10 +6,10 @@
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   title="&title.changeAccount;"
   buttons="accept">
-  <hbox flex="1">
+  <hbox class="main">
     <radiogroup class="services"/>
-    <vbox class="right-box" flex="1">
-      <listbox class="accounts" flex="1"/>
+    <vbox class="right-box">
+      <listbox class="accounts"/>
       <button
         class="login-button"
         label="&label.changeAccount.login;"

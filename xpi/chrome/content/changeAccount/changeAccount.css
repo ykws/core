@@ -1,3 +1,9 @@
+.main,
+.right-box,
+.accounts {
+  -moz-box-flex: 1;
+}
+
 .services > radio,
 .accounts > listitem,
 .login-button:not([disabled]) {
