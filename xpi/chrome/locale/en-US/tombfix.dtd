@@ -38,4 +38,4 @@
 <!ENTITY label.browse "Browse...">
 
 <!-- Change Account -->
-<!ENTITY label.action.changeAccount "Change Account">
+<!ENTITY title.changeAccount "Change Account">

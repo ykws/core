@@ -4,7 +4,7 @@
 <!DOCTYPE dialog SYSTEM "chrome://tombfix/locale/tombfix.dtd">
 <dialog
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  title="&label.action.changeAccount;"
+  title="&title.changeAccount;"
   buttons="accept">
   <hbox flex="1">
     <radiogroup class="services"/>

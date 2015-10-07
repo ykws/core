@@ -38,4 +38,4 @@
 <!ENTITY label.browse "参照...">
 
 <!-- Change Account -->
-<!ENTITY label.action.changeAccount "アカウントの切り替え">
+<!ENTITY title.changeAccount "アカウントの切り替え">
