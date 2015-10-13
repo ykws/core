@@ -1252,6 +1252,7 @@ Models.register(Object.assign({
   callMethod(method, content) {
     return request(`${this.TWEET_API_URL}/${method}`, {
       responseType : 'json',
+      referrer     : this.ORIGIN,
       sendContent  : content
     }).addErrback(err => {
       let json = err.message.response;
