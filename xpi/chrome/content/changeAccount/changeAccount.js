@@ -48,10 +48,12 @@
       )) {
         account.image = 'chrome://tombfix/skin/tick.png';
         account.disabled = true;
-
-        accounts.selectedItem = account;
       } else {
         account.image = 'chrome://tombfix/skin/empty.png';
+
+        if (!accounts.selectedItem) {
+          accounts.selectedItem = account;
+        }
       }
     }
   }
