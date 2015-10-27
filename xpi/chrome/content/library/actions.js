@@ -24,24 +24,24 @@
         }
 
         if (!targetURL) {
-          return;
+          return false;
         }
 
         let {hostname, pathname} = new URL(targetURL);
 
-        return ((
+        return (
           // GitHubでかつraw以外のリンクの場合は除外する
           /^(?:gist\.)?github(?:usercontent)?\.com$/.test(hostname) &&
-            pathname.split('/')[3] === 'raw'
-        ) || /^raw\d*\.github(?:usercontent)?\.com$/.test(hostname)) &&
-          createURI(targetURL).fileExtension === 'js';
+            pathname.split('/')[3] === 'raw' ||
+            /^raw\d*\.github(?:usercontent)?\.com$/.test(hostname)
+        ) && createURI(targetURL).fileExtension === 'js';
       },
       execute(ctx) {
         return this.getInfo(ctx).addCallback(({valid, url}) => {
           if (!valid) {
             alert(getMessage('message.install.invalid'));
 
-            return;
+            return null;
           }
 
           let result = input({
@@ -50,11 +50,12 @@
           }, 'message.install.warning');
 
           if (!(result && result['label.install.agree'])) {
-            return;
+            return null;
           }
 
           return download(url, getPatchDir()).addCallback(() => {
             reload();
+
             notify(
               this.name,
               getMessage('message.install.success'),
@@ -70,12 +71,10 @@
       getInfo(ctx) {
         return ctx.onLink ? request(ctx.linkURL, {
           responseType: 'blob'
-        }).addCallback(
-          res => ({
-            valid: this.isValidContentType(res.response.type),
-            url: res.responseURL
-          })
-        ) : succeed(this.getInfoFromDocument(ctx.document));
+        }).addCallback(res => ({
+          valid: this.isValidContentType(res.response.type),
+          url: res.responseURL
+        })) : succeed(this.getInfoFromDocument(ctx.document));
       },
       getInfoFromDocument(doc) {
         return {
@@ -104,9 +103,9 @@
       name: getMessage('label.action.openScriptFolder'),
       execute() {
         try {
-          getPatchDir().launch();
+          getPatchDir().reveal();
         } catch (err) {
-          alert('Error! ' + (err && err.message || err));
+          alert(`Error! ${err && err.message || err}`);
         }
       }
     },
