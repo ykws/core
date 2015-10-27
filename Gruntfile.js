@@ -183,16 +183,13 @@ module.exports = function createGruntConfig(grunt) {
         },
         options: {
           rules: {
-            'no-extra-parens': 0,
             'no-alert': 0,
             complexity: [2, 5],
             'new-cap': [2, {
               capIsNewExceptions: ['ConvertToUnicode', 'ConvertFromUnicode']
             }],
             'one-var': 0,
-            indent: 0,
-            'consistent-return': 0,
-            'prefer-template': 0
+            indent: 0
           }
         }
       },
