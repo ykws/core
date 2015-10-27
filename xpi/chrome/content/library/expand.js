@@ -26,12 +26,16 @@
 
   Object.expand(Array, {
     wrap(target) {
-      return target == null ? [] : (Array.isArray(target) ? target : [target]);
+      if (target == null) {
+        return [];
+      }
+
+      return Array.isArray(target) ? target : [target];
     },
     hashtags(tags) {
       return Array.isArray(tags) && tags.length ? tags.reduce((list, tag) => {
         if (String.usable(tag)) {
-          list.push(tag.startsWith('#') ? tag : '#' + tag);
+          list.push(tag.startsWith('#') ? tag : `#${tag}`);
         }
 
         return list;
@@ -81,14 +85,14 @@
       return Object.prototype.toString.call(target).slice(8, -1);
     },
     values(target) {
-      return target == null ? [] : (
-        Object.keys(target).map(propName => target[propName])
-      );
+      return target == null ?
+        [] :
+        Object.keys(target).map(propName => target[propName]);
     },
     entries(target) {
-      return target == null ? [] : (
-        Object.keys(target).map(propName => [propName, target[propName]])
-      );
+      return target == null ?
+        [] :
+        Object.keys(target).map(propName => [propName, target[propName]]);
     }
   });
 
@@ -113,9 +117,9 @@
       return this.replace(/^/mg, (char || ' ').repeat(num));
     },
     wrap(prefix, suffix) {
-      return prefix == null ? this : (
-        prefix + this + (suffix == null ? prefix : suffix)
-      );
+      return prefix == null ?
+        this :
+        prefix + this + (suffix == null ? prefix : suffix);
     },
     extract(re, group) {
       let match = this.match(re);
@@ -132,13 +136,13 @@
       return new UnicodeConverter(charset).ConvertFromUnicode(this);
     },
     md5(base64, charset) {
-      let crypto = new CryptoHash(CryptoHash.MD5),
-          data = new UnicodeConverter(charset).convertToByteArray(this, {});
+      let hash = new CryptoHash(CryptoHash.MD5);
+      let data = new UnicodeConverter(charset).convertToByteArray(this, {});
 
-      crypto.update(data, data.length);
+      hash.update(data, data.length);
 
-      return base64 ? crypto.finish(true) : crypto.finish(false).split('').map(
-        char => ('0' + char.charCodeAt().toString(16)).slice(-2)
+      return base64 ? hash.finish(true) : hash.finish(false).split('').map(
+        char => `0${char.charCodeAt().toString(16)}`.slice(-2)
       ).join('');
     },
     unEscapeURI(charset) {
