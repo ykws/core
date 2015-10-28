@@ -423,7 +423,7 @@ function download(sourceURL, targetFile){
     onSecurityChange : function(){},
     onStatusChange   : function(){},
     onStateChange    : function(progress, req, state, status){
-      if(state & IWebProgressListener.STATE_STOP){
+      if(state & IWebProgressListener.STATE_STOP && req){
         broad(req);
 
         var res = {
