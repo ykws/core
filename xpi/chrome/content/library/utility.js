@@ -117,7 +117,7 @@ function notify(title, msg, icon){
     icon, title, msg,
     false, '', null);
 }
-notify.ICON_INFO = 'chrome://global/skin/icons/information-64.png';
+notify.ICON_INFO = 'chrome://global/skin/icons/information-32.png';
 
 /**
  * URIを生成する。
