@@ -3276,23 +3276,6 @@ Models.register({
 
 
 Models.register({
-  name : '8tracks',
-  ICON : 'http://8tracks.com/favicon.ico',
-  URL  : 'http://8tracks.com',
-
-  upload : function(file){
-    file = getLocalFile(file);
-    return request(this.URL + '/tracks', {
-      redirectionLimit : 0,
-      sendContent : {
-        'track_files[]' : file,
-      },
-    });
-  }
-});
-
-
-Models.register({
   name : 'is.gd',
   ICON : 'http://is.gd/favicon.ico',
   URL  : 'http://is.gd/',
