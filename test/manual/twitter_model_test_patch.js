@@ -413,7 +413,7 @@
   setPref('model.twitter.truncateStatus', true);
 
   assert(Twitter.getTweetLength([
-    'abc 123 テスト 𠮷野家 𠮷𠮷𠮷𠮷𠮷𠮷𠮷𠮷\n',
+    'abc 123 テスト 𠮷野家 𠮷𠮷𠮷𠮷\n',
     'tombfix.github.io http://tombfix.github.io/ ',
     'http://tombfix.github.io/a0b2739c3045b3d95ca8da051fc411b0028b7925bd2' +
       '00899b780138ab91e3eafa2d76efe6f571347cb23e70cf6e2e7dbe26da70e510' +
@@ -778,7 +778,7 @@
     description : str + 'http://tombfix.github.io/'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 20);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
   assert(tweet, [
     str,
     '… http://tombfix.github.io/'
@@ -875,7 +875,7 @@
     description : str + ' http://tombfix.github.io/ a'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 22);
   assert(tweet, [
     str,
     ' … http://tombfix.github.io/'
@@ -916,7 +916,7 @@
     description : str + ' http://tombfix.github.io/'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 20);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
   assert(tweet, [
     str,
     ' … http://tombfix.github.io/'
@@ -956,7 +956,7 @@
     description : str + ' http://tombfix.github.io/'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 20);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
   assert(tweet, [
     str,
     ' … http://tombfix.github.io/'
@@ -1018,7 +1018,7 @@
     description : str + ' http://tombfix.github.io/ a'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 22);
   assert(tweet, [
     str,
     ' … http://tombfix.github.io/'
@@ -1059,7 +1059,7 @@
     description : str + ' http://tombfix.github.io/'
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 20);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 21);
   assert(tweet, [
     str,
     ' … http://tombfix.github.io/'
@@ -1115,7 +1115,7 @@
     description : str
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 24);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 25);
   assert(tweet, [
     str,
     ' http://tombfix.github.io/'
@@ -1149,7 +1149,7 @@
     description : str
   });
 
-  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 22);
+  assert(Twitter.getTweetLength(tweet), Twitter.STATUS_MAX_LENGTH - 23);
   assert(tweet, [
     str,
     ' http://tombfix.github.io/'

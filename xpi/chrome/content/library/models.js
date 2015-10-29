@@ -1153,7 +1153,7 @@ Models.register(Object.assign({
   STATUS_MAX_LENGTH : 140,
   OPTIONS           : {
     // for twttr.txt.getTweetLength()
-    short_url_length       : 22,
+    short_url_length       : 23,
     short_url_length_https : 23
   },
 
