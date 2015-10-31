@@ -297,6 +297,8 @@ module.exports = function createGruntConfig(grunt) {
             'space-infix-ops': 0,
             'space-unary-ops': 0,
 
+            'arrow-body-style': 0,
+            'no-arrow-condition': 0,
             'no-var': 0,
             'object-shorthand': 0,
             'prefer-arrow-callback': 0,
