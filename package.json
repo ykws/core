@@ -9,6 +9,7 @@
     "grunt-contrib-jshint": "",
     "grunt-jscs": "",
     "grunt-eslint": "",
+    "eslint-config-tombfix": "",
     "grunt-contrib-compress": ""
   },
   "engines": {

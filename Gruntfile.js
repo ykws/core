@@ -153,7 +153,6 @@ module.exports = function createGruntConfig(grunt) {
         options: {
           rules: {
             'no-unused-vars': 0,
-            complexity: [2, 5],
             'new-cap': 0,
             'one-var': 0,
             indent: 0,
@@ -184,7 +183,6 @@ module.exports = function createGruntConfig(grunt) {
         options: {
           rules: {
             'no-alert': 0,
-            complexity: [2, 5],
             'new-cap': [2, {
               capIsNewExceptions: ['ConvertToUnicode', 'ConvertFromUnicode']
             }],
