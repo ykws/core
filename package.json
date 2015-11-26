@@ -12,8 +12,8 @@
     "grunt-contrib-compress": ""
   },
   "engines": {
-    "node": ">=0.12",
-    "npm": ">=2.9"
+    "node": ">=5.1.0",
+    "npm": ">=3.3.12"
   },
   "private": true
 }
