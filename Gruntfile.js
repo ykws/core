@@ -33,7 +33,7 @@ module.exports = function createGruntConfig(grunt) {
           src: 'Gruntfile.js'
         },
         options: {
-          config: '.jscsrc',
+          config: '.jscs.json',
           esnext: null
         }
       },
@@ -58,7 +58,7 @@ module.exports = function createGruntConfig(grunt) {
           ]
         },
         options: {
-          config: '.jscsrc',
+          config: '.jscs.json',
           disallowNestedTernaries: null
         }
       },
@@ -129,7 +129,7 @@ module.exports = function createGruntConfig(grunt) {
           src: 'xpi/defaults/preferences/prefs.js'
         },
         options: {
-          config: '.jscsrc',
+          config: '.jscs.json',
           maximumLineLength: null
         }
       }
