@@ -31,7 +31,7 @@
 
 # Pull Request について
 
-現在、[Gruntfile.js](https://github.com/tombfix/core/blob/master/Gruntfile.js) でコメントアウトされているファイル以外への変更は、[.jshintrc](https://github.com/tombfix/core/blob/master/.jshintrc) と [.jscsrc](https://github.com/tombfix/core/blob/master/.jscsrc) と [.eslintrc](https://github.com/tombfix/core/blob/master/.eslintrc) に従い、[Travis CI](https://travis-ci.org/tombfix/core) 上で JSHint と JSCS と ESLint により構文チェックされます。  
+現在、[Gruntfile.js](https://github.com/tombfix/core/blob/master/Gruntfile.js) でコメントアウトされているファイル以外への変更は、[.jshintrc](https://github.com/tombfix/core/blob/master/.jshintrc) と [.jscsrc](https://github.com/tombfix/core/blob/master/.jscsrc) と [.eslintrc.json](https://github.com/tombfix/core/blob/master/.eslintrc.json) に従い、[Travis CI](https://travis-ci.org/tombfix/core) 上で JSHint と JSCS と ESLint により構文チェックされます。  
 Pull Request をなさる際は、Travis CI のチェックを通る(All is well)ようお願いします。
 
 なお、コミットについては、[Commits](https://github.com/tombfix/core/commits/master) を参考にして、以下のようにすると良いでしょう。
