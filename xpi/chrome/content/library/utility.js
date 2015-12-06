@@ -2537,3 +2537,13 @@ function getImageURLFromPS(ps) {
 
   return (file ? getDataURLFromFile(file) : ps.itemUrl) || '';
 }
+
+function getCanonicalURL(doc) {
+  let canonicalLink = doc.querySelector('link[rel="canonical"][href]');
+
+  if (canonicalLink) {
+    return canonicalLink.href;
+  }
+
+  return '';
+}

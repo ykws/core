@@ -678,7 +678,7 @@ Extractors.register([
           responseType : 'document'
         }).addCallback(({response : doc}) => {
           ctx.title = doc.title;
-          ctx.href = url;
+          ctx.href = getCanonicalURL(doc) || url;
         });
       }).addCallback(() => {
         let {postID} = options;
