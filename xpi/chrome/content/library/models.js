@@ -102,6 +102,9 @@ var Tumblr = update({}, AbstractSessionService, {
   ICON : 'http://www.tumblr.com/images/favicon.gif',
   ORIGIN : 'https://www.tumblr.com',
   TUMBLR_URL : 'http://www.tumblr.com/',
+  API_URL : 'https://api.tumblr.com/',
+  // Tombfix's OAuth Consumer Key
+  API_KEY : 'wiHRMlZeYbLaIA0CCfb5UzGtEsIJOLgMtJ4OJPPe7WYCQG1GOU',
   SVC_URL : 'https://www.tumblr.com/svc/',
 
   blogID : '',
@@ -468,6 +471,29 @@ var Tumblr = update({}, AbstractSessionService, {
       }
 
       throw new Error(getMessage('error.unknown'));
+    });
+  },
+
+  getPostInfo(hostname, postID) {
+    // https://www.tumblr.com/docs/en/api/v2#posts
+    return request(`${this.API_URL}v2/blog/${hostname}/posts`, {
+      responseType : 'json',
+      queryString  : {
+        api_key : this.API_KEY,
+        id      : postID
+      }
+    }).addCallback(({response : json}) => {
+      let {meta} = json;
+
+      if (meta.status === 200) {
+        let {posts} = json.response;
+
+        if (posts && posts.length) {
+          return posts[0];
+        }
+      }
+
+      throw new Error(meta.msg || getMessage('error.contentsNotFound'));
     });
   },
 
