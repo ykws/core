@@ -805,7 +805,8 @@ Extractors.register([
     name : 'ReBlog - Tumblr link',
     ICON : 'chrome://tombfix/skin/reblog.ico',
     check(ctx) {
-      return ctx.onLink && Extractors.ReBlog.getPostID(ctx.link.href);
+      return !ctx.selection && ctx.onLink &&
+        Extractors.ReBlog.getPostID(ctx.link.href);
     },
     extract(ctx) {
       return Extractors.ReBlog.extractByURL(ctx, {
