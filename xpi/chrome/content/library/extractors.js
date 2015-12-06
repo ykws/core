@@ -748,7 +748,8 @@ Extractors.register([
     name : 'ReBlog - Tumblr',
     ICON : 'chrome://tombfix/skin/reblog.ico',
     check(ctx) {
-      return Extractors.ReBlog.getIframe(ctx.document) &&
+      return !(ctx.selection || ctx.onImage || ctx.onLink) &&
+        Extractors.ReBlog.getIframe(ctx.document) &&
         Extractors.ReBlog.getPostID(ctx.href, true);
     },
     extract(ctx) {
