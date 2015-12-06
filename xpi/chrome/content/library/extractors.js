@@ -621,9 +621,7 @@ Extractors.register([
           return pathname.extract(/^\/(?:(?:post|image)\/)?(\d+)/);
         }
 
-        if (urlObj.hostname.endsWith('.tumblr.com')) {
-          return pathname.extract(/^\/(?:post|image)\/(\d+)/);
-        }
+        return pathname.extract(/^\/(?:post|image)\/(\d+)/);
       }
 
       return '';
