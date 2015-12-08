@@ -611,28 +611,27 @@ Extractors.register([
   },
 
   {
-    name       : 'ReBlog',
-    CONVERTERS : {
-      regular      : info => ({
-        type : 'quote',
-        item : info.svcInfo.one
+    name: 'ReBlog',
+    CONVERTERS: {
+      regular: info => ({
+        type: 'quote',
+        item: info.svcInfo.one
       }),
-      photo        : info => ({
-        itemUrl : info.apiInfo.photos[0].original_size.url
+      photo: info => ({
+        itemUrl: info.apiInfo.photos[0].original_size.url
       }),
-      quote        : info => ({
-        body : info.svcInfo.one
+      quote: info => ({
+        body: info.svcInfo.one
       }),
-      link         : ({svcInfo}) => ({
-        item    : svcInfo.one,
-        itemUrl : svcInfo.two,
-        body    : svcInfo.three
+      link: ({svcInfo}) => ({
+        item: svcInfo.one,
+        itemUrl: svcInfo.two,
+        body: svcInfo.three
       }),
-      conversation : info => ({
-        body : info.svcInfo.two
+      conversation: info => ({
+        body: info.svcInfo.two
       })
     },
-
     getPostID(url, special) {
       if (url) {
         let urlObj = new URL(url);
@@ -647,7 +646,6 @@ Extractors.register([
 
       return '';
     },
-
     getNoSlugURL(url) {
       let urlObj = new URL(url);
 
@@ -655,7 +653,6 @@ Extractors.register([
 
       return urlObj.toString();
     },
-
     getIframe(doc) {
       // for XML page
       if (!(doc && doc.body)) {
@@ -674,16 +671,14 @@ Extractors.register([
 
       return doc.querySelector('iframe.tmblr-iframe');
     },
-
     overridePageInfo(ctx, url) {
       return request(this.getNoSlugURL(url), {
-        responseType : 'document'
-      }).addCallback(({response : doc}) => {
+        responseType: 'document'
+      }).addCallback(({response: doc}) => {
         ctx.title = doc.title;
         ctx.href = getCanonicalURL(doc) || url;
       });
     },
-
     getInfo(ctx, options) {
       let {url, postID} = options;
 
@@ -699,11 +694,11 @@ Extractors.register([
         let reblogKey = postInfo.reblog_key;
 
         return new DeferredHash(Object.assign({
-          reblogPostInfo : Tumblr.getReblogPostInfo(postID, reblogKey)
+          reblogPostInfo: Tumblr.getReblogPostInfo(postID, reblogKey)
         }, Tumblr.isLoggedIn() ? {
-          reblogPage : Tumblr.getReblogPage(postID, reblogKey)
+          reblogPage: Tumblr.getReblogPage(postID, reblogKey)
         } : {}, options.override ? {
-          entryPage : this.overridePageInfo(ctx, url)
+          entryPage: this.overridePageInfo(ctx, url)
         } : {})).addCallback(({reblogPostInfo, reblogPage}) => {
           let reblogInfo = reblogPostInfo[1];
 
@@ -712,23 +707,22 @@ Extractors.register([
           }
 
           return Object.assign({
-            apiInfo    : postInfo,
-            svcInfo    : reblogInfo,
-            reblogPage : reblogPage && reblogPage[0] ? reblogPage[1] : null
+            apiInfo: postInfo,
+            svcInfo: reblogInfo,
+            reblogPage: reblogPage && reblogPage[0] ? reblogPage[1] : null
           });
         });
       });
     },
-
     extractByURL(ctx, options) {
       return this.getInfo(ctx, options).addCallback(info => {
         let {svcInfo, reblogPage} = info;
         let postType = svcInfo.type;
         let converter = this.CONVERTERS[postType];
         let favorite = {
-          name : 'Tumblr',
-          form : {
-            'post[type]' : postType
+          name: 'Tumblr',
+          form: {
+            'post[type]': postType
           }
         };
 
@@ -742,16 +736,16 @@ Extractors.register([
           Tumblr.trimReblogInfo(form);
 
           Object.assign(favorite, {
-            endpoint : reblogPage.URL,
+            endpoint: reblogPage.URL,
             form
           });
         }
 
         return Object.assign({
-          type    : postType,
-          item    : ctx.title,
-          itemUrl : ctx.href,
-          body    : svcInfo.reblog_tree,
+          type: postType,
+          item: ctx.title,
+          itemUrl: ctx.href,
+          body: svcInfo.reblog_tree,
           favorite
         }, converter ? converter(info) : {});
       });
@@ -759,8 +753,8 @@ Extractors.register([
   },
 
   {
-    name : 'ReBlog - Tumblr',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
+    name: 'ReBlog - Tumblr',
+    ICON: 'chrome://tombfix/skin/reblog.ico',
     check(ctx) {
       return !(ctx.selection || ctx.onImage || ctx.onLink) &&
         Extractors.ReBlog.getIframe(ctx.document) &&
@@ -771,14 +765,14 @@ Extractors.register([
 
       return Extractors.ReBlog.extractByURL(ctx, {
         url,
-        postID : Extractors.ReBlog.getPostID(url, true)
+        postID: Extractors.ReBlog.getPostID(url, true)
       });
     }
   },
 
   {
-    name : 'ReBlog - Dashboard',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
+    name: 'ReBlog - Dashboard',
+    ICON: 'chrome://tombfix/skin/reblog.ico',
     check(ctx) {
       return ctx.hostname.endsWith('.tumblr.com') &&
         Extractors.ReBlog.getPostID(this.getPermalinkURL(ctx), true);
@@ -788,8 +782,8 @@ Extractors.register([
 
       return Extractors.ReBlog.extractByURL(ctx, {
         url,
-        postID   : Extractors.ReBlog.getPostID(url, true),
-        override : true
+        postID: Extractors.ReBlog.getPostID(url, true),
+        override: true
       });
     },
     getPermalinkURL(ctx) {
@@ -816,16 +810,16 @@ Extractors.register([
   },
 
   {
-    name : 'ReBlog - Tumblr link',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
+    name: 'ReBlog - Tumblr link',
+    ICON: 'chrome://tombfix/skin/reblog.ico',
     check(ctx) {
       return !ctx.selection && ctx.onLink &&
         Extractors.ReBlog.getPostID(ctx.link.href);
     },
     extract(ctx) {
       return Extractors.ReBlog.extractByURL(ctx, {
-        url      : ctx.link.href,
-        override : true
+        url: ctx.link.href,
+        override: true
       });
     }
   },
