@@ -294,7 +294,7 @@ Extractors.register([
     extract(ctx) {
       Extractors.LDR.overwriteCTX(ctx);
 
-      return Extractors.ReBlog.extractByURL(ctx, {
+      return Extractors.ReBlog.extract(ctx, {
         url      : ctx.href,
         override : true
       });
@@ -632,6 +632,42 @@ Extractors.register([
         body: info.svcInfo.two
       })
     },
+    extract(ctx, options) {
+      return this.getInfo(ctx, options).addCallback(info => {
+        let {svcInfo, reblogPage} = info;
+        let postType = svcInfo.type;
+        let converter = this.CONVERTERS[postType];
+        let favorite = {
+          name: 'Tumblr',
+          form: {
+            'post[type]': postType
+          }
+        };
+
+        if (reblogPage) {
+          let form = formContents(reblogPage.body);
+
+          if (!form['post[type]']) {
+            form['post[type]'] = postType;
+          }
+
+          Tumblr.trimReblogInfo(form);
+
+          Object.assign(favorite, {
+            endpoint: reblogPage.URL,
+            form
+          });
+        }
+
+        return Object.assign({
+          type: postType,
+          item: ctx.title,
+          itemUrl: ctx.href,
+          body: svcInfo.reblog_tree,
+          favorite
+        }, converter ? converter(info) : {});
+      });
+    },
     getPostID(url, special) {
       if (url) {
         let urlObj = new URL(url);
@@ -713,42 +749,6 @@ Extractors.register([
           });
         });
       });
-    },
-    extractByURL(ctx, options) {
-      return this.getInfo(ctx, options).addCallback(info => {
-        let {svcInfo, reblogPage} = info;
-        let postType = svcInfo.type;
-        let converter = this.CONVERTERS[postType];
-        let favorite = {
-          name: 'Tumblr',
-          form: {
-            'post[type]': postType
-          }
-        };
-
-        if (reblogPage) {
-          let form = formContents(reblogPage.body);
-
-          if (!form['post[type]']) {
-            form['post[type]'] = postType;
-          }
-
-          Tumblr.trimReblogInfo(form);
-
-          Object.assign(favorite, {
-            endpoint: reblogPage.URL,
-            form
-          });
-        }
-
-        return Object.assign({
-          type: postType,
-          item: ctx.title,
-          itemUrl: ctx.href,
-          body: svcInfo.reblog_tree,
-          favorite
-        }, converter ? converter(info) : {});
-      });
     }
   },
 
@@ -763,7 +763,7 @@ Extractors.register([
     extract(ctx) {
       let url = ctx.href;
 
-      return Extractors.ReBlog.extractByURL(ctx, {
+      return Extractors.ReBlog.extract(ctx, {
         url,
         postID: Extractors.ReBlog.getPostID(url, true)
       });
@@ -780,7 +780,7 @@ Extractors.register([
     extract(ctx) {
       let url = this.getPermalinkURL(ctx);
 
-      return Extractors.ReBlog.extractByURL(ctx, {
+      return Extractors.ReBlog.extract(ctx, {
         url,
         postID: Extractors.ReBlog.getPostID(url, true),
         override: true
@@ -817,7 +817,7 @@ Extractors.register([
         Extractors.ReBlog.getPostID(ctx.link.href);
     },
     extract(ctx) {
-      return Extractors.ReBlog.extractByURL(ctx, {
+      return Extractors.ReBlog.extract(ctx, {
         url: ctx.link.href,
         override: true
       });
