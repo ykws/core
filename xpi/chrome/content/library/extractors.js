@@ -611,7 +611,28 @@ Extractors.register([
   },
 
   {
-    name : 'ReBlog',
+    name       : 'ReBlog',
+    CONVERTERS : {
+      regular      : info => ({
+        type : 'quote',
+        item : info.svcInfo.one
+      }),
+      photo        : info => ({
+        itemUrl : info.apiInfo.photos[0].original_size.url
+      }),
+      quote        : info => ({
+        body : info.svcInfo.one
+      }),
+      link         : ({svcInfo}) => ({
+        item    : svcInfo.one,
+        itemUrl : svcInfo.two,
+        body    : svcInfo.three
+      }),
+      conversation : info => ({
+        body : info.svcInfo.two
+      })
+    },
+
     getPostID(url, special) {
       if (url) {
         let urlObj = new URL(url);
@@ -654,93 +675,86 @@ Extractors.register([
       return doc.querySelector('iframe.tmblr-iframe');
     },
 
-    getReblogURL(url, postID) {
-      let urlObj = new URL(url);
+    overridePageInfo(ctx, url) {
+      return request(this.getNoSlugURL(url), {
+        responseType : 'document'
+      }).addCallback(({response : doc}) => {
+        ctx.title = doc.title;
+        ctx.href = getCanonicalURL(doc) || url;
+      });
+    },
 
-      return Tumblr.getPostInfo(urlObj.hostname, postID).addCallback(info =>
-        `${Tumblr.ORIGIN}/reblog/${postID}/${info.reblog_key}`
+    getInfo(ctx, options) {
+      let {url, postID} = options;
+
+      if (!postID) {
+        postID = this.getPostID(url);
+      }
+
+      return Tumblr.getPostInfo((new URL(url)).hostname, postID).addCallback(
+        info => info
       ).addErrback(() => {
         throw new Error(getMessage('error.contentsNotFound'));
+      }).addCallback(postInfo => {
+        let reblogKey = postInfo.reblog_key;
+
+        return new DeferredHash(Object.assign({
+          reblogPostInfo : Tumblr.getReblogPostInfo(postID, reblogKey)
+        }, Tumblr.isLoggedIn() ? {
+          reblogPage : Tumblr.getReblogPage(postID, reblogKey)
+        } : {}, options.override ? {
+          entryPage : this.overridePageInfo(ctx, url)
+        } : {})).addCallback(({reblogPostInfo, reblogPage}) => {
+          let reblogInfo = reblogPostInfo[1];
+
+          if (!reblogPostInfo[0]) {
+            throw reblogInfo;
+          }
+
+          return Object.assign({
+            apiInfo    : postInfo,
+            svcInfo    : reblogInfo,
+            reblogPage : reblogPage && reblogPage[0] ? reblogPage[1] : null
+          });
+        });
       });
     },
 
     extractByURL(ctx, options) {
-      let url = options.url;
-
-      return succeed().addCallback(() => {
-        if (!options.override) {
-          return succeed();
-        }
-
-        return request(this.getNoSlugURL(url), {
-          responseType : 'document'
-        }).addCallback(({response : doc}) => {
-          ctx.title = doc.title;
-          ctx.href = getCanonicalURL(doc) || url;
-        });
-      }).addCallback(() => {
-        let {postID} = options;
-
-        if (!postID) {
-          postID = this.getPostID(url);
-        }
-
-        return this.getReblogURL(url, postID).addCallback(reblogURL =>
-          this.extractByEndpoint(ctx, reblogURL)
-        );
-      });
-    },
-
-    extractByEndpoint(ctx, reblogURL) {
-      return Tumblr.getForm(reblogURL).addCallback(form =>
-        Object.assign({
-          type     : form['post[type]'],
-          item     : ctx.title,
-          itemUrl  : ctx.href,
-          favorite : {
-            name     : 'Tumblr',
-            endpoint : reblogURL,
-            form
+      return this.getInfo(ctx, options).addCallback(info => {
+        let {svcInfo, reblogPage} = info;
+        let postType = svcInfo.type;
+        let converter = this.CONVERTERS[postType];
+        let favorite = {
+          name : 'Tumblr',
+          form : {
+            'post[type]' : postType
           }
-        }, this.convertToParams(form))
-      )
-    },
+        };
 
-    convertToParams(form) {
-      switch (form['post[type]']) {
-      case 'regular':
-        return {
-          type : 'quote',
-          item : form['post[one]'],
-          body : form['post[two]']
-        };
-      case 'photo':
-        return {
-          itemUrl : form.image,
-          body    : form['post[two]']
-        };
-      case 'link':
-        return {
-          item    : form['post[one]'],
-          itemUrl : form['post[two]'],
-          body    : form['post[three]']
-        };
-      case 'quote':
-        // FIXME: post[two]検討
-        return {
-          body : form['post[one]']
-        };
-      case 'video':
-        // FIXME: post[one]検討
-        return {
-          body : form['post[two]']
-        };
-      case 'conversation':
-        return {
-          item : form['post[one]'],
-          body : form['post[two]']
-        };
-      }
+        if (reblogPage) {
+          let form = formContents(reblogPage.body);
+
+          if (!form['post[type]']) {
+            form['post[type]'] = postType;
+          }
+
+          Tumblr.trimReblogInfo(form);
+
+          Object.assign(favorite, {
+            endpoint : reblogPage.URL,
+            form
+          });
+        }
+
+        return Object.assign({
+          type    : postType,
+          item    : ctx.title,
+          itemUrl : ctx.href,
+          body    : svcInfo.reblog_tree,
+          favorite
+        }, converter ? converter(info) : {});
+      });
     }
   },
 

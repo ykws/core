@@ -280,29 +280,37 @@ var Tumblr = update({}, AbstractSessionService, {
   },
 
   /**
-   * reblogする。
-   * Extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
+   * Reblogする。
+   * Extractors.ReBlogの各抽出メソッドを使いReblog情報を抽出できる。
    *
    * @param {Object} ps
    * @return {Deferred}
    */
-  favor : function(ps){
-    // メモをreblogフォームの適切なフィールドの末尾に追加する
-    var form = ps.favorite.form;
-    items(Tumblr[ps.type.capitalize()].convertToForm({
-      description : ps.description,
-    })).forEach(function([name, value]){
-      if(!value)
-        return;
+  favor(ps) {
+    let {endpoint, form} = ps.favorite;
 
-      form[name] += '\n\n' + value;
-    });
+    if (!endpoint) {
+      throw new Error(getMessage('error.notLoggedin'));
+    }
+
+    // メモをReblogフォームの適切なフィールドの末尾に追加する
+    for (let [itemName, itemValue] of Object.entries(
+      this[ps.type.capitalize()].convertToForm({
+        description : ps.description
+      })
+    )) {
+      if (itemValue) {
+        form[itemName] += `\n\n${itemValue}`;
+      }
+    }
 
     this.appendTags(form, ps);
 
-    return this.postForm(function(){
-      return request(ps.favorite.endpoint, {sendContent : form})
-    });
+    return this.postForm(() =>
+      request(endpoint, {
+        sendContent : form
+      })
+    );
   },
 
   /**
@@ -515,6 +523,18 @@ var Tumblr = update({}, AbstractSessionService, {
       }
 
       throw new Error(json.error || getMessage('error.contentsNotFound'));
+    });
+  },
+
+  getReblogPage(reblogID, reblogKey) {
+    return request(`${this.ORIGIN}/reblog/${reblogID}/${reblogKey}`, {
+      responseType : 'document'
+    }).addCallback(({response : doc}) => {
+      if ((new URL(doc.URL)).pathname === '/register') {
+        throw new Error(getMessage('error.notLoggedin'));
+      }
+
+      return doc;
     });
   },
 
