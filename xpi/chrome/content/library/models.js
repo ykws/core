@@ -106,6 +106,61 @@ var Tumblr = update({}, AbstractSessionService, {
   // Tombfix's OAuth Consumer Key
   API_KEY : 'wiHRMlZeYbLaIA0CCfb5UzGtEsIJOLgMtJ4OJPPe7WYCQG1GOU',
   SVC_URL : 'https://www.tumblr.com/svc/',
+  CONVERTERS : {
+    regular      : {
+      reblog : desc => ({
+        'post[two]' : desc
+      })
+    },
+    photo        : {
+      reblog : desc => ({
+        'post[two]' : desc
+      })
+    },
+    quote        : {
+      reblog : (desc, ps) => {
+        let str = ps.favorite.form['post[two]'];
+
+        if (desc) {
+          str += `<p>${desc}</p>`;
+        }
+
+        return {
+          'post[one]' : getFlavor(ps.body, 'html'),
+          'post[two]' : str
+        };
+      }
+    },
+    link         : {
+      reblog : (desc, ps) => {
+        let str = '';
+        let thumbnailTemplate = getPref('thumbnailTemplate');
+
+        if (thumbnailTemplate) {
+          str += `<p>${thumbnailTemplate.replace(/{url}/g, ps.pageUrl)}</p>`;
+        }
+
+        if (desc) {
+          str += `<p>${desc}</p>`;
+        }
+
+        return {
+          'post[three]' : str
+        };
+      }
+    },
+    conversation : {
+      reblog : (desc, ps) => ({
+        'post[one]' : ps.item,
+        'post[two]' : joinText([getFlavor(ps.body, 'html'), desc], '\n\n')
+      })
+    },
+    video        : {
+      reblog : desc => ({
+        'post[two]' : desc
+      })
+    }
+  },
 
   blogID : '',
 
@@ -287,30 +342,16 @@ var Tumblr = update({}, AbstractSessionService, {
    * @return {Deferred}
    */
   favor(ps) {
-    let {endpoint, form} = ps.favorite;
-
-    if (!endpoint) {
+    if (!this.isLoggedIn()) {
       throw new Error(getMessage('error.notLoggedin'));
     }
 
-    // メモをReblogフォームの適切なフィールドの末尾に追加する
-    for (let [itemName, itemValue] of Object.entries(
-      this[ps.type.capitalize()].convertToForm({
-        description : ps.description
-      })
-    )) {
-      if (itemValue) {
-        form[itemName] += `\n\n${itemValue}`;
-      }
-    }
+    let data = ps.favorite.form;
 
-    this.appendTags(form, ps);
-
-    return this.postForm(() =>
-      request(endpoint, {
-        sendContent : form
-      })
-    );
+    return this.postUpdate(Object.assign(
+      data,
+      this.CONVERTERS[data['post[type]']].reblog(ps.description || '', ps)
+    ), ps);
   },
 
   /**
@@ -406,6 +447,62 @@ var Tumblr = update({}, AbstractSessionService, {
         ).textContent.trim();
       });
     }).addErrback(() => '');
+  },
+
+  getDashboard() {
+    return request(`${this.ORIGIN}/dashboard`, {
+      responseType : 'document'
+    }).addCallback(({response : doc}) => {
+      if ((new URL(doc.URL)).pathname === '/login') {
+        throw new Error(getMessage('error.notLoggedin'));
+      }
+
+      return doc;
+    });
+  },
+
+  getSecureFormKey(formKey) {
+    return request(`${this.SVC_URL}secure_form_key`, {
+      responseType : 'text',
+      method       : 'POST',
+      headers      : {
+        'X-Tumblr-Form-Key' : formKey
+      }
+    }).addCallback(res => res.getResponseHeader('x-tumblr-secure-form-key'));
+  },
+
+  postUpdate(data, ps) {
+    return this.getDashboard().addCallback(doc => {
+      let formKey = doc.querySelector('input[name="form_key"]').value;
+
+      data.channel_id = this.blogID ||
+        doc.querySelector('input[name="t"]').value;
+
+      return this.getSecureFormKey(formKey).addCallback(secureFormKey => ({
+        formKey, secureFormKey
+      }));
+    }).addCallback(info => {
+      this.appendTags(data, ps);
+
+      return request(`${this.SVC_URL}post/update`, {
+        responseType : 'json',
+        headers      : {
+          'X-Tumblr-Form-Key' : info.formKey,
+          'X-tumblr-puppies'  : info.secureFormKey
+        },
+        sendContent  : JSON.stringify(this.updateData(data))
+      });
+    });
+  },
+
+  updateData(data) {
+    if (data['post[state]'] == null) {
+      data['post[state]'] = 0;
+    }
+
+    data['post[state]'] = String(data['post[state]']);
+
+    return data;
   },
 
   getBlogs() {
@@ -523,21 +620,6 @@ var Tumblr = update({}, AbstractSessionService, {
       }
 
       throw new Error(json.error || getMessage('error.contentsNotFound'));
-    });
-  },
-
-  getReblogPage(reblogID, reblogKey) {
-    return request(`${this.ORIGIN}/reblog/${reblogID}/${reblogKey}`, {
-      responseType : 'document',
-      queryString  : {
-        redirect_to : `${this.ORIGIN}/dashboard`
-      }
-    }).addCallback(({response : doc}) => {
-      if ((new URL(doc.URL)).pathname === '/register') {
-        throw new Error(getMessage('error.notLoggedin'));
-      }
-
-      return doc;
     });
   },
 

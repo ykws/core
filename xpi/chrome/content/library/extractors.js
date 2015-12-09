@@ -178,59 +178,87 @@ Extractors.register([
     name: 'ReBlog',
     ICON: 'chrome://tombfix/skin/reblog.ico',
     CONVERTERS: {
-      regular: info => ({
-        type: 'quote',
-        item: info.svcInfo.one
-      }),
-      photo: info => ({
-        itemUrl: info.apiInfo.photos[0].original_size.url
-      }),
-      quote: info => ({
-        body: info.svcInfo.one
-      }),
-      link: ({svcInfo}) => ({
-        item: svcInfo.one,
-        itemUrl: svcInfo.two,
-        body: svcInfo.three
-      }),
-      conversation: info => ({
-        body: info.svcInfo.two
-      })
+      regular: {
+        data: svcInfo => ({
+          'post[two]': svcInfo.reblog_tree
+        }),
+        ps: ({data}) => ({
+          type: 'quote',
+          item: data['post[one]'],
+          body: data['post[two]']
+        })
+      },
+      photo: {
+        data: svcInfo => ({
+          'post[two]': svcInfo.reblog_tree
+        }),
+        ps: info => ({
+          itemUrl: info.apiInfo.photos[0].original_size.url,
+          body: info.data['post[two]']
+        })
+      },
+      quote: {
+        data: () => ({}),
+        ps: info => ({
+          body: info.data['post[one]']
+        })
+      },
+      link: {
+        data: svcInfo => ({
+          'post[three]': svcInfo.reblog_tree
+        }),
+        ps: ({data}) => ({
+          item: data['post[one]'],
+          itemUrl: data['post[two]'],
+          body: data['post[three]']
+        })
+      },
+      conversation: {
+        data: () => ({}),
+        ps: ({data}) => ({
+          item: data['post[one]'],
+          body: data['post[two]']
+        })
+      },
+      video: {
+        data: svcInfo => ({
+          'post[two]': svcInfo.reblog_tree
+        }),
+        ps: info => ({
+          body: info.data['post[two]']
+        })
+      }
     },
     extract(ctx, options) {
-      return this.getInfo(ctx, options).addCallback(info => {
-        let {svcInfo, reblogPage} = info;
+      return this.getInfo(ctx, options).addCallback(({apiInfo, svcInfo}) => {
         let postType = svcInfo.type;
         let converter = this.CONVERTERS[postType];
-        let favorite = {
-          name: 'Tumblr',
-          form: {
-            'post[type]': postType
-          }
-        };
 
-        if (reblogPage) {
-          let form = formContents(reblogPage.body);
-
-          if (!form['post[type]']) {
-            form['post[type]'] = postType;
-          }
-
-          Tumblr.trimReblogInfo(form);
-
-          Object.assign(favorite, {
-            endpoint: reblogPage.URL,
-            form
-          });
+        if (!converter) {
+          throw new Error(getMessage('error.contentsNotFound'));
         }
+
+        let data = Object.assign({
+          reblog: true,
+          reblog_key: apiInfo.reblog_key,
+          reblog_post_id: options.postID,
+          'post[type]': postType,
+          'post[one]': svcInfo.one,
+          'post[two]': svcInfo.two,
+          'post[three]': svcInfo.three
+        }, converter.data(svcInfo));
+
+        Tumblr.trimReblogInfo(data);
 
         return Object.assign({
           type: postType,
           item: ctx.title,
           itemUrl: ctx.href,
-          body: svcInfo.reblog_tree,
-          favorite
-        }, converter ? converter(info) : {});
+          favorite: {
+            name: 'Tumblr',
+            form: data
+          }
+        }, converter.ps({apiInfo, data}));
       });
     },
     getPostID(url, special) {
@@ -284,7 +312,7 @@ Extractors.register([
       let {url, postID} = options;
 
       if (!postID) {
-        postID = this.getPostID(url);
+        postID = options.postID = this.getPostID(url);
       }
 
       return Tumblr.getPostInfo((new URL(url)).hostname, postID).addCallback(
@@ -296,22 +324,19 @@ Extractors.register([
 
         return new DeferredHash(Object.assign({
           reblogPostInfo: Tumblr.getReblogPostInfo(postID, reblogKey)
-        }, Tumblr.isLoggedIn() ? {
-          reblogPage: Tumblr.getReblogPage(postID, reblogKey)
-        } : {}, options.override ? {
+        }, options.override ? {
           entryPage: this.overridePageInfo(ctx, url)
-        } : {})).addCallback(({reblogPostInfo, reblogPage}) => {
+        } : {})).addCallback(({reblogPostInfo}) => {
           let reblogInfo = reblogPostInfo[1];
 
           if (!reblogPostInfo[0]) {
             throw reblogInfo;
           }
 
-          return Object.assign({
+          return {
             apiInfo: postInfo,
-            svcInfo: reblogInfo,
-            reblogPage: reblogPage && reblogPage[0] ? reblogPage[1] : null
-          });
+            svcInfo: reblogInfo
+          };
         });
       });
     }
