@@ -528,7 +528,10 @@ var Tumblr = update({}, AbstractSessionService, {
 
   getReblogPage(reblogID, reblogKey) {
     return request(`${this.ORIGIN}/reblog/${reblogID}/${reblogKey}`, {
-      responseType : 'document'
+      responseType : 'document',
+      queryString  : {
+        redirect_to : `${this.ORIGIN}/dashboard`
+      }
     }).addCallback(({response : doc}) => {
       if ((new URL(doc.URL)).pathname === '/register') {
         throw new Error(getMessage('error.notLoggedin'));
