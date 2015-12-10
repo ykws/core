@@ -432,6 +432,26 @@
   assert('e'.wrap(1, 0), '1e0');
   assert('true'.wrap(false), 'falsetruefalse');
 
+  assert(''.wrapTag(), '');
+  assert('a'.wrapTag(), 'a');
+  assert('a'.wrapTag(void 0), 'a');
+  assert('a'.wrapTag(null), 'a');
+  assert('a'.wrapTag(false), 'a');
+  assert('a'.wrapTag(0), 'a');
+  assert('a'.wrapTag([]), 'a');
+  assert('a'.wrapTag({}), 'a');
+  assert('a'.wrapTag(/(?:)/), 'a');
+  assert('a'.wrapTag(Object.create(null)), 'a');
+  assert('a'.wrapTag(''), 'a');
+  assert('a'.wrapTag(new String('')), 'a');
+  assert('a'.wrapTag('div'), '<div>a</div>');
+  assert('a'.wrapTag(new String('div')), '<div>a</div>');
+  assert('a'.wrapTag('DIV'), '<div>a</div>');
+  assert('a'.wrapTag('Div'), '<div>a</div>');
+  assert(''.wrapTag('div'), '<div></div>');
+  assert(''.wrapTag('div', true), '');
+  assert('a'.wrapTag('div', true), '<div>a</div>');
+
   assert('test'.extract(/^(t)e(st)$/), 't');
   assert('test'.extract(/^(t)e(st)$/, 2), 'st');
   assert('test'.capitalize(), 'Test');

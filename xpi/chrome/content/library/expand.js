@@ -121,6 +121,19 @@
         this :
         prefix + this + (suffix == null ? prefix : suffix);
     },
+    wrapTag(tagName, returnEmpty) {
+      if (!String.usable(tagName)) {
+        return this;
+      }
+
+      if (!this && returnEmpty) {
+        return '';
+      }
+
+      let elementName = tagName.toLowerCase();
+
+      return `<${elementName}>${this}</${elementName}>`;
+    },
     extract(re, group) {
       let match = this.match(re);
 
