@@ -245,60 +245,6 @@ var Tumblr = update({}, AbstractSessionService, {
       delete form.preview_post;
       form.redirect_to = Tumblr.TUMBLR_URL+'dashboard';
 
-      if (!form['post[type]']) {
-        let {pathname} = new URL(url),
-          match = /^\/reblog\/(\d+)\/([^\/]+)/.exec(pathname);
-
-        if (match) {
-          let [reblogID, reblogKey] = match.slice(1);
-
-          return Tumblr.getReblogPostInfo(reblogID, reblogKey).addCallback(info => {
-            form['post[type]'] = info.type;
-
-            if (!form.reblog_post_id) {
-              form.reblog_post_id = info.parent_id;
-            }
-
-            return form;
-          });
-        }
-      }
-
-      return form;
-    }).addCallback(function(form){
-      if(form.reblog_post_id){
-        self.trimReblogInfo(form);
-
-        // Tumblrから他サービスへポストするため画像URLを取得しておく
-        if (form['post[type]'] === 'photo') {
-          form.image = $x('id("edit_post")//img[contains(@src, "media.tumblr.com/") or contains(@src, "data.tumblr.com/")]/@src', doc);
-          if (!form.image) {
-            let img = doc.querySelector('.reblog_content img');
-
-            if (img) {
-              form.image = img.src;
-            }
-          }
-          if (!form.image) {
-            let photoset = doc.querySelector('iframe.photoset');
-            if (photoset) {
-              return request(photoset.src, {
-                responseType: 'document'
-              }).addCallback(res => {
-                var doc = res.response;
-                var photoset_photo = doc.querySelector('.photoset_photo');
-
-                if (photoset_photo) {
-                  form.image = photoset_photo.href;
-                }
-
-                return form;
-              });
-            }
-          }
-        }
-      }
-
       return form;
     });
   },
