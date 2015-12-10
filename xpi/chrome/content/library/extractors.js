@@ -179,53 +179,55 @@ Extractors.register([
     ICON: 'chrome://tombfix/skin/reblog.ico',
     CONVERTERS: {
       regular: {
-        data: svcInfo => ({
-          'post[two]': svcInfo.reblog_tree
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
         }),
-        ps: ({data}) => ({
+        ps: info => ({
           type: 'quote',
-          item: data['post[one]'],
-          body: data['post[two]']
+          item: info['post[one]'],
+          body: info['post[two]']
         })
       },
       photo: {
-        data: svcInfo => ({
-          'post[two]': svcInfo.reblog_tree
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
         }),
         ps: info => ({
-          itemUrl: info.apiInfo.photos[0].original_size.url,
-          body: info.data['post[two]']
+          itemUrl: info.photos[0].original_size.url,
+          body: info['post[two]']
         })
       },
       quote: {
-        data: () => ({}),
+        data: info => ({
+          'post[two]': info['post[two]']
+        }),
         ps: info => ({
-          body: info.data['post[one]']
+          body: info['post[one]']
         })
       },
       link: {
-        data: svcInfo => ({
-          'post[three]': svcInfo.reblog_tree
+        data: info => ({
+          'post[three]': info.reblogTree + info['post[three]']
         }),
-        ps: ({data}) => ({
-          item: data['post[one]'],
-          itemUrl: data['post[two]'],
-          body: data['post[three]']
+        ps: info => ({
+          item: info['post[one]'],
+          itemUrl: info['post[two]'],
+          body: info['post[three]']
         })
       },
       conversation: {
         data: () => ({}),
-        ps: ({data}) => ({
-          item: data['post[one]'],
-          body: data['post[two]']
+        ps: info => ({
+          item: info['post[one]'],
+          body: info['post[two]']
         })
       },
       video: {
-        data: svcInfo => ({
-          'post[two]': svcInfo.reblog_tree
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
         }),
         ps: info => ({
-          body: info.data['post[two]']
+          body: info['post[two]']
         })
       }
     },
@@ -238,17 +240,22 @@ Extractors.register([
           throw new Error(getMessage('error.contentsNotFound'));
         }
 
-        let data = Object.assign({
+        let data = {
           reblog: true,
           reblog_key: apiInfo.reblog_key,
           reblog_post_id: options.postID,
           'post[type]': postType,
-          'post[one]': svcInfo.one,
-          'post[two]': svcInfo.two,
-          'post[three]': svcInfo.three
-        }, converter.data(svcInfo));
+          'post[one]': svcInfo.one || '',
+          'post[two]': svcInfo.two || '',
+          'post[three]': svcInfo.three || ''
+        };
+        let info = Object.assign({
+          reblogTree: svcInfo.reblog_tree || ''
+        }, data);
 
-        Tumblr.trimReblogInfo(data);
+        if (getPref('model.tumblr.trimReblogInfo')) {
+          info = this.trimReblogInfo(info);
+        }
 
         return Object.assign({
           type: postType,
@@ -256,9 +263,12 @@ Extractors.register([
           itemUrl: ctx.href,
           favorite: {
             name: 'Tumblr',
-            form: data
+            form: Object.assign(data, converter.data(info)),
+            info
           }
-        }, converter.ps({apiInfo, data}));
+        }, converter.ps(Object.assign({
+          photos: apiInfo.photos
+        }, data)));
       });
     },
     getPostID(url, special) {
@@ -339,6 +349,68 @@ Extractors.register([
           };
         });
       });
+    },
+    trimReblogInfo(info) {
+      let {reblogTree} = info;
+
+      if (reblogTree) {
+        info.reblogTree = this.trimReblogTree(reblogTree);
+      }
+
+      let dataName = Object.keys(
+        this.CONVERTERS[info['post[type]']].data(info)
+      )[0];
+
+      if (dataName) {
+        let str = info[dataName];
+
+        if (str) {
+          info[dataName] = this.trimReblogSource(str);
+        }
+      }
+
+      return info;
+    },
+    trimReblogTree(html) {
+      return (function removeBlockquote(all, contents) {
+        return contents.replace(
+          /<blockquote>(([\n\r]|.)+)<\/blockquote>/gm,
+          removeBlockquote
+        );
+      }(
+        null,
+        html.replace(/<p><\/p>/g, '').replace(/<p><a[^<]+<\/a>:<\/p>/g, '')
+      )).trim();
+    },
+    trimReblogSource(html) {
+      let str = html;
+      let strictVia = [
+        '\\(via (?:<a class="tumblr_blog" href="[^"]+">[^<]+</a>',
+        '<a href="[^"]+" class="tumblr_blog">[^<]+</a>)\\)'
+      ].join('|');
+
+      if ((new RegExp(strictVia)).test(str)) {
+        str = str
+          .replace(new RegExp(` ${strictVia}`, 'g'), '')
+          .replace(new RegExp(strictVia.wrapTag('p'), 'g'), '');
+      }
+
+      let via = 'via <a[^<]+</a>(?:, <a[^<]+</a>)?';
+
+      if (!(new RegExp(via)).test(str)) {
+        return str;
+      }
+
+      return html
+        .replace(new RegExp(`\\(${via}\\)`.wrapTag('p'), 'g'), '')
+        .replace(new RegExp(
+          ` *(?:\\(|\\(</p>\\n<p>)${via}(?:\\)|</p>\\n<p>\\)) *`,
+          'g'
+        ), '</p>\n\n<p>')
+        .replace(/<p>\n*<\/p>/g, '')
+        .replace(/<p>\n+/g, '<p>')
+        .replace(/\n+<\/p>/g, '</p>')
+        .replace(/\n\n+/g, '\n\n').trim();
     }
   }
 ]);

@@ -108,96 +108,45 @@ var Tumblr = update({}, AbstractSessionService, {
   SVC_URL : 'https://www.tumblr.com/svc/',
   CONVERTERS : {
     regular      : {
-      reblog : desc => ({
-        'post[two]' : desc
+      reblog : (ps, desc) => ({
+        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
       })
     },
     photo        : {
-      reblog : desc => ({
-        'post[two]' : desc
+      reblog : (ps, desc) => ({
+        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
       })
     },
     quote        : {
-      reblog : (desc, ps) => {
-        let str = ps.favorite.form['post[two]'];
-
-        if (desc) {
-          str += `<p>${desc}</p>`;
-        }
-
-        return {
-          'post[one]' : getFlavor(ps.body, 'html'),
-          'post[two]' : str
-        };
-      }
+      reblog : (ps, desc) => ({
+        'post[one]' : getFlavor(ps.body, 'html'),
+        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
+      })
     },
     link         : {
-      reblog : (desc, ps) => {
-        let str = '';
-        let thumbnailTemplate = getPref('thumbnailTemplate');
-
-        if (thumbnailTemplate) {
-          str += `<p>${thumbnailTemplate.replace(/{url}/g, ps.pageUrl)}</p>`;
-        }
-
-        if (desc) {
-          str += `<p>${desc}</p>`;
-        }
-
-        return {
-          'post[three]' : str
-        };
-      }
+      reblog : (ps, desc) => ({
+        'post[three]' : ps.favorite.info['post[three]'] +
+          getPref('thumbnailTemplate').replace(
+            /{url}/g,
+            ps.pageUrl
+          ).wrapTag('p', true) +
+          desc.wrapTag('p', true)
+      })
     },
     conversation : {
-      reblog : (desc, ps) => ({
+      reblog : (ps, desc) => ({
         'post[one]' : ps.item,
         'post[two]' : joinText([getFlavor(ps.body, 'html'), desc], '\n\n')
       })
     },
     video        : {
-      reblog : desc => ({
-        'post[two]' : desc
+      reblog : (ps, desc) => ({
+        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
       })
     }
   },
 
   blogID : '',
-
-  /**
-   * reblog情報を取り除く。
-   *
-   * @param {Array} form reblogフォーム。
-   * @return {Deferred}
-   */
-  trimReblogInfo : function(form){
-    if(!getPref('model.tumblr.trimReblogInfo'))
-     return;
-
-    function trimQuote(entry){
-      entry = entry.replace(/<p><\/p>/g, '').replace(/<p><a[^<]+<\/a>:<\/p>/g, '');
-      entry = (function callee(all, contents){
-        return contents.replace(/<blockquote>(([\n\r]|.)+)<\/blockquote>/gm, callee);
-      })(null, entry);
-      return entry.trim();
-    }
-
-    switch(form['post[type]']){
-    case 'link':
-      form['post[three]'] = trimQuote(form['post[three]']);
-      break;
-    case 'regular':
-    case 'photo':
-    case 'video':
-      form['post[two]'] = trimQuote(form['post[two]']);
-      break;
-    case 'quote':
-      form['post[two]'] = form['post[two]'].replace(/ \(via <a.*?<\/a>\)/g, '').trim();
-      break;
-    }
-
-    return form;
-  },
 
   /**
    * ポスト可能かをチェックする。
@@ -296,7 +245,7 @@ var Tumblr = update({}, AbstractSessionService, {
 
     return this.postUpdate(Object.assign(
       data,
-      this.CONVERTERS[data['post[type]']].reblog(ps.description || '', ps)
+      this.CONVERTERS[data['post[type]']].reblog(ps, ps.description || '')
     ), ps);
   },
 
