@@ -243,7 +243,8 @@ var Tumblr = update({}, AbstractSessionService, {
       throw new Error(getMessage('error.notLoggedin'));
     }
 
-    let data = ps.favorite.form;
+    // サブブログでの利用を考慮して、データを同じObjectで管理しないようにする
+    let data = Object.assign({}, ps.favorite.form);
 
     return this.postUpdate(Object.assign(
       data,
@@ -368,28 +369,45 @@ var Tumblr = update({}, AbstractSessionService, {
     }).addCallback(res => res.getResponseHeader('x-tumblr-secure-form-key'));
   },
 
-  postUpdate(data, ps) {
+  getInfo() {
     return this.getDashboard().addCallback(doc => {
-      let formKey = doc.querySelector('input[name="form_key"]').value;
+      let info = {};
+      let element = doc.querySelector('input[name="form_key"]');
 
-      data.channel_id = this.blogID ||
-        doc.querySelector('input[name="t"]').value;
+      if (element && element.value) {
+        info.formKey = element.value;
 
-      return this.getSecureFormKey(formKey).addCallback(secureFormKey => ({
-        formKey, secureFormKey
-      }));
-    }).addCallback(info => {
-      this.appendTags(data, ps);
+        element = doc.querySelector('input[name="t"]');
 
-      return request(`${this.SVC_URL}post/update`, {
-        responseType : 'json',
-        headers      : {
-          'X-Tumblr-Form-Key' : info.formKey,
-          'X-tumblr-puppies'  : info.secureFormKey
-        },
-        sendContent  : JSON.stringify(this.updateData(data))
-      });
-    }).addCallback(({response : {errors}}) => {
+        if (element && element.value) {
+          info.channelID = element.value;
+
+          return info;
+        }
+      }
+
+      throw new Error(getMessage('error.unknown'));
+    });
+  },
+
+  postUpdate(data, ps) {
+    this.appendTags(data, ps);
+
+    return this.getInfo().addCallback(({formKey, channelID}) =>
+      this.getSecureFormKey(formKey).addCallback(secureFormKey =>
+        request(`${this.SVC_URL}post/update`, {
+          responseType : 'json',
+          headers      : {
+            'X-Tumblr-Form-Key' : formKey,
+            'X-tumblr-puppies'  : secureFormKey
+          },
+          sendContent  : JSON.stringify(Object.assign(data, {
+            channel_id    : data.channel_id || this.blogID || channelID,
+            'post[state]' : String(data['post[state]'] || 0)
+          }))
+        })
+      )
+    ).addCallback(({response : {errors}}) => {
       if (!errors) {
         return;
       }
@@ -406,16 +424,6 @@ var Tumblr = update({}, AbstractSessionService, {
 
       throw new Error(errorMessage || getMessage('error.unknown'));
     });
-  },
-
-  updateData(data) {
-    if (data['post[state]'] == null) {
-      data['post[state]'] = 0;
-    }
-
-    data['post[state]'] = String(data['post[state]']);
-
-    return data;
   },
 
   getBlogs() {
