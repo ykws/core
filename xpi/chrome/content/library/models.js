@@ -114,6 +114,8 @@ var Tumblr = update({}, AbstractSessionService, {
     },
     photo        : {
       reblog : (ps, desc) => ({
+        // Reblogした画像が表示されなくなるのを防ぐ
+        'post[one]' : void 0,
         'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
       })
     },
