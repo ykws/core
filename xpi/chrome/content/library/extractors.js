@@ -237,7 +237,7 @@ Extractors.register([
         let converter = this.CONVERTERS[postType];
 
         if (!converter) {
-          throw new Error(getMessage('error.contentsNotFound'));
+          throw new Error(getMessage('error.contentsTypeNotSupported'));
         }
 
         let data = {
