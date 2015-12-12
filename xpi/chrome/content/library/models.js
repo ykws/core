@@ -389,6 +389,22 @@ var Tumblr = update({}, AbstractSessionService, {
         },
         sendContent  : JSON.stringify(this.updateData(data))
       });
+    }).addCallback(({response : {errors}}) => {
+      if (!errors) {
+        return;
+      }
+
+      let errorMessage = '';
+
+      if (Array.isArray(errors)) {
+        // daily post limit
+        errorMessage = errors.join('\n');
+      } else if (errors.type) {
+        // daily photo upload limit
+        errorMessage = errors.type;
+      }
+
+      throw new Error(errorMessage || getMessage('error.unknown'));
     });
   },
 
