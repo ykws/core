@@ -329,26 +329,21 @@ Extractors.register([
         info => info
       ).addErrback(() => {
         throw new Error(getMessage('error.contentsNotFound'));
-      }).addCallback(postInfo => {
-        let reblogKey = postInfo.reblog_key;
-
-        return new DeferredHash(Object.assign({
-          reblogPostInfo: Tumblr.getReblogPostInfo(postID, reblogKey)
+      }).addCallback(apiInfo =>
+        new DeferredHash(Object.assign({
+          reblogPostInfo: Tumblr.getReblogPostInfo(postID, apiInfo.reblog_key)
         }, options.override ? {
           entryPage: this.overridePageInfo(ctx, url)
         } : {})).addCallback(({reblogPostInfo}) => {
-          let reblogInfo = reblogPostInfo[1];
+          let svcInfo = reblogPostInfo[1];
 
           if (!reblogPostInfo[0]) {
-            throw reblogInfo;
+            throw svcInfo;
           }
 
-          return {
-            apiInfo: postInfo,
-            svcInfo: reblogInfo
-          };
-        });
-      });
+          return {apiInfo, svcInfo};
+        })
+      );
     },
     trimReblogInfo(info) {
       let {reblogTree} = info;
