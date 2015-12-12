@@ -184,7 +184,6 @@ Extractors.register([
         }),
         ps: info => ({
           type: 'quote',
-          item: info['post[one]'],
           body: info['post[two]']
         })
       },
