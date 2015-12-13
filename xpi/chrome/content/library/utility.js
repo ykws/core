@@ -2567,3 +2567,28 @@ function getHTMLString(target) {
 
   return str || '';
 }
+
+function getFlavoredString(target) {
+  let str;
+  let html;
+
+  if (target) {
+    if (String.usable(target)) {
+      str = convertToPlainText(target);
+      html = target;
+    } else if (target instanceof Element) {
+      str = target.textContent;
+      html = convertToHTMLString(target, true);
+    } else if (target instanceof window.Selection) {
+      str = convertToPlainText(target);
+      html = convertToHTMLString(target, true);
+    }
+
+    str = str || '';
+    html = html || '';
+  }
+
+  return (str || html) ? Object.assign(new String(str), {
+    flavors : {html}
+  }) : '';
+}
