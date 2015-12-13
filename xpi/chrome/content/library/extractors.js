@@ -192,8 +192,8 @@ Extractors.register([
           'post[two]': info.reblogTree + info['post[two]']
         }),
         ps: info => ({
-          itemUrl: info.photos[0].original_size.url,
-          body: info['post[two]']
+          itemUrl: info.photos[0].original_size.url
+          // body: info['post[two]']
         })
       },
       quote: {
@@ -210,23 +210,23 @@ Extractors.register([
         }),
         ps: info => ({
           item: info['post[one]'],
-          itemUrl: info['post[two]'],
-          body: info['post[three]']
+          itemUrl: info['post[two]']
+          // body: info['post[three]']
         })
       },
       conversation: {
         data: () => ({}),
         ps: info => ({
-          item: info['post[one]'],
-          body: info['post[two]']
+          item: info['post[one]']
+          // body: info['post[two]']
         })
       },
       video: {
         data: info => ({
           'post[two]': info.reblogTree + info['post[two]']
         }),
-        ps: info => ({
-          body: info['post[two]']
+        ps: () => ({
+          // body: info['post[two]']
         })
       }
     },

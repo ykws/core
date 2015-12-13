@@ -138,7 +138,7 @@ var Tumblr = update({}, AbstractSessionService, {
     conversation : {
       reblog : (ps, desc) => ({
         'post[one]' : ps.item,
-        'post[two]' : joinText([getFlavor(ps.body, 'html'), desc], '\n\n')
+        'post[two]' : joinText([ps.favorite.info['post[two]'], desc], '\n\n')
       })
     },
     video        : {
