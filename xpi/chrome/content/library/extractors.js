@@ -184,7 +184,7 @@ Extractors.register([
         }),
         ps: info => ({
           type: 'quote',
-          body: info['post[two]']
+          body: getFlavoredString(info['post[two]'])
         })
       },
       photo: {
@@ -193,7 +193,7 @@ Extractors.register([
         }),
         ps: info => ({
           itemUrl: info.photos[0].original_size.url
-          // body: info['post[two]']
+          // body: getFlavoredString(info['post[two]'])
         })
       },
       quote: {
@@ -201,7 +201,7 @@ Extractors.register([
           'post[two]': info['post[two]']
         }),
         ps: info => ({
-          body: info['post[one]']
+          body: getFlavoredString(info['post[one]'])
         })
       },
       link: {
@@ -209,7 +209,7 @@ Extractors.register([
           'post[three]': info.reblogTree + info['post[three]']
         }),
         ps: () => ({
-          // body: info['post[three]']
+          // body: getFlavoredString(info['post[three]'])
         })
       },
       conversation: {
@@ -224,7 +224,7 @@ Extractors.register([
           'post[two]': info.reblogTree + info['post[two]']
         }),
         ps: () => ({
-          // body: info['post[two]']
+          // body: getFlavoredString(info['post[two]'])
         })
       }
     },
@@ -342,6 +342,23 @@ Extractors.register([
         })
       );
     },
+    getDataList(info) {
+      let converter = this.CONVERTERS[info['post[type]']];
+
+      if (converter) {
+        let key = Object.keys(converter.data(info))[0];
+
+        if (key) {
+          let val = info[key];
+
+          if (val) {
+            return [key, val];
+          }
+        }
+      }
+
+      return [];
+    },
     trimReblogInfo(info) {
       let {reblogTree} = info;
 
@@ -349,16 +366,10 @@ Extractors.register([
         info.reblogTree = this.trimReblogTree(reblogTree);
       }
 
-      let dataName = Object.keys(
-        this.CONVERTERS[info['post[type]']].data(info)
-      )[0];
+      let list = this.getDataList(info);
 
-      if (dataName) {
-        let str = info[dataName];
-
-        if (str) {
-          info[dataName] = this.trimReblogSource(str);
-        }
+      if (list.length) {
+        info[list[0]] = this.trimReblogSource(list[1]);
       }
 
       return info;

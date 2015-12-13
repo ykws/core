@@ -108,42 +108,43 @@ var Tumblr = update({}, AbstractSessionService, {
   SVC_URL : 'https://www.tumblr.com/svc/',
   CONVERTERS : {
     regular      : {
-      reblog : (ps, desc) => ({
-        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
+      reblog : (ps, descList) => ({
+        'post[two]' : descList.join('')
       })
     },
     photo        : {
-      reblog : (ps, desc) => ({
+      reblog : (ps, descList) => ({
         // Reblogした画像が表示されなくなるのを防ぐ
         'post[one]' : void 0,
-        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
+        'post[two]' : descList.join('')
       })
     },
     quote        : {
-      reblog : (ps, desc) => ({
-        'post[one]' : getFlavor(ps.body, 'html'),
-        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
+      reblog : (ps, descList) => ({
+        'post[one]' : getHTMLString(ps.body),
+        'post[two]' : descList.join('')
       })
     },
     link         : {
-      reblog : (ps, desc) => ({
-        'post[three]' : ps.favorite.info['post[three]'] +
-          getPref('thumbnailTemplate').replace(
-            /{url}/g,
-            ps.pageUrl
-          ).wrapTag('p', true) +
-          desc.wrapTag('p', true)
+      reblog : (ps, descList) => ({
+        'post[three]' : descList.cutIn(
+          1,
+          Tumblr.getThumbnailHTML(ps).wrapTag('p', true)
+        ).join('')
       })
     },
     conversation : {
-      reblog : (ps, desc) => ({
+      reblog : ps => ({
         'post[one]' : ps.item,
-        'post[two]' : joinText([ps.favorite.info['post[two]'], desc], '\n\n')
+        'post[two]' : joinText([
+          ps.favorite.info['post[two]'],
+          ps.description
+        ], '\n\n')
       })
     },
     video        : {
-      reblog : (ps, desc) => ({
-        'post[two]' : ps.favorite.info['post[two]'] + desc.wrapTag('p', true)
+      reblog : (ps, descList) => ({
+        'post[two]' : descList.join('')
       })
     }
   },
@@ -246,10 +247,9 @@ var Tumblr = update({}, AbstractSessionService, {
     // サブブログでの利用を考慮して、データを同じObjectで管理しないようにする
     let data = Object.assign({}, ps.favorite.form);
 
-    return this.postUpdate(Object.assign(
-      data,
-      this.CONVERTERS[data['post[type]']].reblog(ps, ps.description || '')
-    ), ps);
+    return this.postUpdate(Object.assign(data, this.CONVERTERS[
+      data['post[type]']
+    ].reblog(ps, this.createReblogDescriptionList(ps))), ps);
   },
 
   /**
@@ -542,6 +542,26 @@ var Tumblr = update({}, AbstractSessionService, {
 
       throw new Error(json.error || getMessage('error.contentsNotFound'));
     });
+  },
+
+  createReblogDescriptionList(ps) {
+    let list = Extractors.ReBlog.getDataList(ps.favorite.info);
+    let via = list.length ? list[1] : '';
+
+    return [
+      via.startsWith('<p>') ? via : via.wrapTag('p', true),
+      getHTMLString(ps.description).wrapTag('p', true)
+    ];
+  },
+
+  getThumbnailHTML(ps) {
+    let thumbnailTemplate = getPref('thumbnailTemplate');
+
+    if (thumbnailTemplate) {
+      return thumbnailTemplate.replace(/{url}/g, ps.pageUrl);
+    }
+
+    return '';
   },
 
   /**
@@ -1360,10 +1380,6 @@ Models.register(Object.assign({
       url   : ps.itemUrl || '',
       tags  : Array.hashtags(ps.tags)
     };
-
-    if (contents.quote && isFavorite(ps, 'Tumblr')) {
-      contents.quote = this.createQuote(ps.body.trimTag());
-    }
 
     let maxLen = this.STATUS_MAX_LENGTH;
 
