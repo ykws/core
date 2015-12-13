@@ -301,6 +301,20 @@
   assert([{name : 'fuga'}, {name : 'piyo'}].merge([{name : 'hoge'}, {name : 'foo'}], {indexFunc : obj => obj.name === 'bar', after : false})[2].name, 'hoge');
   assert([{name : 'fuga'}, {name : 'piyo'}].merge([{name : 'hoge'}, {name : 'foo'}], {indexFunc : obj => obj.name === 'bar', after : false})[3].name, 'foo');
 
+  {
+    assert(Array.isArray([].cutIn()));
+    assert([].cutIn().length, 0);
+
+    let arr = ['a', 'c'];
+
+    assert(arr.cutIn(1, 'b') !== arr);
+    assert(JSON.stringify(arr.cutIn(1, 'b')), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(-1, 'b')), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(1, ...['b'])), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(1, 'b', 'd')), '["a","b","d","c"]');
+    assert(JSON.stringify(arr.cutIn(1, ...['b', 'd'])), '["a","b","d","c"]');
+  }
+
   assert(JSON.parseable(void 0), false);
   assert(JSON.parseable(''), false);
   assert(JSON.parseable(NaN), false);

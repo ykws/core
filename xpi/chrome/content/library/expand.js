@@ -65,6 +65,13 @@
       }
 
       return master.concat(branch);
+    },
+    cutIn(index, ...args) {
+      let arr = this.slice();
+
+      arr.splice(index, 0, ...args);
+
+      return arr;
     }
   });
 
