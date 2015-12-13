@@ -208,9 +208,7 @@ Extractors.register([
         data: info => ({
           'post[three]': info.reblogTree + info['post[three]']
         }),
-        ps: info => ({
-          item: info['post[one]'],
-          itemUrl: info['post[two]']
+        ps: () => ({
           // body: info['post[three]']
         })
       },
