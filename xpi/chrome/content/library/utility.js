@@ -2547,3 +2547,23 @@ function getCanonicalURL(doc) {
 
   return '';
 }
+
+function getHTMLString(target) {
+  let str;
+
+  if (target) {
+    let {flavors} = target;
+
+    if (flavors && flavors.html) {
+      str = getFlavor(target, 'html');
+    } else if (String.usable(target)) {
+      str = convertToHTMLString(document.createTextNode(target));
+    } else if (
+      target instanceof Element || target instanceof window.Selection
+    ) {
+      str = convertToHTMLString(target, true);
+    }
+  }
+
+  return str || '';
+}
