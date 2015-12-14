@@ -131,28 +131,26 @@
     itemUrl     : 'http://tsuyuhara.tumblr.com/post/70206435185',
     page        : '† - test1',
     pageUrl     : 'http://tsuyuhara.tumblr.com/post/70206435185',
-    body        : 'syoichi: test2',
     tags        : ['hoge'],
     description : 'fuga',
     favorite    : {
-      name     : 'Tumblr',
-      endpoint : 'http://www.tumblr.com/reblog/70206435185/rQGsSyZi',
-      form     : {}
+      name : 'Tumblr',
+      form : {},
+      info : {}
     }
-  }), 'fuga "syoichi: test2" test1 http://tsuyuhara.tumblr.com/post/70206435185 #hoge');
+  }), 'fuga test1 http://tsuyuhara.tumblr.com/post/70206435185 #hoge');
   assert(Twitter.createStatus({
     type        : 'conversation',
     item        : 'test1',
     itemUrl     : 'http://tsuyuhara.tumblr.com/post/70206435185',
     page        : '† - test1',
     pageUrl     : 'http://tsuyuhara.tumblr.com/post/70206435185',
-    body        : 'syoichi: test2',
     favorite    : {
-      name     : 'Tumblr',
-      endpoint : 'http://www.tumblr.com/reblog/70206435185/rQGsSyZi',
-      form     : {}
+      name : 'Tumblr',
+      form : {},
+      info : {}
     }
-  }), '"syoichi: test2" test1 http://tsuyuhara.tumblr.com/post/70206435185');
+  }), 'test1 http://tsuyuhara.tumblr.com/post/70206435185');
   // Video
   assert(Twitter.createStatus({
     type        : 'video',
@@ -190,16 +188,13 @@
     itemUrl     : 'http://tsuyuhara.tumblr.com/post/71963590605',
     page        : '† - test',
     pageUrl     : 'http://tsuyuhara.tumblr.com/post/71963590605',
-    body        : [
-      '<p><a href="http://tsuyuhara.tumblr.com/post/71963590605" class="tumblr_blog">',
-      'tsuyuhara</a>:</p>\n\n<blockquote><p>test</p></blockquote>\n\n<p></p>'
-    ].join(''),
+    body        : 'tsuyuhara:\n\n    test',
     favorite    : {
-      name     : 'Tumblr',
-      endpoint : 'http://www.tumblr.com/reblog/71963590605/PrNB53Jd',
-      form     : {}
+      name : 'Tumblr',
+      form : {},
+      info : {}
     }
-  }), '"tsuyuhara:\n\ntest" http://tsuyuhara.tumblr.com/post/71963590605');
+  }), '"tsuyuhara:\n\n    test" http://tsuyuhara.tumblr.com/post/71963590605');
 
   // prefix
   setPref('model.twitter.template.prefix', '見てる:');
