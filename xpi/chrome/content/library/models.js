@@ -520,6 +520,18 @@ var Tumblr = update({}, AbstractSessionService, {
         api_key : this.API_KEY,
         id      : postID
       }
+    }).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {meta} = json;
+
+        if (meta) {
+          throw new Error(meta.msg);
+        }
+      }
+
+      throw err;
     }).addCallback(({response : json}) => {
       let {meta} = json;
 
