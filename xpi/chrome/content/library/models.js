@@ -555,6 +555,18 @@ var Tumblr = update({}, AbstractSessionService, {
         reblog_key : reblogKey,
         post_type  : postType || ''
       }
+    }).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {error} = json;
+
+        if (error) {
+          throw new Error(error);
+        }
+      }
+
+      throw err;
     }).addCallback(({response : json}) => {
       if (json.errors === false) {
         let {post} = json;
