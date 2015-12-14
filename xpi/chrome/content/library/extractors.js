@@ -874,7 +874,7 @@ Extractors.register([
     name: 'ReBlog - Dashboard',
     ICON: Extractors.ReBlog.ICON,
     check(ctx) {
-      return ctx.hostname.endsWith('.tumblr.com') &&
+      return ctx.hostname.endsWith('.tumblr.com') && !ctx.selection &&
         Extractors.ReBlog.getPostID(this.getPermalinkURL(ctx), true);
     },
     extract(ctx) {
@@ -901,11 +901,21 @@ Extractors.register([
 
       let link = post.querySelector('a[id^="permalink_"]');
 
-      if (!link) {
-        return '';
+      if (link) {
+        return link.href;
       }
 
-      return link.href;
+      let {json} = post.dataset;
+
+      if (JSON.parseable(json)) {
+        let data = JSON.parse(json).share_popover_data;
+
+        if (data) {
+          return data.post_url;
+        }
+      }
+
+      return '';
     }
   },
 
