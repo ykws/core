@@ -232,11 +232,6 @@ Extractors.register([
       return this.getInfo(ctx, options).addCallback(({apiInfo, svcInfo}) => {
         let postType = svcInfo.type;
         let converter = this.CONVERTERS[postType];
-
-        if (!converter) {
-          throw new Error(getMessage('error.contentsTypeNotSupported'));
-        }
-
         let data = {
           reblog: true,
           reblog_key: apiInfo.reblog_key,
@@ -267,6 +262,29 @@ Extractors.register([
           photos: apiInfo.photos
         }, data)));
       });
+    },
+    getInfo(ctx, options) {
+      let {url, postID} = options;
+
+      if (!postID) {
+        postID = options.postID = this.getPostID(url);
+      }
+
+      return this.getAPIInfo(url, postID).addCallback(apiInfo =>
+        new DeferredHash(Object.assign({
+          reblogPostInfo: Tumblr.getReblogPostInfo(postID, apiInfo.reblog_key)
+        }, options.override ? {
+          entryPage: this.overridePageInfo(ctx, url)
+        } : {})).addCallback(({reblogPostInfo}) => {
+          let svcInfo = reblogPostInfo[1];
+
+          if (!reblogPostInfo[0]) {
+            throw svcInfo;
+          }
+
+          return {apiInfo, svcInfo};
+        })
+      );
     },
     getPostID(url, special) {
       if (url) {
@@ -307,6 +325,23 @@ Extractors.register([
 
       return doc.querySelector('iframe.tmblr-iframe');
     },
+    getAPIInfo(url, postID) {
+      return Tumblr.getPostInfo((new URL(url)).hostname, postID).addErrback(
+        () => {
+          throw new Error(getMessage('error.contentsNotFound'));
+        }
+      ).addCallback(apiInfo => {
+        let postType = apiInfo.type
+          .replace(/^text$/, 'regular')
+          .replace(/^chat$/, 'conversation');
+
+        if (!this.CONVERTERS[postType]) {
+          throw new Error(getMessage('error.contentsTypeNotSupported'));
+        }
+
+        return apiInfo;
+      });
+    },
     overridePageInfo(ctx, url) {
       return request(this.getNoSlugURL(url), {
         responseType: 'document'
@@ -314,33 +349,6 @@ Extractors.register([
         ctx.title = doc.title;
         ctx.href = getCanonicalURL(doc) || url;
       });
-    },
-    getInfo(ctx, options) {
-      let {url, postID} = options;
-
-      if (!postID) {
-        postID = options.postID = this.getPostID(url);
-      }
-
-      return Tumblr.getPostInfo((new URL(url)).hostname, postID).addCallback(
-        info => info
-      ).addErrback(() => {
-        throw new Error(getMessage('error.contentsNotFound'));
-      }).addCallback(apiInfo =>
-        new DeferredHash(Object.assign({
-          reblogPostInfo: Tumblr.getReblogPostInfo(postID, apiInfo.reblog_key)
-        }, options.override ? {
-          entryPage: this.overridePageInfo(ctx, url)
-        } : {})).addCallback(({reblogPostInfo}) => {
-          let svcInfo = reblogPostInfo[1];
-
-          if (!reblogPostInfo[0]) {
-            throw svcInfo;
-          }
-
-          return {apiInfo, svcInfo};
-        })
-      );
     },
     getDataList(info) {
       let converter = this.CONVERTERS[info['post[type]']];
