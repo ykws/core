@@ -407,7 +407,19 @@ var Tumblr = update({}, AbstractSessionService, {
           }))
         })
       )
-    ).addCallback(({response : {errors}}) => {
+    ).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {error} = json;
+
+        if (error) {
+          throw new Error(error);
+        }
+      }
+
+      throw err;
+    }).addCallback(({response : {errors}}) => {
       if (!errors) {
         return;
       }
