@@ -127,10 +127,7 @@ var Tumblr = update({}, AbstractSessionService, {
     },
     link         : {
       reblog : (ps, descList) => ({
-        'post[three]' : descList.cutIn(
-          1,
-          Tumblr.getThumbnailHTML(ps).wrapTag('p', true)
-        ).join('')
+        'post[three]' : descList.join('')
       })
     },
     conversation : {
