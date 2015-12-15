@@ -288,8 +288,7 @@ Extractors.register([
     },
     getPostID(url, special) {
       if (url) {
-        let urlObj = new URL(url);
-        let {pathname} = urlObj;
+        let {pathname} = new URL(url);
 
         if (special) {
           return pathname.extract(/^\/(?:(?:post|image)\/)?(\d+)/);
