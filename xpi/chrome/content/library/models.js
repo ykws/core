@@ -102,44 +102,51 @@ var Tumblr = update({}, AbstractSessionService, {
   ICON : 'http://www.tumblr.com/images/favicon.gif',
   ORIGIN : 'https://www.tumblr.com',
   TUMBLR_URL : 'http://www.tumblr.com/',
+  API_URL : 'https://api.tumblr.com/',
+  // Tombfix's OAuth Consumer Key
+  API_KEY : 'wiHRMlZeYbLaIA0CCfb5UzGtEsIJOLgMtJ4OJPPe7WYCQG1GOU',
   SVC_URL : 'https://www.tumblr.com/svc/',
+  CONVERTERS : {
+    regular      : {
+      reblog : (ps, descList) => ({
+        'post[two]' : descList.join('')
+      })
+    },
+    photo        : {
+      reblog : (ps, descList) => ({
+        // Reblogした画像が表示されなくなるのを防ぐ
+        'post[one]' : void 0,
+        'post[two]' : descList.join('')
+      })
+    },
+    quote        : {
+      reblog : (ps, descList) => ({
+        'post[one]' : getHTMLString(ps.body),
+        'post[two]' : descList.join('')
+      })
+    },
+    link         : {
+      reblog : (ps, descList) => ({
+        'post[three]' : descList.join('')
+      })
+    },
+    conversation : {
+      reblog : ps => ({
+        'post[one]' : ps.item,
+        'post[two]' : joinText([
+          ps.favorite.info['post[two]'],
+          ps.description
+        ], '\n\n')
+      })
+    },
+    video        : {
+      reblog : (ps, descList) => ({
+        'post[two]' : descList.join('')
+      })
+    }
+  },
 
   blogID : '',
-
-  /**
-   * reblog情報を取り除く。
-   *
-   * @param {Array} form reblogフォーム。
-   * @return {Deferred}
-   */
-  trimReblogInfo : function(form){
-    if(!getPref('model.tumblr.trimReblogInfo'))
-     return;
-
-    function trimQuote(entry){
-      entry = entry.replace(/<p><\/p>/g, '').replace(/<p><a[^<]+<\/a>:<\/p>/g, '');
-      entry = (function callee(all, contents){
-        return contents.replace(/<blockquote>(([\n\r]|.)+)<\/blockquote>/gm, callee);
-      })(null, entry);
-      return entry.trim();
-    }
-
-    switch(form['post[type]']){
-    case 'link':
-      form['post[three]'] = trimQuote(form['post[three]']);
-      break;
-    case 'regular':
-    case 'photo':
-    case 'video':
-      form['post[two]'] = trimQuote(form['post[two]']);
-      break;
-    case 'quote':
-      form['post[two]'] = form['post[two]'].replace(/ \(via <a.*?<\/a>\)/g, '').trim();
-      break;
-    }
-
-    return form;
-  },
 
   /**
    * ポスト可能かをチェックする。
@@ -187,60 +194,6 @@ var Tumblr = update({}, AbstractSessionService, {
       delete form.preview_post;
       form.redirect_to = Tumblr.TUMBLR_URL+'dashboard';
 
-      if (!form['post[type]']) {
-        let {pathname} = new URL(url),
-          match = /^\/reblog\/(\d+)\/([^\/]+)/.exec(pathname);
-
-        if (match) {
-          let [reblogID, reblogKey] = match.slice(1);
-
-          return Tumblr.getReblogPostInfo(reblogID, reblogKey).addCallback(info => {
-            form['post[type]'] = info.type;
-
-            if (!form.reblog_post_id) {
-              form.reblog_post_id = info.parent_id;
-            }
-
-            return form;
-          });
-        }
-      }
-
-      return form;
-    }).addCallback(function(form){
-      if(form.reblog_post_id){
-        self.trimReblogInfo(form);
-
-        // Tumblrから他サービスへポストするため画像URLを取得しておく
-        if (form['post[type]'] === 'photo') {
-          form.image = $x('id("edit_post")//img[contains(@src, "media.tumblr.com/") or contains(@src, "data.tumblr.com/")]/@src', doc);
-          if (!form.image) {
-            let img = doc.querySelector('.reblog_content img');
-
-            if (img) {
-              form.image = img.src;
-            }
-          }
-          if (!form.image) {
-            let photoset = doc.querySelector('iframe.photoset');
-            if (photoset) {
-              return request(photoset.src, {
-                responseType: 'document'
-              }).addCallback(res => {
-                var doc = res.response;
-                var photoset_photo = doc.querySelector('.photoset_photo');
-
-                if (photoset_photo) {
-                  form.image = photoset_photo.href;
-                }
-
-                return form;
-              });
-            }
-          }
-        }
-      }
-
       return form;
     });
   },
@@ -277,29 +230,23 @@ var Tumblr = update({}, AbstractSessionService, {
   },
 
   /**
-   * reblogする。
-   * Extractors.ReBlogの各抽出メソッドを使いreblog情報を抽出できる。
+   * Reblogする。
+   * Extractors.ReBlogの各抽出メソッドを使いReblog情報を抽出できる。
    *
    * @param {Object} ps
    * @return {Deferred}
    */
-  favor : function(ps){
-    // メモをreblogフォームの適切なフィールドの末尾に追加する
-    var form = ps.favorite.form;
-    items(Tumblr[ps.type.capitalize()].convertToForm({
-      description : ps.description,
-    })).forEach(function([name, value]){
-      if(!value)
-        return;
+  favor(ps) {
+    if (!this.isLoggedIn()) {
+      throw new Error(getMessage('error.notLoggedin'));
+    }
 
-      form[name] += '\n\n' + value;
-    });
+    // サブブログでの利用を考慮して、データを同じObjectで管理しないようにする
+    let data = Object.assign({}, ps.favorite.form);
 
-    this.appendTags(form, ps);
-
-    return this.postForm(function(){
-      return request(ps.favorite.endpoint, {sendContent : form})
-    });
+    return this.postUpdate(Object.assign(data, this.CONVERTERS[
+      data['post[type]']
+    ].reblog(ps, this.createReblogDescriptionList(ps))), ps);
   },
 
   /**
@@ -397,6 +344,97 @@ var Tumblr = update({}, AbstractSessionService, {
     }).addErrback(() => '');
   },
 
+  getDashboard() {
+    return request(`${this.ORIGIN}/dashboard`, {
+      responseType : 'document'
+    }).addCallback(({response : doc}) => {
+      if ((new URL(doc.URL)).pathname === '/login') {
+        throw new Error(getMessage('error.notLoggedin'));
+      }
+
+      return doc;
+    });
+  },
+
+  getSecureFormKey(formKey) {
+    return request(`${this.SVC_URL}secure_form_key`, {
+      responseType : 'text',
+      method       : 'POST',
+      headers      : {
+        'X-Tumblr-Form-Key' : formKey
+      }
+    }).addCallback(res => res.getResponseHeader('x-tumblr-secure-form-key'));
+  },
+
+  getInfo() {
+    return this.getDashboard().addCallback(doc => {
+      let info = {};
+      let element = doc.querySelector('input[name="form_key"]');
+
+      if (element && element.value) {
+        info.formKey = element.value;
+
+        element = doc.querySelector('input[name="t"]');
+
+        if (element && element.value) {
+          info.channelID = element.value;
+
+          return info;
+        }
+      }
+
+      throw new Error(getMessage('error.unknown'));
+    });
+  },
+
+  postUpdate(data, ps) {
+    this.appendTags(data, ps);
+
+    return this.getInfo().addCallback(({formKey, channelID}) =>
+      this.getSecureFormKey(formKey).addCallback(secureFormKey =>
+        request(`${this.SVC_URL}post/update`, {
+          responseType : 'json',
+          headers      : {
+            'X-Tumblr-Form-Key' : formKey,
+            'X-tumblr-puppies'  : secureFormKey
+          },
+          sendContent  : JSON.stringify(Object.assign(data, {
+            channel_id    : data.channel_id || this.blogID || channelID,
+            'post[state]' : String(data['post[state]'] || 0)
+          }))
+        })
+      )
+    ).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {error} = json;
+
+        if (error) {
+          throw new Error(error);
+        }
+      }
+
+      throw err;
+    }).addCallback(({response : {errors}}) => {
+      if (!errors) {
+        return;
+      }
+
+      let errorMessage = '';
+
+      if (Array.isArray(errors)) {
+        // daily post limit
+        errorMessage = errors.join('\n');
+      } else if (errors.type) {
+        // daily photo upload limit
+        errorMessage = errors.type;
+      }
+
+      throw new Error(errorMessage || getMessage('error.unknown'));
+    });
+  },
+
   getBlogs() {
     return new DeferredHash({
       primaryblogID       : this.getPrimaryBlogID(),
@@ -471,6 +509,41 @@ var Tumblr = update({}, AbstractSessionService, {
     });
   },
 
+  getPostInfo(hostname, postID) {
+    // https://www.tumblr.com/docs/en/api/v2#posts
+    return request(`${this.API_URL}v2/blog/${hostname}/posts`, {
+      responseType : 'json',
+      queryString  : {
+        api_key : this.API_KEY,
+        id      : postID
+      }
+    }).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {meta} = json;
+
+        if (meta) {
+          throw new Error(meta.msg);
+        }
+      }
+
+      throw err;
+    }).addCallback(({response : json}) => {
+      let {meta} = json;
+
+      if (meta.status === 200) {
+        let {posts} = json.response;
+
+        if (posts && posts.length) {
+          return posts[0];
+        }
+      }
+
+      throw new Error(meta.msg || getMessage('error.contentsNotFound'));
+    });
+  },
+
   getReblogPostInfo(reblogID, reblogKey, postType) {
     return request(this.SVC_URL + 'post/fetch', {
       responseType : 'json',
@@ -479,6 +552,18 @@ var Tumblr = update({}, AbstractSessionService, {
         reblog_key : reblogKey,
         post_type  : postType || ''
       }
+    }).addErrback(err => {
+      let json = err.message.response;
+
+      if (json) {
+        let {error} = json;
+
+        if (error) {
+          throw new Error(error);
+        }
+      }
+
+      throw err;
     }).addCallback(({response : json}) => {
       if (json.errors === false) {
         let {post} = json;
@@ -490,6 +575,26 @@ var Tumblr = update({}, AbstractSessionService, {
 
       throw new Error(json.error || getMessage('error.contentsNotFound'));
     });
+  },
+
+  createReblogDescriptionList(ps) {
+    let list = Extractors.ReBlog.getDataList(ps.favorite.info);
+    let via = list.length ? list[1] : '';
+
+    return [
+      via.startsWith('<p>') ? via : via.wrapTag('p', true),
+      getHTMLString(ps.description).wrapTag('p', true)
+    ];
+  },
+
+  getThumbnailHTML(ps) {
+    let thumbnailTemplate = getPref('thumbnailTemplate');
+
+    if (thumbnailTemplate) {
+      return thumbnailTemplate.replace(/{url}/g, ps.pageUrl);
+    }
+
+    return '';
   },
 
   /**
@@ -1308,10 +1413,6 @@ Models.register(Object.assign({
       url   : ps.itemUrl || '',
       tags  : Array.hashtags(ps.tags)
     };
-
-    if (contents.quote && isFavorite(ps, 'Tumblr')) {
-      contents.quote = this.createQuote(ps.body.trimTag());
-    }
 
     let maxLen = this.STATUS_MAX_LENGTH;
 

@@ -173,6 +173,255 @@ Extractors.register([
         return arr;
       }, []);
     }
+  },
+  {
+    name: 'ReBlog',
+    ICON: 'chrome://tombfix/skin/reblog.ico',
+    CONVERTERS: {
+      regular: {
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
+        }),
+        ps: info => ({
+          type: 'quote',
+          body: getFlavoredString(info['post[two]'])
+        })
+      },
+      photo: {
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
+        }),
+        ps: info => ({
+          itemUrl: info.photos[0].original_size.url
+          // body: getFlavoredString(info['post[two]'])
+        })
+      },
+      quote: {
+        data: info => ({
+          'post[two]': info['post[two]']
+        }),
+        ps: info => ({
+          body: getFlavoredString(info['post[one]'])
+        })
+      },
+      link: {
+        data: info => ({
+          'post[three]': info.reblogTree + info['post[three]']
+        }),
+        ps: () => ({
+          // body: getFlavoredString(info['post[three]'])
+        })
+      },
+      conversation: {
+        data: () => ({}),
+        ps: info => ({
+          item: info['post[one]']
+          // body: info['post[two]']
+        })
+      },
+      video: {
+        data: info => ({
+          'post[two]': info.reblogTree + info['post[two]']
+        }),
+        ps: () => ({
+          // body: getFlavoredString(info['post[two]'])
+        })
+      }
+    },
+    extract(ctx, options) {
+      return this.getInfo(ctx, options).addCallback(({apiInfo, svcInfo}) => {
+        let postType = svcInfo.type;
+        let converter = this.CONVERTERS[postType];
+        let data = {
+          reblog: true,
+          reblog_key: apiInfo.reblog_key,
+          reblog_post_id: options.postID,
+          'post[type]': postType,
+          'post[one]': svcInfo.one || '',
+          'post[two]': svcInfo.two || '',
+          'post[three]': svcInfo.three || ''
+        };
+        let info = Object.assign({
+          reblogTree: svcInfo.reblog_tree || ''
+        }, data);
+
+        if (getPref('model.tumblr.trimReblogInfo')) {
+          info = this.trimReblogInfo(info);
+        }
+
+        return Object.assign({
+          type: postType,
+          item: ctx.title,
+          itemUrl: ctx.href,
+          favorite: {
+            name: 'Tumblr',
+            form: Object.assign(data, converter.data(info)),
+            info
+          }
+        }, converter.ps(Object.assign({
+          photos: apiInfo.photos
+        }, data)));
+      });
+    },
+    getInfo(ctx, options) {
+      let {url, postID} = options;
+
+      if (!postID) {
+        postID = options.postID = this.getPostID(url);
+      }
+
+      return this.getAPIInfo(url, postID).addCallback(apiInfo =>
+        new DeferredHash(Object.assign({
+          reblogPostInfo: Tumblr.getReblogPostInfo(postID, apiInfo.reblog_key)
+        }, options.override ? {
+          entryPage: this.overridePageInfo(ctx, url)
+        } : {})).addCallback(({reblogPostInfo}) => {
+          let svcInfo = reblogPostInfo[1];
+
+          if (!reblogPostInfo[0]) {
+            throw svcInfo;
+          }
+
+          return {apiInfo, svcInfo};
+        })
+      );
+    },
+    getPostID(url, special) {
+      if (url) {
+        let {pathname} = new URL(url);
+
+        if (special) {
+          return pathname.extract(/^\/(?:(?:post|image)\/)?(\d+)/);
+        }
+
+        return pathname.extract(/^\/(?:post|image)\/(\d+)/);
+      }
+
+      return '';
+    },
+    getNoSlugURL(url) {
+      let urlObj = new URL(url);
+
+      urlObj.pathname = urlObj.pathname.split('/').slice(0, 3).join('/');
+
+      return urlObj.toString();
+    },
+    getIframe(doc) {
+      // for XML page
+      if (!(doc && doc.body)) {
+        return null;
+      }
+
+      let iframe = doc.querySelector('iframe#tumblr_controls');
+
+      if (iframe) {
+        let {src} = iframe;
+
+        if (src && (new URL(src)).hostname.endsWith('.tumblr.com')) {
+          return iframe;
+        }
+      }
+
+      return doc.querySelector('iframe.tmblr-iframe');
+    },
+    getAPIInfo(url, postID) {
+      return Tumblr.getPostInfo((new URL(url)).hostname, postID).addErrback(
+        () => {
+          throw new Error(getMessage('error.contentsNotFound'));
+        }
+      ).addCallback(apiInfo => {
+        let postType = apiInfo.type
+          .replace(/^text$/, 'regular')
+          .replace(/^chat$/, 'conversation');
+
+        if (!this.CONVERTERS[postType]) {
+          throw new Error(getMessage('error.contentsTypeNotSupported'));
+        }
+
+        return apiInfo;
+      });
+    },
+    overridePageInfo(ctx, url) {
+      return request(this.getNoSlugURL(url), {
+        responseType: 'document'
+      }).addCallback(({response: doc}) => {
+        ctx.title = doc.title;
+        ctx.href = getCanonicalURL(doc) || url;
+      });
+    },
+    getDataList(info) {
+      let converter = this.CONVERTERS[info['post[type]']];
+
+      if (converter) {
+        let key = Object.keys(converter.data(info))[0];
+
+        if (key) {
+          let val = info[key];
+
+          if (val) {
+            return [key, val];
+          }
+        }
+      }
+
+      return [];
+    },
+    trimReblogInfo(info) {
+      let {reblogTree} = info;
+
+      if (reblogTree) {
+        info.reblogTree = this.trimReblogTree(reblogTree);
+      }
+
+      let list = this.getDataList(info);
+
+      if (list.length) {
+        info[list[0]] = this.trimReblogSource(list[1]);
+      }
+
+      return info;
+    },
+    trimReblogTree(html) {
+      return (function removeBlockquote(all, contents) {
+        return contents.replace(
+          /<blockquote>(([\n\r]|.)+)<\/blockquote>/gm,
+          removeBlockquote
+        );
+      }(
+        null,
+        html.replace(/<p><\/p>/g, '').replace(/<p><a[^<]+<\/a>:<\/p>/g, '')
+      )).trim();
+    },
+    trimReblogSource(html) {
+      let str = html;
+      let strictVia = [
+        '\\(via (?:<a class="tumblr_blog" href="[^"]+">[^<]+</a>',
+        '<a href="[^"]+" class="tumblr_blog">[^<]+</a>)\\)'
+      ].join('|');
+
+      if ((new RegExp(strictVia)).test(str)) {
+        str = str
+          .replace(new RegExp(` ${strictVia}`, 'g'), '')
+          .replace(new RegExp(strictVia.wrapTag('p'), 'g'), '');
+      }
+
+      let via = 'via <a[^<]+</a>(?:, <a[^<]+</a>)?';
+
+      if (!(new RegExp(via)).test(str)) {
+        return str;
+      }
+
+      return html
+        .replace(new RegExp(`\\(${via}\\)`.wrapTag('p'), 'g'), '')
+        .replace(new RegExp(
+          ` *(?:\\(|\\(</p>\\n<p>)${via}(?:\\)|</p>\\n<p>\\)) *`,
+          'g'
+        ), '</p>\n\n<p>')
+        .replace(/<p>\n*<\/p>/g, '')
+        .replace(/<p>\n+/g, '<p>')
+        .replace(/\n+<\/p>/g, '</p>')
+        .replace(/\n\n+/g, '\n\n').trim();
+    }
   }
 ]);
 
@@ -294,7 +543,10 @@ Extractors.register([
     extract(ctx) {
       Extractors.LDR.overwriteCTX(ctx);
 
-      return Extractors.ReBlog.extractByLink(ctx, ctx.href);
+      return Extractors.ReBlog.extract(ctx, {
+        url      : ctx.href,
+        override : true
+      });
     }
   },
 
@@ -608,135 +860,85 @@ Extractors.register([
   },
 
   {
-    name : 'ReBlog',
-    extractByLink : function(ctx, link){
-      var self = this;
-      return request(link).addCallback(function(res){
-        var doc = convertToHTMLDocument(res.responseText);
-        ctx.href = link;
-        ctx.title = ($x('//title/text()', doc) || '').replace(/[\n\r]/g, '');
+    name: 'ReBlog - Tumblr',
+    ICON: Extractors.ReBlog.ICON,
+    check(ctx) {
+      return !(ctx.selection || ctx.onImage || ctx.onLink) &&
+        Extractors.ReBlog.getIframe(ctx.document) &&
+        Extractors.ReBlog.getPostID(ctx.href, true);
+    },
+    extract(ctx) {
+      let url = ctx.href;
 
-        return self.extractByPage(ctx, doc);
+      return Extractors.ReBlog.extract(ctx, {
+        url,
+        postID: Extractors.ReBlog.getPostID(url, true)
+      });
+    }
+  },
+
+  {
+    name: 'ReBlog - Dashboard',
+    ICON: Extractors.ReBlog.ICON,
+    check(ctx) {
+      return ctx.hostname.endsWith('.tumblr.com') && !ctx.selection &&
+        Extractors.ReBlog.getPostID(this.getPermalinkURL(ctx), true);
+    },
+    extract(ctx) {
+      let url = this.getPermalinkURL(ctx);
+
+      return Extractors.ReBlog.extract(ctx, {
+        url,
+        postID: Extractors.ReBlog.getPostID(url, true),
+        override: true
       });
     },
+    getPermalinkURL(ctx) {
+      let {target} = ctx;
 
-    extractByPage : function(ctx, doc){
-      var m = unescapeHTML(this.getFrameUrl(doc)).match(/.+&pid=([^&]*)&rk=([^&]*)/);
-      return this.extractByEndpoint(ctx, Tumblr.TUMBLR_URL+'reblog/' + m[1] + '/' + m[2]);
-    },
-
-    extractByEndpoint : function(ctx, endpoint){
-      var self = this;
-      return Tumblr.getForm(endpoint).addCallback(function(form){
-        return update({
-          type     : form['post[type]'],
-          item     : ctx.title,
-          itemUrl  : ctx.href,
-          favorite : {
-            name     : 'Tumblr',
-            endpoint : endpoint,
-            form     : form,
-          },
-        }, self.convertToParams(form));
-      })
-    },
-
-    getFrameUrl : function(doc){
-      var tumblr_controls = doc.querySelector('iframe#tumblr_controls[src*="pid="]');
-      if (tumblr_controls) {
-        return tumblr_controls.src;
-      }
-
-      // for XML page
-      if (!doc.body) {
+      if (!target) {
         return '';
       }
 
-      var src = doc.body.textContent.extract(/(?:<|\\x3c)iframe\b[\s\S]*?src\s*=\s*(["']|\\x22)(http:\/\/(?:www|assets)\.tumblr\.com\/.*?iframe.*?pid=.*?)\1/i, 2);
-      return (src || '').replace(/\\x22/g, '"').replace(/\\x26/g, '&');
-    },
+      let post = target.closest('.post');
 
-    convertToParams : function(form){
-      switch(form['post[type]']){
-      case 'regular':
-        return {
-          type    : 'quote',
-          item    : form['post[one]'],
-          body    : form['post[two]'],
-        }
-
-      case 'photo':
-        return {
-          itemUrl : form.image,
-          body    : form['post[two]'],
-        }
-
-      case 'link':
-        return {
-          item    : form['post[one]'],
-          itemUrl : form['post[two]'],
-          body    : form['post[three]'],
-        };
-
-      case 'quote':
-        // FIXME: post[two]検討
-        return {
-          body    : form['post[one]'],
-        };
-
-      case 'video':
-        // FIXME: post[one]検討
-        return {
-          body    : form['post[two]'],
-        };
-
-      case 'conversation':
-        return {
-          item : form['post[one]'],
-          body : form['post[two]'],
-        };
+      if (!post) {
+        return '';
       }
-    },
+
+      let link = post.querySelector('a[id^="permalink_"]');
+
+      if (link) {
+        return link.href;
+      }
+
+      let {json} = post.dataset;
+
+      if (JSON.parseable(json)) {
+        let data = JSON.parse(json).share_popover_data;
+
+        if (data) {
+          return data.post_url;
+        }
+      }
+
+      return '';
+    }
   },
 
   {
-    name : 'ReBlog - Tumblr',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
-    check : function(ctx){
-      return Extractors.ReBlog.getFrameUrl(currentDocument());
+    name: 'ReBlog - Tumblr link',
+    ICON: Extractors.ReBlog.ICON,
+    check(ctx) {
+      return !ctx.selection && ctx.onLink &&
+        Extractors.ReBlog.getPostID(ctx.link.href);
     },
-    extract : function(ctx){
-      return Extractors.ReBlog.extractByPage(ctx, currentDocument());
-    },
-  },
-
-  {
-    name : 'ReBlog - Dashboard',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
-    check : function(ctx){
-      return (/(tumblr-beta\.com|tumblr\.com)\//).test(ctx.href) && this.getLink(ctx);
-    },
-    extract : function(ctx){
-      // タイトルなどを取得するためextractByLinkを使う(reblogリンクを取得しextractByEndpointを使った方が速い)
-      return Extractors.ReBlog.extractByLink(ctx, this.getLink(ctx));
-    },
-    getLink : function(ctx){
-      var link = $x(
-        './ancestor-or-self::li[starts-with(normalize-space(@class), "post")]' +
-        '//a[starts-with(@id, "permalink_") and not(contains(@href, "/private/"))]', ctx.target);
-      return link && link.href;
-    },
-  },
-
-  {
-    name : 'ReBlog - Tumblr link',
-    ICON : 'chrome://tombfix/skin/reblog.ico',
-    check : function(ctx){
-      return ctx.link && ctx.link.href.match(/^http:\/\/[^.]+.tumblr\.com\/post\/\d+/);
-    },
-    extract : function(ctx){
-      return Extractors.ReBlog.extractByLink(ctx, ctx.link.href);
-    },
+    extract(ctx) {
+      return Extractors.ReBlog.extract(ctx, {
+        url: ctx.link.href,
+        override: true
+      });
+    }
   },
 
   {

@@ -301,6 +301,20 @@
   assert([{name : 'fuga'}, {name : 'piyo'}].merge([{name : 'hoge'}, {name : 'foo'}], {indexFunc : obj => obj.name === 'bar', after : false})[2].name, 'hoge');
   assert([{name : 'fuga'}, {name : 'piyo'}].merge([{name : 'hoge'}, {name : 'foo'}], {indexFunc : obj => obj.name === 'bar', after : false})[3].name, 'foo');
 
+  {
+    assert(Array.isArray([].cutIn()));
+    assert([].cutIn().length, 0);
+
+    let arr = ['a', 'c'];
+
+    assert(arr.cutIn(1, 'b') !== arr);
+    assert(JSON.stringify(arr.cutIn(1, 'b')), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(-1, 'b')), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(1, ...['b'])), '["a","b","c"]');
+    assert(JSON.stringify(arr.cutIn(1, 'b', 'd')), '["a","b","d","c"]');
+    assert(JSON.stringify(arr.cutIn(1, ...['b', 'd'])), '["a","b","d","c"]');
+  }
+
   assert(JSON.parseable(void 0), false);
   assert(JSON.parseable(''), false);
   assert(JSON.parseable(NaN), false);
@@ -431,6 +445,26 @@
   assert('e'.wrap(0, 1), '0e1');
   assert('e'.wrap(1, 0), '1e0');
   assert('true'.wrap(false), 'falsetruefalse');
+
+  assert(''.wrapTag(), '');
+  assert('a'.wrapTag(), 'a');
+  assert('a'.wrapTag(void 0), 'a');
+  assert('a'.wrapTag(null), 'a');
+  assert('a'.wrapTag(false), 'a');
+  assert('a'.wrapTag(0), 'a');
+  assert('a'.wrapTag([]), 'a');
+  assert('a'.wrapTag({}), 'a');
+  assert('a'.wrapTag(/(?:)/), 'a');
+  assert('a'.wrapTag(Object.create(null)), 'a');
+  assert('a'.wrapTag(''), 'a');
+  assert('a'.wrapTag(new String('')), 'a');
+  assert('a'.wrapTag('div'), '<div>a</div>');
+  assert('a'.wrapTag(new String('div')), '<div>a</div>');
+  assert('a'.wrapTag('DIV'), '<div>a</div>');
+  assert('a'.wrapTag('Div'), '<div>a</div>');
+  assert(''.wrapTag('div'), '<div></div>');
+  assert(''.wrapTag('div', true), '');
+  assert('a'.wrapTag('div', true), '<div>a</div>');
 
   assert('test'.extract(/^(t)e(st)$/), 't');
   assert('test'.extract(/^(t)e(st)$/, 2), 'st');

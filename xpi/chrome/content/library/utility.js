@@ -2537,3 +2537,58 @@ function getImageURLFromPS(ps) {
 
   return (file ? getDataURLFromFile(file) : ps.itemUrl) || '';
 }
+
+function getCanonicalURL(doc) {
+  let canonicalLink = doc.querySelector('link[rel="canonical"][href]');
+
+  if (canonicalLink) {
+    return canonicalLink.href;
+  }
+
+  return '';
+}
+
+function getHTMLString(target) {
+  let str;
+
+  if (target) {
+    let {flavors} = target;
+
+    if (flavors && flavors.html) {
+      str = getFlavor(target, 'html');
+    } else if (String.usable(target)) {
+      str = convertToHTMLString(document.createTextNode(target));
+    } else if (
+      target instanceof Element || target instanceof window.Selection
+    ) {
+      str = convertToHTMLString(target, true);
+    }
+  }
+
+  return str || '';
+}
+
+function getFlavoredString(target) {
+  let str;
+  let html;
+
+  if (target) {
+    if (String.usable(target)) {
+      str = convertToPlainText(target);
+      html = target;
+    } else if (target instanceof Element) {
+      str = target.textContent;
+      html = convertToHTMLString(target, true);
+    } else if (target instanceof window.Selection) {
+      str = convertToPlainText(target);
+      html = convertToHTMLString(target, true);
+    }
+
+    str = str || '';
+    html = html || '';
+  }
+
+  return (str || html) ? Object.assign(new String(str), {
+    flavors : {html}
+  }) : '';
+}

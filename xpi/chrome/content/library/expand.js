@@ -65,6 +65,13 @@
       }
 
       return master.concat(branch);
+    },
+    cutIn(index, ...args) {
+      let arr = this.slice();
+
+      arr.splice(index, 0, ...args);
+
+      return arr;
     }
   });
 
@@ -120,6 +127,19 @@
       return prefix == null ?
         this :
         prefix + this + (suffix == null ? prefix : suffix);
+    },
+    wrapTag(tagName, returnEmpty) {
+      if (!String.usable(tagName)) {
+        return this;
+      }
+
+      if (!this && returnEmpty) {
+        return '';
+      }
+
+      let elementName = tagName.toLowerCase();
+
+      return `<${elementName}>${this}</${elementName}>`;
     },
     extract(re, group) {
       let match = this.match(re);
