@@ -1,4 +1,4 @@
-let Extractors = Object.create(Object.expand(new Repository(), {
+Tombfix.environment.Extractors = Object.create(Object.expand(new Repository(), {
   REDIRECTORS : [
     {
       re : new RegExp(`^https?://(?:${[
@@ -100,7 +100,8 @@ let Extractors = Object.create(Object.expand(new Repository(), {
     );
   }
 }));
-this.Extractors = Tombfix.Service.extractors = Extractors;
+// for Patch Compatibility
+Tombfix.Service.extractors = Extractors;
 
 Extractors.register([
   {

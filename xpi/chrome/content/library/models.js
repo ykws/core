@@ -1,4 +1,4 @@
-let Models = this.Models = Object.create(Object.expand(new Repository(), {
+Tombfix.environment.Models = Object.create(Object.expand(new Repository(), {
   /**
    * ポストを受け取ることができるサービスのリストを取得する。
    *
@@ -94,7 +94,7 @@ let Models = this.Models = Object.create(Object.expand(new Repository(), {
   }
 }));
 // for Patch Compatibility
-this.models = Models;
+Tombfix.environment.models = Models;
 
 
 var Tumblr = update({}, AbstractSessionService, {
