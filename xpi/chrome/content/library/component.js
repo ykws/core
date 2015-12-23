@@ -63,14 +63,6 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
     );
   });
 
-  // http://mxr.mozilla.org/mozilla-central/source/toolkit/components/exthelper/extIApplication.idl
-  XPCOMUtils.defineLazyServiceGetter(
-    global,
-    'FuelApplication',
-    '@mozilla.org/fuel/application;1',
-    'fuelIApplication'
-  );
-
   /**
    * XPCOMのコンストラクタを生成する。
    * コンストラクタは指定されたインターフェースの定数を全て持つ。
