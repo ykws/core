@@ -30,17 +30,10 @@
         }
       },
       jscs: {
-        node: {
-          files: {
-            src: 'Gruntfile.js'
-          },
-          options: {
-            config: '.jscs.json'
-          }
-        },
         main: {
           files: {
             src: [
+              'Gruntfile.js',
               'xpi/components/tombfix.js',
               'xpi/chrome/content/overlay/overlay.js',
               'xpi/chrome/content/library/expand.js',
@@ -59,8 +52,7 @@
             ]
           },
           options: {
-            config: '.jscs.json',
-            disallowNestedTernaries: null
+            config: '.jscs.json'
           }
         },
         old: {
