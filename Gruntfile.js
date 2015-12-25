@@ -44,7 +44,7 @@
               'xpi/components/tombfix.js',
               'xpi/chrome/content/overlay/overlay.js',
               'xpi/chrome/content/library/expand.js',
-              // 'xpi/chrome/content/library/component.js',
+              'xpi/chrome/content/library/component.js',
               // 'xpi/chrome/content/library/utility.js',
               // 'xpi/chrome/content/library/tabWatcher.js',
               'xpi/chrome/content/library/repository.js',
@@ -66,7 +66,6 @@
         old: {
           files: {
             src: [
-              'xpi/chrome/content/library/component.js',
               'xpi/chrome/content/library/utility.js',
               'xpi/chrome/content/library/tabWatcher.js',
               'xpi/chrome/content/library/models.js',
@@ -166,7 +165,7 @@
             src: [
               'xpi/chrome/content/overlay/overlay.js',
               'xpi/chrome/content/library/expand.js',
-              // 'xpi/chrome/content/library/component.js',
+              'xpi/chrome/content/library/component.js',
               // 'xpi/chrome/content/library/utility.js',
               // 'xpi/chrome/content/library/tabWatcher.js',
               'xpi/chrome/content/library/repository.js',
@@ -194,7 +193,6 @@
         old: {
           files: {
             src: [
-              'xpi/chrome/content/library/component.js',
               'xpi/chrome/content/library/utility.js',
               'xpi/chrome/content/library/tabWatcher.js',
               'xpi/chrome/content/library/models.js',

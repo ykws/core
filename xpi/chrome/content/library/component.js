@@ -1,87 +1,72 @@
-/* global Components, ConverterInputStream, StringInputStream, update */
-/* global createConstructor, FileOutputStream */
-/* exported Cr, Preferences, console, AppInfo */
-/* exported DirectoryService, IOService, WindowMediator, PromptService */
-/* exported CookieManager, LoginManager, StringBundleService, ObserverService */
-/* exported ThreadManager, DOMStorageManager, ScriptSecurityManager */
-/* exported CategoryManager */
-
-var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
-    // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
-    {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
-    // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
-    {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {}),
-    // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Preferences.jsm
-    {Preferences} = Cu.import('resource://gre/modules/Preferences.jsm', {}),
-    // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
-    {console} = Cu.import('resource://gre/modules/devtools/Console.jsm', {}),
-    {
-      appinfo               : AppInfo,
-      dirsvc                : DirectoryService,
-      io                    : IOService,
-      wm                    : WindowMediator,
-      prompt                : PromptService,
-      cookies               : CookieManager,
-      logins                : LoginManager,
-      strings               : StringBundleService,
-      obs                   : ObserverService,
-      tm                    : ThreadManager,
-      // http://mxr.mozilla.org/mozilla-central/source/dom/interfaces/storage/nsIDOMStorageManager.idl
-      domStorageManager     : DOMStorageManager,
-      scriptSecurityManager : ScriptSecurityManager
-    } = Services,
-    {categoryManager: CategoryManager} = XPCOMUtils;
+/* global Components, ConverterInputStream, StringInputStream */
+/* global FileOutputStream */
 
 (function executeComponent(global) {
   'use strict';
 
-  [
-    'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IInputStream',
-    'IHttpChannel'
-  ].forEach(name => {
-    global[name] = Ci['ns' + name];
+  const {
+    interfaces: Ci,
+    classes: Cc,
+    results: Cr,
+    utils: Cu
+  } = Components;
+
+  Object.assign(global, {
+    // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
+    console: Cu.import(
+      'resource://gre/modules/devtools/Console.jsm',
+      {}
+    ).console
   });
 
-  global.INTERFACES = Object.keys(Ci).map(name => Ci[name]);
+  // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
+  const {Services} = Cu.import('resource://gre/modules/Services.jsm', {});
+  // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
+  const {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {});
+  // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Preferences.jsm
+  const {Preferences} = Cu.import('resource://gre/modules/Preferences.jsm', {});
 
-  [
-    ['AtomService',         'atom-service'],
-    ['AlertsService',       'alerts-service'],
-    ['NavBookmarksService', 'browser/nav-bookmarks-service'],
-    ['NavHistoryService',   'browser/nav-history-service'],
-    ['AnnotationService',   'browser/annotation-service'],
-    ['ClipboardHelper',     'widget/clipboardhelper'],
-    ['MIMEService',         'mime'],
-    ['TextToSubURI',        'intl/texttosuburi'],
-    ['ChromeRegistry',      'chrome/chrome-registry', 'XULChromeRegistry']
-  ].forEach(function defineInGlobal([name, cid, ifc]) {
-    XPCOMUtils.defineLazyServiceGetter(
-      global,
-      name,
-      '@mozilla.org/' + cid + ';1',
-      'nsI' + (ifc || name)
-    );
-  });
+  const {
+    appinfo: AppInfo,
+    dirsvc: DirectoryService,
+    io: IOService,
+    wm: WindowMediator,
+    prompt: PromptService,
+    cookies: CookieManager,
+    logins: LoginManager,
+    strings: StringBundleService,
+    obs: ObserverService,
+    tm: ThreadManager,
+    // http://mxr.mozilla.org/mozilla-central/source/dom/interfaces/storage/nsIDOMStorageManager.idl
+    domStorageManager: DOMStorageManager,
+    scriptSecurityManager: ScriptSecurityManager
+  } = Services;
+  const {categoryManager: CategoryManager} = XPCOMUtils;
+
+  const INTERFACES = Object.values(Ci);
 
   /**
    * XPCOMのコンストラクタを生成する。
    * コンストラクタは指定されたインターフェースの定数を全て持つ。
    *
    * @param {String} clsName クラス名(@mozilla.org/以降を指定する)。
-   * @param {String || nsIJSID} ifc インターフェイス。
+   * @param {String || nsIJSID} target インターフェイスの名前か、インターフェイスそのもの。
    * @param {String || Function} init
    *        初期化関数。
    *        文字列の場合、該当するメソッドが呼び出される。
    *        関数の場合、生成されたインスタンスをthisとして呼び出される。
+   * @return {Object}
    */
-  global.createConstructor = function createConstructor(clsName, ifc, init) {
-    var cls = Cc['@mozilla.org/' + clsName];
+  function createConstructor(clsName, target, init) {
+    let cls = Cc[`@mozilla.org/${clsName}`];
+
+    let ifc = target;
 
     if (typeof ifc === 'string') {
-      let ifcName = ifc, prefixes = ['', 'nsI', 'mozI'];
+      let ifcName = ifc;
 
-      for (let idx = 0, len = prefixes.length; idx < len; idx += 1) {
-        ifc = Ci[prefixes[idx] + ifcName];
+      for (let prefix of ['', 'nsI', 'mozI']) {
+        ifc = Ci[prefix + ifcName];
 
         if (ifc) {
           break;
@@ -89,64 +74,91 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
       }
     }
 
-    function cons() {
-      var obj = cls.createInstance(ifc);
+    function cons(...args) {
+      let instance = cls.createInstance(ifc);
 
       if (init) {
-        (typeof init === 'string' ? obj[init] : init).apply(obj, arguments);
+        if (String.usable(init)) {
+          instance[init](...args);
+        } else if (typeof init === 'function') {
+          init.apply(instance, args);
+        }
       }
 
-      return obj;
+      return instance;
     }
 
-    cons.instanceOf = function (obj) {
-      return obj instanceof ifc;
-    };
+    return Object.assign(cons, {
+      instanceOf(obj) {
+        return obj instanceof ifc;
+      }
+    }, ifc);
+  }
 
-    return update(cons, ifc);
-  };
-
-  [
-    ['WebBrowserPersist',       'embedding/browser/nsWebBrowserPersist;1', {}],
-    ['HTMLFormatConverter',     'widget/htmlformatconverter;1',    {
-      ifc: 'FormatConverter'
+  Object.assign(global, {
+    Ci,
+    Cc,
+    Cr,
+    Cu,
+    Services,
+    XPCOMUtils,
+    Preferences,
+    AppInfo,
+    DirectoryService,
+    IOService,
+    WindowMediator,
+    PromptService,
+    CookieManager,
+    LoginManager,
+    StringBundleService,
+    ObserverService,
+    ThreadManager,
+    DOMStorageManager,
+    ScriptSecurityManager,
+    CategoryManager,
+    INTERFACES,
+    createConstructor
+  }, [
+    ['embedding/browser/nsWebBrowserPersist;1', 'WebBrowserPersist'],
+    ['widget/htmlformatconverter;1', 'HTMLFormatConverter', {
+      ifcName: 'FormatConverter'
     }],
-    ['Process',                 'process/util;1',                  {
+    ['process/util;1', 'Process', {
       init: 'init'
     }],
-    ['FilePicker',              'filepicker;1',                    {
+    ['filepicker;1', 'FilePicker', {
       init: 'init'
     }],
-    ['FileInputStream',         'network/file-input-stream;1',     {
+    ['network/file-input-stream;1', 'FileInputStream', {
       init: 'init'
     }],
-    ['FileOutputStream',        'network/file-output-stream;1',    {
+    ['network/file-output-stream;1', 'FileOutputStream', {
       init: 'init'
     }],
-    ['CryptoHash',              'security/hash;1',                 {
+    ['security/hash;1', 'CryptoHash', {
       init: 'init'
     }],
-    ['InputStream',             'scriptableinputstream;1',         {
-      ifc: 'ScriptableInputStream',
+    ['scriptableinputstream;1', 'InputStream', {
+      ifcName: 'ScriptableInputStream',
       init: 'init'
     }],
-    ['HTMLCopyEncoder',         'layout/htmlCopyEncoder;1',        {
-      ifc: 'DocumentEncoder',
+    ['layout/htmlCopyEncoder;1', 'HTMLCopyEncoder', {
+      ifcName: 'DocumentEncoder',
       init: 'init'
     }],
-    ['LocalFile',               'file/local;1',                    {
+    ['file/local;1', 'LocalFile', {
       init: 'initWithPath'
     }],
-    ['BinaryInputStream',       'binaryinputstream;1',             {
+    ['binaryinputstream;1', 'BinaryInputStream', {
       init: 'setInputStream'
     }],
-    ['SupportsString',          'supports-string;1',               {
-      init: function (data) {
+    ['supports-string;1', 'SupportsString', {
+      init(data) {
         this.data = data;
       }
     }],
-    ['ConverterInputStream',    'intl/converter-input-stream;1',   {
-      init: function (stream, charset, bufferSize) {
+    ['intl/converter-input-stream;1', 'ConverterInputStream', {
+      init(stream, charset, bufferSize) {
         this.init(
           stream,
           charset || 'UTF-8',
@@ -155,56 +167,95 @@ var {interfaces: Ci, classes: Cc, results: Cr, utils: Cu} = Components,
         );
       }
     }],
-    ['BufferedInputStream',     'network/buffered-input-stream;1', {
-      init: function (stream, bufferSize) {
+    ['network/buffered-input-stream;1', 'BufferedInputStream', {
+      init(stream, bufferSize) {
         this.init(stream, bufferSize || 4096);
       }
     }],
-    ['StringInputStream',       'io/string-input-stream;1',        {
-      init: function (str) {
+    ['io/string-input-stream;1', 'StringInputStream', {
+      init(str) {
         this.setData(str, str.length);
       }
     }],
-    ['UnicodeConverter',        'intl/scriptableunicodeconverter', {
-      ifc: 'ScriptableUnicodeConverter',
-      init: function (charset) {
+    ['intl/scriptableunicodeconverter', 'UnicodeConverter', {
+      ifcName: 'ScriptableUnicodeConverter',
+      init(charset) {
         this.charset = charset || 'UTF-8';
       }
     }],
-    ['MIMEInputStream',         'network/mime-input-stream;1',     {
-      init: function (stream) {
+    ['network/mime-input-stream;1', 'MIMEInputStream', {
+      init(stream) {
         this.addContentLength = true;
         this.setData(stream);
       }
     }],
-    ['MultiplexInputStream',    'io/multiplex-input-stream;1',     {
-      init: function (streams) {
-        (streams || []).forEach(stream => {
+    ['io/multiplex-input-stream;1', 'MultiplexInputStream', {
+      init(streams) {
+        if (!streams) {
+          return;
+        }
+
+        for (let stream of streams) {
           if (stream.join) {
             stream = stream.join('\r\n');
           }
 
           if (typeof stream === 'string') {
-            stream = new StringInputStream(stream + '\r\n');
+            stream = new StringInputStream(`${stream}\r\n`);
           }
 
           this.appendStream(stream);
-        });
+        }
       }
     }]
-  ].forEach(function defineInGlobal([name, cid, obj]) {
-    global[name] = createConstructor(cid, obj.ifc || name, obj.init);
+  ].reduce((obj, list) => {
+    let [clsName, target, info] = list;
+    let ifcName;
+    let init;
+
+    if (info) {
+      ifcName = info.ifcName;
+      init = info.init;
+    }
+
+    return Object.assign(obj, {
+      [target]: createConstructor(clsName, ifcName || target, init)
+    });
+  }, {}), [
+    'IWebProgressListener', 'IFile', 'ILocalFile', 'IURI', 'IInputStream',
+    'IHttpChannel'
+  ].reduce((obj, ifcName) => Object.assign(obj, {
+    [ifcName]: Ci[`ns${ifcName}`]
+  }), {}));
+
+  Object.assign(FileOutputStream, {
+    // https://developer.mozilla.org/en-US/docs/PR_Open#Parameters
+    PR_RDONLY: 0x01,
+    PR_WRONLY: 0x02,
+    PR_RDWR: 0x04,
+    PR_CREATE_FILE: 0x08,
+    PR_APPEND: 0x10,
+    PR_TRUNCATE: 0x20,
+    PR_SYNC: 0x40,
+    PR_EXCL: 0x80
   });
 
-  update(FileOutputStream, {
-    // https://developer.mozilla.org/en-US/docs/PR_Open#Parameters
-    PR_RDONLY      : 0x01,
-    PR_WRONLY      : 0x02,
-    PR_RDWR        : 0x04,
-    PR_CREATE_FILE : 0x08,
-    PR_APPEND      : 0x10,
-    PR_TRUNCATE    : 0x20,
-    PR_SYNC        : 0x40,
-    PR_EXCL        : 0x80
-  });
+  for (let [clsName, target, ifcName] of [
+    ['atom-service', 'AtomService'],
+    ['alerts-service', 'AlertsService'],
+    ['browser/nav-bookmarks-service', 'NavBookmarksService'],
+    ['browser/nav-history-service', 'NavHistoryService'],
+    ['browser/annotation-service', 'AnnotationService'],
+    ['widget/clipboardhelper', 'ClipboardHelper'],
+    ['mime', 'MIMEService'],
+    ['intl/texttosuburi', 'TextToSubURI'],
+    ['chrome/chrome-registry', 'ChromeRegistry', 'XULChromeRegistry']
+  ]) {
+    XPCOMUtils.defineLazyServiceGetter(
+      global,
+      target,
+      `@mozilla.org/${clsName};1`,
+      `nsI${ifcName || target}`
+    );
+  }
 }(this));
