@@ -7,8 +7,8 @@
         SCRIPT_PATHS = [
           'third_party/MochiKit.js',
           'third_party/twitter-text.js',
-          'component.js',
           'expand.js',
+          'component.js',
           'utility.js',
           'tabWatcher.js',
           'repository.js',
