@@ -3,54 +3,64 @@
 (function executeTombfixService(global) {
   'use strict';
 
-  const CHROME_DIR = 'chrome://tombfix',
-        SCRIPT_PATHS = [
-          'third_party/MochiKit.js',
-          'third_party/twitter-text.js',
-          'expand.js',
-          'component.js',
-          'utility.js',
-          'tabWatcher.js',
-          'repository.js',
-          'models.js',
-          'Tombfix.Service.js',
-          'actions.js',
-          'extractors.js',
-          'ui.js'
-        ],
-        {interfaces: Ci, utils: Cu} = Components,
-        // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
-        {Services} = Cu.import('resource://gre/modules/Services.jsm', {}),
-        // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
-        {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {}),
-        // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
-        /* jshint ignore: start */
-        {console} = Cu.import(
-          'resource://gre/modules/devtools/Console.jsm',
-          {}
-        ),
-        /* jshint ignore: end */
-        {
-          appShell: AppShellService,
-          scriptloader: ScriptLoader,
-          wm: WindowMediator
-        } = Services,
-        FileProtocolHandler = new Components.Constructor(
-          '@mozilla.org/network/protocol;1?name=file',
-          'nsIFileProtocolHandler'
-        )();
+  const {
+    interfaces: Ci,
+    utils: Cu,
+    Constructor: CC
+  } = Components;
 
-  let loadScript = function loadScript(url, target) {
-        ScriptLoader.loadSubScriptWithOptions(url, Object.assign({
-          charset: 'UTF-8',
-          ignoreCache: true
-        }, target ? {target} : {}));
-      },
-      loadLibrary = function loadLibrary(paths, target) {
-        for (let path of paths) {
-          loadScript(`${CHROME_DIR}/content/library/${path}`, target);
-        }
-      };
+  Object.assign(global, {
+    // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
+    console: Cu.import(
+      'resource://gre/modules/devtools/Console.jsm',
+      {}
+    ).console
+  });
+
+  // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
+  const {Services} = Cu.import('resource://gre/modules/Services.jsm', {});
+  // http://mxr.mozilla.org/mozilla-central/source/js/xpconnect/loader/XPCOMUtils.jsm
+  const {XPCOMUtils} = Cu.import('resource://gre/modules/XPCOMUtils.jsm', {});
+
+  const {
+    appShell: AppShellService,
+    scriptloader: ScriptLoader,
+    wm: WindowMediator
+  } = Services;
+
+  const FileProtocolHandler = new CC(
+    '@mozilla.org/network/protocol;1?name=file',
+    'nsIFileProtocolHandler'
+  )();
+
+  const CHROME_DIR = 'chrome://tombfix';
+  const SCRIPT_PATHS = [
+    'third_party/MochiKit.js',
+    'third_party/twitter-text.js',
+    'expand.js',
+    'component.js',
+    'utility.js',
+    'tabWatcher.js',
+    'repository.js',
+    'models.js',
+    'Tombfix.Service.js',
+    'actions.js',
+    'extractors.js',
+    'ui.js'
+  ];
+
+  function loadScript(url, target) {
+    ScriptLoader.loadSubScriptWithOptions(url, Object.assign({
+      charset: 'UTF-8',
+      ignoreCache: true
+    }, target ? {target} : {}));
+  }
+
+  function loadLibrary(paths, target) {
+    for (let path of paths) {
+      loadScript(`${CHROME_DIR}/content/library/${path}`, target);
+    }
+  }
 
   // https://developer.mozilla.org/en-US/docs/Components.utils.importGlobalProperties
   Cu.importGlobalProperties(['File', 'URL', 'XMLHttpRequest']);
@@ -96,20 +106,22 @@
     // libraryの読み込み
     loadLibrary(SCRIPT_PATHS, env);
 
-    if (!env.getPref('disableAllScripts')) {
-      let patchDir;
+    if (env.getPref('disableAllScripts')) {
+      return;
+    }
 
-      // dataDirの設定が不正なものである時に、Tombfixが起動できなくなるのを防ぐ
-      try {
-        patchDir = env.getPatchDir();
-      } catch (err) {
-        Cu.reportError(err);
-      }
+    let patchDir;
 
-      if (patchDir) {
-        // パッチの読み込み
-        loadSubScripts(getScriptFiles(patchDir), env);
-      }
+    // dataDirの設定が不正なものである時に、Tombfixが起動できなくなるのを防ぐ
+    try {
+      patchDir = env.getPatchDir();
+    } catch (err) {
+      Cu.reportError(err);
+    }
+
+    if (patchDir) {
+      // パッチの読み込み
+      loadSubScripts(getScriptFiles(patchDir), env);
     }
   }
 
@@ -140,22 +152,24 @@
 
   // https://developer.mozilla.org/en-US/docs/How_to_Build_an_XPCOM_Component_in_Javascript#Using_XPCOMUtils
   function TombfixService(noInit) {
-    if (!noInit) {
-      // https://developer.mozilla.org/en-US/docs/wrappedJSObject
-      this.wrappedJSObject = this.init();
+    if (noInit) {
+      return;
     }
+
+    // https://developer.mozilla.org/en-US/docs/wrappedJSObject
+    this.wrappedJSObject = this.init();
   }
 
   Object.expand(TombfixService.prototype, {
     className: TombfixService.name,
     classDescription: 'Tombfix\'s JavaScript XPCOM Component',
     contractID: '@tombfix.github.io/tombfix-service;1',
-    classID: Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
+    classID: new Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
     QueryInterface: XPCOMUtils.generateQI(),
 
-    CHROME_DIR: CHROME_DIR,
+    CHROME_DIR,
 
-    global: global,
+    global,
 
     // リロードによって変更されない領域を用意する
     // イベントに安定してフックするためなどに使われる
@@ -183,7 +197,7 @@
       // MochiKit内部で使用しているinstanceofで異常が発生するのを避ける
       env.MochiKit = {};
 
-      // for twttr
+      // twttrはwindow上に作られる為、事前にenvとwindowで共通のオブジェクトを作っておく
       env.twttr = env.window.twttr = {};
 
       // libraryとパッチを読み込む

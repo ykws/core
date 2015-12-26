@@ -137,24 +137,10 @@
             envs: ['node']
           }
         },
-        tombfix: {
-          files: {
-            src: 'xpi/components/tombfix.js'
-          },
-          options: {
-            rules: {
-              'no-unused-vars': 0,
-              'new-cap': 0,
-              'one-var': 0,
-              indent: 0,
-              'no-shadow': 0,
-              'object-shorthand': 0
-            }
-          }
-        },
         main: {
           files: {
             src: [
+              'xpi/components/tombfix.js',
               'xpi/chrome/content/overlay/overlay.js',
               'xpi/chrome/content/library/expand.js',
               'xpi/chrome/content/library/component.js',
@@ -175,7 +161,9 @@
             rules: {
               'no-alert': 0,
               'new-cap': [2, {
-                capIsNewExceptions: ['ConvertToUnicode', 'ConvertFromUnicode']
+                capIsNewExceptions: [
+                  'QueryInterface', 'ConvertToUnicode', 'ConvertFromUnicode'
+                ]
               }],
               'one-var': 0,
               indent: 0
