@@ -99,7 +99,7 @@ Tombfix.environment.models = Models;
 
 var Tumblr = update({}, AbstractSessionService, {
   name : 'Tumblr',
-  ICON : 'http://www.tumblr.com/images/favicon.gif',
+  ICON : 'https://www.tumblr.com/favicon.ico',
   ORIGIN : 'https://www.tumblr.com',
   TUMBLR_URL : 'http://www.tumblr.com/',
   API_URL : 'https://api.tumblr.com/',
