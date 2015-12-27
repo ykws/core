@@ -1747,12 +1747,12 @@ Models.register({
 
 
 Models.register({
-  name         : 'GoogleCalendar',
-  ICON         : 'https://calendar.google.com/googlecalendar/images/favicon.ico',
-  CALENDAR_URL : 'https://www.google.com/calendar/',
+  name: 'GoogleCalendar',
+  ICON: 'https://calendar.google.com/googlecalendar/images/favicon.ico',
+  API_URL: 'https://calendar.google.com/calendar/',
 
   check(ps) {
-    return /^(?:regular|link)$/.test(ps.type);
+    return ['regular', 'link'].includes(ps.type);
   },
 
   post(ps) {
@@ -1760,72 +1760,80 @@ Models.register({
       throw new Error(getMessage('error.notLoggedin'));
     }
 
-    if (ps.item && (ps.itemUrl || ps.description)) {
-      return this.addSchedule(
-        ps.item,
-        joinText([
-          ps.itemUrl,
-          (ps.body || '').trimTag(),
-          ps.description
-        ], '\n'),
-        ps.date
-      );
-    } else {
-      return this.addSimpleSchedule(ps.description);
+    let {
+      item: title,
+      description
+    } = ps;
+
+    if (ps.type === 'link' || (title && description)) {
+      return this.addSchedule(title, joinText([
+        ps.itemUrl, description
+      ], '\n'), {
+        from: ps.date
+      });
     }
+
+    return this.addSimpleSchedule(description || title);
   },
 
-  addSchedule(title, description, from, to) {
-    return this.getToken().addCallback(token => {
-      return request(this.CALENDAR_URL + 'event', {
-        sendContent : {
-          action  : 'CREATE',
-          crm     : 'AVAILABLE',
-          icc     : 'DEFAULT',
-          scp     : 'ONE',
-          sf      : true,
-          secid   : token,
-          text    : title,
-          details : description,
-          dates   : this.getDates(from, to)
-        }
-      });
-    });
+  addSchedule(title, description, dateInfo) {
+    return this.getToken().addCallback(token => this.callMethod('event', {
+      sendContent: {
+        action: 'CREATE',
+        crm: 'AVAILABLE',
+        icc: 'DEFAULT',
+        scp: 'ONE',
+        sf: true,
+        secid: token,
+        text: title,
+        details: description,
+        dates: this.getDates(dateInfo.from, dateInfo.to)
+      }
+    }));
   },
 
-  addSimpleSchedule(description) {
-    return request(this.CALENDAR_URL + 'm?hl=en', {
-      responseType : 'document'
-    }).addCallback(({response : doc}) => {
-      return request(this.CALENDAR_URL + 'm', {
-        sendContent : Object.assign(formContents(doc.documentElement), {
-          ctext : description || ''
-        })
-      });
-    });
+  addSimpleSchedule(text) {
+    return this.callMethod('m', {
+      responseType: 'document',
+      queryString: {
+        hl: 'en'
+      }
+    }).addCallback(({response: doc}) => this.callMethod('m', {
+      sendContent: Object.assign(formContents(
+        doc.querySelector('form[action="m"]')
+      ), {
+        ctext: text || ''
+      })
+    }));
   },
 
   getToken() {
-    return maybeDeferred(
-      this.getSECID() || request(
-        this.CALENDAR_URL + 'render'
-      ).addCallback(() => this.getSECID())
+    let secID = this.getSECID();
+
+    return secID ? succeed(secID) : this.callMethod('render').addCallback(() =>
+      this.getSECID()
     );
   },
 
+  callMethod(method, info) {
+    return request(this.API_URL + method, Object.assign({
+      responseType: 'text'
+    }, info));
+  },
+
   getSECID() {
-    return getCookieValue('www.google.com', 'secid');
+    return getCookieValue('calendar.google.com', 'secid');
   },
 
   getDates(from, to) {
-    let begin = from || new Date(),
-      end = to || new Date(begin.getTime() + 86400000);
+    let begin = from || new Date();
+    let finish = to || new Date(begin.getTime() + 86400000);
 
-    return this.createDateString(begin) + '/' + this.createDateString(end);
+    return `${this.createDateString(begin)}/${this.createDateString(finish)}`;
   },
 
   // via Taberareloo 4.0.4's GoogleCalendar.createDateString()
-  // https://github.com/taberareloo/taberareloo/blob/4.0.4/src/lib/models.js#L1618-1629
+  // https://github.com/taberareloo/taberareloo/blob/4.0.4/src/lib/models.js#L1618-L1629
   createDateString(dateObj) {
     return [
       dateObj.getFullYear(), dateObj.getMonth() + 1, dateObj.getDate()
@@ -1833,7 +1841,7 @@ Models.register({
       let numStr = String(date);
 
       if (numStr.length === 1) {
-        numStr = '0' + numStr;
+        numStr = `0${numStr}`;
       }
 
       return numStr;
