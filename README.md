@@ -15,10 +15,10 @@ Tombloo がインストールされていても Tombfix のインストールに
 
 ## 対応環境
 
-* Mozilla Firefox 32bit on Windows 7 Home Premium SP1 64bit
+* Mozilla Firefox 64bit on Windows 10 Home 64bit
 
 基本的に Firefox の最新の安定版のみに対応しますが、Beta、Developer Edition、Nightly で不具合が発生した場合、確認でき次第修正を試みたいと考えています。[ESR](http://www.mozilla.jp/business/downloads/) については[対応しません](https://github.com/tombfix/core/issues/70)。  
-また、OS に関しては Windows 7 Home Premium SP1 64bit でしか確認していない為、その他の環境の設定ダイアログのデザインなどは崩れている可能性があります。
+また、OS に関しては Windows 10 Home 64bit でしか確認していない為、その他の環境の設定ダイアログのデザインなどは崩れている可能性があります。
 
 ## 不具合や要望の報告
 [Tombfix 本体](https://github.com/tombfix/core/issues)に関しては[こちら](https://github.com/tombfix/core/issues/new)に、[パッチ](https://github.com/tombfix/patch/issues)に関しては[こちら](https://github.com/tombfix/patch/issues/new)から報告をお願いします。報告の際、[こちら](https://github.com/tombfix/core/blob/master/CONTRIBUTING.md)の「Issue について」を確認して頂けるとありがたいです。
