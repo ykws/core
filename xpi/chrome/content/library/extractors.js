@@ -1989,19 +1989,19 @@ Extractors.register([
       let that = this,
           uriObj = createURI(info.imageURL),
           extension = uriObj.fileExtension,
-          extensions = this.IMG_EXTENSIONS.filter(candidate =>
+          extensionList = this.IMG_EXTENSIONS.filter(candidate =>
             extension !== candidate
           );
 
       return (function recursive() {
-        uriObj.fileExtension = extensions.shift();
+        uriObj.fileExtension = extensionList.shift();
 
         let imageURL = uriObj.spec;
 
         return downloadWithReferrer(imageURL, that.REFERRER).addCallback(() =>
           Object.assign(info, {imageURL})
         ).addErrback(() => {
-          if (extensions.length) {
+          if (extensionList.length) {
             return recursive();
           }
 
