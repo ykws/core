@@ -34,6 +34,7 @@
   )();
 
   const CHROME_DIR = 'chrome://tombfix';
+  const MAIN_URL = 'https://tombfix.github.io/';
   const SCRIPT_PATHS = [
     'third_party/MochiKit.js',
     'third_party/twitter-text.js',
@@ -163,11 +164,12 @@
   Object.expand(TombfixService.prototype, {
     className: TombfixService.name,
     classDescription: 'Tombfix\'s JavaScript XPCOM Component',
-    contractID: '@tombfix.github.io/tombfix-service;1',
+    contractID: `@${(new URL(MAIN_URL)).hostname}/tombfix-service;1`,
     classID: new Components.ID('{ab5cbd9b-56e1-42e4-8414-2201edb883e7}'),
     QueryInterface: XPCOMUtils.generateQI(),
 
     CHROME_DIR,
+    URL: MAIN_URL,
 
     global,
 
