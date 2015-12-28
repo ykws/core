@@ -50,7 +50,7 @@
   assert(isObject(ScriptSecurityManager));
   assert(isObject(CategoryManager));
 
-  assert(isObject(INTERFACES));
+  assert(Array.isArray(INTERFACES));
 
   assert(isFunction(createConstructor));
 
