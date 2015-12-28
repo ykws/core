@@ -398,6 +398,42 @@
   assert(Object.entries({hoge : 0, fuga : 1, piyo : 2}).map(([, val]) => val).reduce((curr, prev) => curr + prev), 3);
   assert(Object.entries('hoge').map(([, val]) => val).join(''), 'hoge');
 
+  assert(Array.isArray(Object.take()));
+  assert(Object.take().length, 0);
+  assert(Array.isArray(Object.take(void 0)));
+  assert(Object.take(void 0).length, 0);
+  assert(Array.isArray(Object.take(null)));
+  assert(Object.take(null).length, 0);
+  assert(Array.isArray(Object.take({})));
+  assert(Object.take({}).length, 0);
+  assert(Array.isArray(Object.take(void 0, 'hoge')));
+  assert(Object.take(void 0, 'hoge').length, 0);
+  assert(Array.isArray(Object.take(null, 'hoge')));
+  assert(Object.take(null, 'hoge').length, 0);
+  assert(Array.isArray(Object.take({}, 'hoge')));
+  assert(Object.take({}, 'hoge').length, 1);
+  assert(Object.take({}, 'hoge')[0], void 0);
+  assert(Array.isArray(Object.take({hoge : '0'}, void 0)));
+  assert(Object.take({hoge : '0'}, void 0).length, 0);
+  assert(Array.isArray(Object.take({hoge : '0'}, null)));
+  assert(Object.take({hoge : '0'}, null).length, 0);
+  assert(Array.isArray(Object.take({hoge : '0'}, [])));
+  assert(Object.take({hoge : '0'}, []).length, 0);
+  assert(Array.isArray(Object.take({'0' : '0'}, 0)));
+  assert(Object.take({'0' : '0'}, 0).length, 1);
+  assert(Object.take({'0' : '0'}, 0)[0], '0');
+  assert(Array.isArray(Object.take({hoge : '0'}, 'hoge')));
+  assert(Object.take({hoge : '0'}, 'hoge').length, 1);
+  assert(Object.take({hoge : '0'}, 'hoge')[0], '0');
+  assert(Array.isArray(Object.take({hoge : '0'}, ['hoge'])));
+  assert(Object.take({hoge : '0'}, ['hoge']).length, 1);
+  assert(Object.take({hoge : '0'}, ['hoge'])[0], '0');
+  assert(Object.take({hoge : '0', fuga : '1'}, ['hoge', 'fuga']).length, 2);
+  assert(Object.take({hoge : '0', fuga : '1'}, ['hoge', 'fuga']).reduce((curr, prev) => curr + prev), '01');
+  assert(Object.take({hoge : '0', fuga : '1'}, ['piyo', 'fuga']).length, 2);
+  assert(Object.take({hoge : '0', fuga : '1'}, ['piyo', 'fuga'])[0], void 0);
+  assert(Object.take({hoge : '0', fuga : '1'}, ['piyo', 'fuga'])[1], '1');
+
   {
     assert(String.usable(), false);
     assert(String.usable(void 0), false);

@@ -100,6 +100,17 @@
       return target == null ?
         [] :
         Object.keys(target).map(propName => [propName, target[propName]]);
+    },
+    take(target, propNames) {
+      return target == null ?
+        [] :
+        Array.wrap(propNames).reduce((arr, propName) => {
+          if (propName != null) {
+            arr.push(target[propName]);
+          }
+
+          return arr;
+        }, []);
     }
   });
 
