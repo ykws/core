@@ -1,29 +1,29 @@
 Tombfix.environment.Extractors = Object.create(Object.expand(new Repository(), {
-  REDIRECTORS : [
+  REDIRECTORS: [
     {
-      re : new RegExp(`^https?://(?:${[
+      re: new RegExp(`^https?://(?:${[
         'feedproxy.google.com', 'tinyurl.com', 'bitly.com', 'bit.ly', 'j.mp',
         'is.gd', 'goo.gl', 'nico.ms', 'p.tl', 'ift.tt', 'g.co'
       ].join('|').replace(/\./g, '\\.')})/`),
       getURL(url) {
         return request(url, {
-          responseType : 'document'
+          responseType: 'document'
         }).addCallback(
           // res.responseURLではhashが省略されてしまう為、それ以外からURLを取得する
-          ({response : doc}) => doc.URL
-        )
+          ({response: doc}) => doc.URL
+        );
       }
     },
     {
-      re : /^https?:\/\/t\.co\//,
+      re: /^https?:\/\/t\.co\//,
       getURL(url) {
         return request(url, {
-          responseType : 'document'
-        }).addCallback(({response : doc}) => (new URL(doc.title)).href)
+          responseType: 'document'
+        }).addCallback(({response: doc}) => (new URL(doc.title)).href);
       }
     },
     {
-      re : /^https?:\/\/www\.google\.(?:com|co\.jp)\/url\?/,
+      re: /^https?:\/\/www\.google\.(?:com|co\.jp)\/url\?/,
       getURL(url) {
         return succeed((new URL(url)).searchParams.get('url') || url);
       }
