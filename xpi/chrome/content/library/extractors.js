@@ -3,7 +3,7 @@ Tombfix.environment.Extractors = Object.create(Object.expand(new Repository(), {
     {
       re : new RegExp(`^https?://(?:${[
         'feedproxy.google.com', 'tinyurl.com', 'bitly.com', 'bit.ly', 'j.mp',
-        'is.gd', 'goo.gl', 'nico.ms'
+        'is.gd', 'goo.gl', 'nico.ms', 'p.tl', 'ift.tt', 'g.co'
       ].join('|').replace(/\./g, '\\.')})/`),
       getURL(url) {
         return request(url, {
@@ -20,6 +20,12 @@ Tombfix.environment.Extractors = Object.create(Object.expand(new Repository(), {
         return request(url, {
           responseType : 'document'
         }).addCallback(({response : doc}) => (new URL(doc.title)).href)
+      }
+    },
+    {
+      re : /^https?:\/\/www\.google\.(?:com|co\.jp)\/url\?/,
+      getURL(url) {
+        return succeed((new URL(url)).searchParams.get('url') || url);
       }
     }
   ],
