@@ -188,8 +188,6 @@ function getLocalFile(uri){
 var getExtensionDir = (() => {
   var {AddonManager} = Cu.import('resource://gre/modules/AddonManager.jsm', {});
   return function getExtensionDir(id) {
-    // 最終的にXPIProvider.jsmのXPIDatabase.getVisibleAddonForIDにて
-    // statement.executeAsyncを使った問い合わせで取得される
     var dir = false;
     AddonManager.getAddonByID(id, function(addon){
       dir = (!addon)? null : getLocalFile(addon.getResourceURI('/'));
