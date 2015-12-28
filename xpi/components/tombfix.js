@@ -170,6 +170,7 @@
 
     CHROME_DIR,
     URL: MAIN_URL,
+    POST_TYPES: ['regular', 'photo', 'quote', 'link', 'conversation', 'video'],
 
     global,
 
