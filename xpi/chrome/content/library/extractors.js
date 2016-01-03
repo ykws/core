@@ -2293,14 +2293,14 @@ Extractors.register([
   },
 
   {
-    name    : 'Video - YouTube',
-    ICON    : 'https://www.youtube.com/favicon.ico',
-    ORIGIN  : 'https://www.youtube.com',
+    name: 'Video - YouTube',
+    ICON: 'https://www.youtube.com/favicon.ico',
+    ORIGIN: 'https://www.youtube.com',
     // via https://developers.google.com/youtube/v3/docs/videos/list
-    API_URL : 'https://www.googleapis.com/youtube/v3/videos',
-    API_KEY : 'AIzaSyACVKBQgqThsTtzvxSwpPdS7jSDgIT9Srw',
+    API_URL: 'https://www.googleapis.com/youtube/v3/videos',
+    API_KEY: 'AIzaSyACVKBQgqThsTtzvxSwpPdS7jSDgIT9Srw',
     check(ctx) {
-      return !ctx.selection && !(ctx.onImage && !ctx.onLink) &&
+      return !ctx.selection && (ctx.onVideo || !(ctx.onImage && !ctx.onLink)) &&
         this.getVideoID(ctx);
     },
     extract(ctx) {
@@ -2308,51 +2308,58 @@ Extractors.register([
 
       return this.getInfo(videoID).addCallback(info => {
         let {title} = info;
+        let pageURL = `${this.ORIGIN}/watch?v=${videoID}`;
 
-        ctx.title = title + ' - YouTube';
-        ctx.href = `${this.ORIGIN}/watch?v=${videoID}`;
+        ctx.title = `${title} - YouTube`;
+        ctx.href = pageURL;
 
         return {
-          type      : 'video',
-          item      : title,
-          itemUrl   : ctx.href,
-          author    : info.channelTitle,
-          authorUrl : `${this.ORIGIN}/channel/${info.channelId}`
+          type: 'video',
+          item: title,
+          itemUrl: pageURL,
+          author: info.channelTitle,
+          authorUrl: `${this.ORIGIN}/channel/${info.channelId}`
         };
       });
     },
     getVideoID(ctx) {
       let targetURL = ctx.onLink ? ctx.link.href : ctx.href;
 
-      if (targetURL) {
-        let urlObj = new URL(targetURL);
+      if (!targetURL) {
+        return '';
+      }
 
-        if (
-          /^(?:www\.)?youtube\.com$/.test(urlObj.hostname) &&
-            urlObj.pathname === '/watch'
-        ) {
+      let videoID = '';
+      let urlObj = new URL(targetURL);
+      let {hostname, pathname} = urlObj;
+
+      if (/^(?:(?:www|m)\.)?youtube\.com$/.test(hostname)) {
+        if (pathname === '/watch') {
           if (
             targetURL === ctx.href &&
-              !$x('//embed/@src | //video/@src', ctx.document)
+              !ctx.document.getElementById('movie_player')
           ) {
-            return;
+            return '';
           }
 
-          return urlObj.searchParams.get('v');
+          videoID = urlObj.searchParams.get('v');
+        } else if (/^\/(?:watch|v|embed)\//.test(pathname)) {
+          videoID = pathname.split('/')[2];
         }
-        if (urlObj.hostname === 'youtu.be') {
-          return urlObj.pathname.slice(1);
-        }
+      } else if (hostname === 'youtu.be') {
+        videoID = pathname.slice(1);
       }
+
+      return /^[\w\-]{11}$/.test(videoID) ? videoID : '';
     },
     getInfo(videoID) {
       return request(this.API_URL, {
-        responseType : 'json',
-        referrer     : 'https://tombfix.github.io/',
-        queryString  : {
-          part : 'snippet',
-          id   : videoID,
-          key  : this.API_KEY
+        responseType: 'json',
+        referrer: Tombfix.URL,
+        queryString: {
+          part: 'snippet',
+          id: videoID,
+          key: this.API_KEY
         }
       }).addErrback(err => {
         let res = err.message;
@@ -2362,7 +2369,7 @@ Extractors.register([
         }
 
         throw err;
-      }).addCallback(({response : json}) => {
+      }).addCallback(({response: json}) => {
         let {error} = json;
 
         if (error) {
