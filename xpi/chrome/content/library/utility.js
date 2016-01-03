@@ -2590,3 +2590,9 @@ function getFlavoredString(target) {
     flavors : {html}
   }) : '';
 }
+
+function showMessage(val, target) {
+  (target || this).alert((
+    Array.isArray(val) ? getMessage(...val) : getMessage(val)
+  ) || val);
+}
