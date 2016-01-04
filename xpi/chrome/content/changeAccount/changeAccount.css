@@ -6,6 +6,7 @@ dialog {
 }
 
 .main,
+.left-box,
 .right-box,
 .accounts {
   -moz-box-flex: 1;
@@ -15,10 +16,6 @@ dialog {
 .account,
 .login-button:not([disabled]) {
   cursor: pointer;
-}
-
-.right-box {
-  margin-left: 0.7em;
 }
 
 .account {

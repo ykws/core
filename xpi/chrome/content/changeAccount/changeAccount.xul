@@ -7,7 +7,9 @@
   title="&title.changeAccount;"
   buttons="accept">
   <hbox class="main">
-    <radiogroup class="services"/>
+    <vbox class="left-box">
+      <radiogroup class="services"/>
+    </vbox>
     <vbox class="right-box">
       <listbox class="accounts"/>
       <button

@@ -18,19 +18,13 @@
     return Array.isArray(infoList) ? infoList : [];
   }
 
-  let services = doc.querySelector('.services');
+  let targets = Models.values.filter(model =>
+    model.login && model.getCurrentUser && getAccountInfoList(model).length
+  );
 
-  for (let model of Models.values) {
-    if (
-      model.login && model.getCurrentUser && getAccountInfoList(model).length
-    ) {
-      let modelName = model.name;
+  if (!targets.length) {
+    doc.querySelector('.left-box').hidden = true;
 
-      services.appendItem(modelName, modelName).setAttribute('src', model.ICON);
-    }
-  }
-
-  if (!services.childElementCount) {
     win.addEventListener('load', () => {
       // load時は、まだダイアログが表示されていない
       env.showMessage.async(env, ['message.changeAccount.infoNotFound', win]);
@@ -39,6 +33,7 @@
     return;
   }
 
+  let services = doc.querySelector('.services');
   let loginButton = doc.querySelector('.login-button');
   let accounts = doc.querySelector('.accounts');
 
@@ -94,6 +89,13 @@
   });
 
   win.addEventListener('load', () => {
+    // load後でないとアイコンが表示されない
+    for (let model of targets) {
+      let modelName = model.name;
+
+      services.appendItem(modelName, modelName).setAttribute('src', model.ICON);
+    }
+
     services.selectedIndex = 0;
   });
 }(window, document));
