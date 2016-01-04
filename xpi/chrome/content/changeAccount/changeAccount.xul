@@ -8,7 +8,7 @@
   buttons="accept">
   <hbox class="main">
     <vbox class="left-box">
-      <radiogroup class="services"/>
+      <menulist class="services"/>
     </vbox>
     <vbox class="right-box">
       <listbox class="accounts"/>

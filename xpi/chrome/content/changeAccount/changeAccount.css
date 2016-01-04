@@ -12,13 +12,13 @@ dialog {
   -moz-box-flex: 1;
 }
 
-.services > radio,
+.services,
 .account,
 .login-button:not([disabled]) {
   cursor: pointer;
 }
 
-.services .radio-icon {
+.services .menulist-icon {
   width: 16px;
   height: 16px;
 }

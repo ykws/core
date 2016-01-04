@@ -92,8 +92,10 @@
     // load後でないとアイコンが表示されない
     for (let model of targets) {
       let modelName = model.name;
+      let menuitem = services.appendItem(modelName, modelName);
 
-      services.appendItem(modelName, modelName).setAttribute('src', model.ICON);
+      menuitem.classList.add('menuitem-iconic');
+      menuitem.image = model.ICON;
     }
 
     services.selectedIndex = 0;
