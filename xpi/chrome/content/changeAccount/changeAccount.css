@@ -18,6 +18,11 @@ dialog {
   cursor: pointer;
 }
 
+.services .radio-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .account {
   padding-top: 0.5em;
   padding-right: 0.2em;
