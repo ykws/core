@@ -75,6 +75,24 @@
     }
   });
 
+  Object.expand(Function, {
+    execute(target, obj, arr) {
+      let func = target;
+      let funcThis = obj == null ? null : obj;
+      let funcArgs = Array.wrap(arr);
+
+      if (typeof func === 'string' && funcThis !== null) {
+        func = funcThis[func];
+      }
+
+      if (typeof func === 'function') {
+        return func.call(funcThis, ...funcArgs);
+      }
+
+      return null;
+    }
+  });
+
   Object.expand(JSON, {
     parseable(target) {
       try {

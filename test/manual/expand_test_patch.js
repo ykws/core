@@ -315,6 +315,24 @@
     assert(JSON.stringify(arr.cutIn(1, ...['b', 'd'])), '["a","b","d","c"]');
   }
 
+  assert(Function.execute(), null);
+  assert(Function.execute(function () {}), void 0);
+  assert(Function.execute(function () { return this; }, Array), Array);
+  assert(Function.execute(a => a, null, 0), 0);
+  assert(Function.execute(function () { return this instanceof Boolean; }, false));
+  assert(Function.execute('toString', false), 'false');
+  assert(Function.execute(function (target) { return this.isArray(target); }, Array, [[]]), true);
+  assert(Function.execute(function (target) { return this.isArray(target); }, Array, []), false);
+  assert(Function.execute(function (num1, num2) { return num1 + num2; }, null, [1, 2]), 3);
+  assert(Function.execute(Object.keys, Object, {hoge : 0})[0], 'hoge');
+  assert(Function.execute('keys', Object, {hoge : 0})[0], 'hoge');
+  assert(Function.execute(void 0, Object, {hoge : 0}), null);
+  assert(Function.execute(void 0, Object), null);
+  assert(Function.execute('hoge', {hoge : arg => arg}, 0), 0);
+  assert(Function.execute('hoge', {}, 0), null);
+  assert(Function.execute('hoge', null, 0), null);
+  assert(Function.execute('hoge'), null);
+
   assert(JSON.parseable(void 0), false);
   assert(JSON.parseable(''), false);
   assert(JSON.parseable(NaN), false);
