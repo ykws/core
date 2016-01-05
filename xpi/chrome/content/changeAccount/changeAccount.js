@@ -68,7 +68,11 @@
 
       env.clearChildren(accounts);
 
-      createAccountList(getAccountInfoList(model), Array.wrap(list));
+      // 「アカウントの切り替え」を開いて2回目以降にアカウントリストの表示がおかしくなるのを防ぐ
+      createAccountList.async(null, [
+        getAccountInfoList(model),
+        Array.wrap(list)
+      ]);
     });
   });
 
