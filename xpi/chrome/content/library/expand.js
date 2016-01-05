@@ -93,6 +93,14 @@
     }
   });
 
+  Object.expand(Function.prototype, {
+    async(obj, arr) {
+      setTimeout(() => {
+        this.call(obj == null ? null : obj, ...Array.wrap(arr));
+      }, 0);
+    }
+  });
+
   Object.expand(JSON, {
     parseable(target) {
       try {

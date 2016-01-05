@@ -333,6 +333,17 @@
   assert(Function.execute('hoge', null, 0), null);
   assert(Function.execute('hoge'), null);
 
+  assert((function () {}).async(), void 0);
+  assert((function () {}).async(void 0), void 0);
+  assert((function () {}).async(null), void 0);
+  assert((function () {}).async({}), void 0);
+  assert((function () {}).async(null, 'hoge'), void 0);
+  assert((function () {}).async({}, 'hoge'), void 0);
+  assert((function () {}).async(null, ['hoge', 'fuga']), void 0);
+  assert((function () {}).async({}, ['hoge', 'fuga']), void 0);
+  assert((function () {}).async({}, [['hoge', 'fuga']]), void 0);
+  assert((function () { return this instanceof Boolean; }).async(false), void 0);
+
   assert(JSON.parseable(void 0), false);
   assert(JSON.parseable(''), false);
   assert(JSON.parseable(NaN), false);
