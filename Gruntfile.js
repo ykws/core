@@ -164,9 +164,7 @@
                 capIsNewExceptions: [
                   'QueryInterface', 'ConvertToUnicode', 'ConvertFromUnicode'
                 ]
-              }],
-              'one-var': 0,
-              indent: 0
+              }]
             }
           }
         },

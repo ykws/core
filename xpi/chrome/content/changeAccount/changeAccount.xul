@@ -18,5 +18,8 @@
         dlgtype="accept"/>
     </vbox>
   </hbox>
+  <script
+    type="application/javascript"
+    src="chrome://tombfix/content/library/expand.js"/>
   <script type="application/javascript" src="changeAccount.js"/>
 </dialog>

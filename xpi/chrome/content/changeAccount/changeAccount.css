@@ -12,7 +12,7 @@ dialog {
 }
 
 .services > radio,
-.accounts > listitem,
+.account,
 .login-button:not([disabled]) {
   cursor: pointer;
 }
@@ -21,7 +21,7 @@ dialog {
   margin-left: 0.7em;
 }
 
-.accounts > listitem {
+.account {
   padding-top: 0.5em;
   padding-right: 0.2em;
   padding-bottom: 0.5em;
