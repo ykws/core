@@ -7,15 +7,15 @@
     "grunt": "",
     "grunt-cli": "",
     "grunt-contrib-jshint": "",
-    "grunt-jscs": "",
+    "grunt-jscs": "<3",
     "jscs-config-tombfix": "0.0.3",
-    "grunt-eslint": "",
+    "grunt-eslint": "<18",
     "eslint-config-tombfix": "",
     "grunt-contrib-compress": ""
   },
   "engines": {
-    "node": ">=5.1.0",
-    "npm": ">=3.3.12"
+    "node": ">=6.3.1",
+    "npm": ">=3.10.3"
   },
   "private": true
 }
