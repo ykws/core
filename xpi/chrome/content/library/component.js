@@ -13,10 +13,7 @@
 
   Object.assign(global, {
     // http://mxr.mozilla.org/mozilla-central/source/toolkit/devtools/Console.jsm
-    console: Cu.import(
-      'resource://gre/modules/devtools/Console.jsm',
-      {}
-    ).console
+    console: Cu.import('resource://gre/modules/Console.jsm', {}).console
   });
 
   // http://mxr.mozilla.org/mozilla-central/source/toolkit/modules/Services.jsm
