@@ -2785,55 +2785,6 @@ Models.register({
 });
 
 
-Models.register(update({
-  name   : 'YahooBookmarks',
-  ICON   : 'http://i.yimg.jp/images/sicons/ybm16.gif',
-  ORIGIN : 'http://bookmarks.yahoo.co.jp',
-
-  check : function (ps) {
-    if (/^(?:photo|quote|link|video|conversation)$/.test(ps.type)) {
-      if (ps.file) {
-        return ps.itemUrl;
-      }
-
-      return true;
-    }
-  },
-
-  post : function (ps) {
-    return this.getSessionValue('token', () => {
-      return request(this.ORIGIN + '/bookmarklet', {
-        responseType : 'document'
-      }).addCallback(({response : doc}) => {
-        var script = doc.querySelector('script:not([src])');
-
-        if (!script || doc.getElementById('login_form')) {
-          throw new Error(getMessage('error.notLoggedin'));
-        }
-
-        return script.textContent.trim().extract(/^cic = "([^"]+)"$/);
-      });
-    }).addCallback(token => {
-      return request(this.ORIGIN + '/create/post', {
-        sendContent : {
-          crumb : token,
-          title : ps.item,
-          url   : ps.itemUrl,
-          memo  : joinText([
-            Twitter.createQuote(ps.body || ''),
-            ps.description
-          ], '\n\n', true)
-        }
-      });
-    });
-  },
-
-  getAuthCookie : function () {
-    return getCookieString('.yahoo.co.jp', 'T');
-  }
-}, AbstractSessionService));
-
-
 Models.register(Object.assign({
   name    : 'Hatena',
   ICON    : 'https://www.hatena.ne.jp/favicon.ico',
