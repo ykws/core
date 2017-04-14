@@ -872,7 +872,7 @@ function simpleRequest(url, opt) {
 
       if (file instanceof IFile) {
         // https://developer.mozilla.org/en-US/docs/Extensions/Using_the_DOM_File_API_in_chrome_code
-        file = sendContent[key] = new File(file);
+        file = sendContent[key] = File.createFromNsIFile(file);
       }
 
       if (file instanceof File) {
