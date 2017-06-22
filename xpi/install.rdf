@@ -4,7 +4,7 @@
   xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>tombfix_ykws@tombfix.github.io</em:id>
-    <em:version>0.5.4</em:version>
+    <em:version>0.5.5</em:version>
     <em:type>2</em:type>
     <em:updateURL>https://raw.githubusercontent.com/tombfix/update/master/update.rdf</em:updateURL>
 
