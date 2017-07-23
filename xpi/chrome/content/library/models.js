@@ -369,7 +369,7 @@ var Tumblr = update({}, AbstractSessionService, {
   getInfo() {
     return this.getDashboard().addCallback(doc => {
       let info = {};
-      let element = doc.querySelector('input[name="form_key"]') || doc.querySelector('input[name="tumblr_form_key"]');
+      let element = doc.querySelector('meta[name="tumblr-form-key"]') || doc.querySelector('meta[id="tumblr-form-key"]');
 
       if (element && element.content) {
         info.formKey = element.content;
